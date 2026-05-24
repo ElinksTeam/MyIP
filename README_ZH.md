@@ -2,29 +2,24 @@
 
 <div align="center">
 
-![IPCheck.ing Banner](https://raw.githubusercontent.com/jason5ng32/MyIP/main/public/github/gh_banner.png)
-
-<a href="https://trendshift.io/repositories/5332" target="_blank"><img src="https://trendshift.io/api/badge/repositories/5332" alt="jason5ng32%2FMyIP | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+![MyIP Banner](https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/github/gh_banner.png)
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
-![GitHub Repo stars](https://img.shields.io/github/stars/jason5ng32/MyIP)
-![GitHub forks](https://img.shields.io/github/forks/jason5ng32/myip)
-![Docker Pulls](https://img.shields.io/docker/pulls/jason5ng32/myip)
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
+![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/myip)
 
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Fipcheck.ing&up_message=online&label=IPCheck.ing 'IPCheck.ing')](https://ipcheck.ing)
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
-![CodeQL](https://github.com/jason5ng32/MyIP/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
-![Docker Build and Push](https://github.com/jason5ng32/MyIP/actions/workflows/docker-image.yml/badge.svg?branch=main)
+![CodeQL](https://github.com/ElinksTeam/MyIP/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
+![Docker Build and Push](https://github.com/ElinksTeam/MyIP/actions/workflows/docker-image.yml/badge.svg?branch=main)
 
 🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
 
-👉 在这里体验：[https://ipcheck.ing](https://ipcheck.ing)
+你可以自行部署 MyIP 实例。
 
-你可以直接用我已经搭建好的服务，也可以自行搭建。
-
-[![Deploy with Docker](https://raw.githubusercontent.com/jason5ng32/MyIP/main/public/github/Docker.svg)](https://hub.docker.com/r/jason5ng32/myip)
+[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/myip)
 
 </div>
 
@@ -65,7 +60,7 @@
 克隆代码:
 
 ```bash
-git clone https://github.com/jason5ng32/MyIP.git
+git clone https://github.com/ElinksTeam/MyIP.git
 ```
 
 安装与编译:
@@ -87,7 +82,7 @@ npm start
 点击顶部的部署到 Docker 按钮，即可完成部署，又或者，直接输入下面的命令：
 
 ```bash
-docker run -d -p 18966:18966 --name myip --restart always jason5ng32/myip:latest
+docker run -d -p 18966:18966 --name myip --restart always elinksteam/myip:latest
 ```
 
 ## 📚 环境变量
@@ -180,7 +175,7 @@ docker run -d -p 18966:18966 \
   -e GOOGLE_MAP_API_KEY="YOUR_KEY_HERE" \
   -e ALLOWED_DOMAINS="example.com" \
   --name myip \
-  jason5ng32/myip:latest
+  elinksteam/myip:latest
 
 ```
 
@@ -205,24 +200,10 @@ DOMAIN,ptest-7.ipcheck.ing,Proxy7
 DOMAIN,ptest-8.ipcheck.ing,Proxy8
 ```
 
-## 😶‍🌫️ 额外说明
+## 归属说明
 
-在 V2.0 发布的时候，我曾经说：这个程序的 70% 的代码不是我写的，是通过 AI 写的。大概来回 90 个回合，外加一些细微的手动修改，完成了全部代码。
+本项目由 ElinksTeam 维护。
 
-当然，程序的架构和 UI 还是需要自己进行设计。
+本项目基于 Jason Ng 的 MyIP，并继续遵循 MIT License。根据 MIT License 要求，原始版权声明已保留在 `LICENSE` 文件中。
 
-随着 V3.0 及后续的代码发布，AI 帮助我写代码的比例逐渐下降，估计现在在 40% - 50% 之间。相反，在这个过程中，我从完全不会 JavaScript 和 Vue ，与 AI 结对编程后，我现在已经能看懂大部分的 JS 代码了，并且也已经能手撸一些。
-
-感谢 AI ，给了我这样一个失业产品经理快速学习编程的机会。
-
-## 🌟 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=jason5ng32/MyIP&type=Date)](https://star-history.com/#jason5ng32/MyIP&Date)
-
-## 💖 赞助者
-
-作为一个开源项目，我非常感谢以下赞助者对我的支持：
-
-<a href="https://www.digitalocean.com/?refcode=fd2634a3981b&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" height="40px" title="DigitalOcean" /></a>
-
-<a href="https://www.cloudflare.com/lp/project-alexandria/"><img src="https://cf-assets.www.cloudflare.com/zkvhlag99gkb/69RwBidpiEHCDZ9rFVVk7T/092507edbed698420b89658e5a6d5105/CF_logo_stacked_blktype.png" alt="Cloudflare Project Alexandria" title="Cloudflare Project Alexandria" height="60px" /></a>
+二次修改部分 Copyright (c) 2026 ElinksTeam。
