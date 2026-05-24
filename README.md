@@ -2,11 +2,8 @@
 
 <div align="center">
 
-<a href="https://github.com/ElinksTeam/MyIP">
-  <img src="https://github.com/ElinksTeam/MyIP/blob/main/public/logos/elinks-logo.png?raw=true" alt="ElinksNet Logo" width="420">
-</a>
-
-<br />
+<h1 style="font-size:48px; margin-bottom: 0;">ElinksNet</h1>
+<p><strong>IP & Network Toolbox</strong></p>
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
@@ -16,14 +13,9 @@
 
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
-![CodeQL](https://github.com/ElinksTeam/MyIP/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
-![Docker Build and Push](https://github.com/ElinksTeam/MyIP/actions/workflows/docker-image.yml/badge.svg?branch=main)
-
 🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
 
 Deploy your own ElinksNet instance.
-
-[![Deploy with Docker](https://github.com/ElinksTeam/MyIP/blob/main/public/github/Docker.svg?raw=true)](https://hub.docker.com/r/elinksteam/elinksnet)
 
 </div>
 
@@ -83,8 +75,6 @@ npm start
 The program will run on port 18966.
 
 ### Using Docker
-
-Click the 'Deploy to Docker' button at the top to complete the deployment. Or, use the following shell:
 
 ```bash
 docker run -d -p 18966:18966 --name elinksnet --restart always elinksteam/elinksnet:latest
