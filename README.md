@@ -2,26 +2,28 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/logos/elinks-logo.png" alt="ElinksNet Logo" width="420" />
+<a href="https://github.com/ElinksTeam/MyIP">
+  <img src="https://github.com/ElinksTeam/MyIP/blob/main/public/logos/elinks-logo.png?raw=true" alt="ElinksNet Logo" width="420">
+</a>
 
 <br />
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
-![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/ElinksNet)
-![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/ElinksNet)
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
 ![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/elinksnet)
 
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
-![CodeQL](https://github.com/ElinksTeam/ElinksNet/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
-![Docker Build and Push](https://github.com/ElinksTeam/ElinksNet/actions/workflows/docker-image.yml/badge.svg?branch=main)
+![CodeQL](https://github.com/ElinksTeam/MyIP/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
+![Docker Build and Push](https://github.com/ElinksTeam/MyIP/actions/workflows/docker-image.yml/badge.svg?branch=main)
 
 🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
 
 Deploy your own ElinksNet instance.
 
-[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/ElinksNet/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/elinksnet)
+[![Deploy with Docker](https://github.com/ElinksTeam/MyIP/blob/main/public/github/Docker.svg?raw=true)](https://hub.docker.com/r/elinksteam/elinksnet)
 
 </div>
 
@@ -62,8 +64,8 @@ Make sure you have Node.js installed.
 Clone the code:
 
 ```bash
-git clone https://github.com/ElinksTeam/ElinksNet.git
-cd ElinksNet
+git clone https://github.com/ElinksTeam/MyIP.git
+cd MyIP
 ```
 
 Install and build:
