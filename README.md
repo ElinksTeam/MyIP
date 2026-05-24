@@ -2,15 +2,13 @@
 
 <div align="center">
 
-<h1 style="font-size:48px; margin-bottom: 0;">ElinksNet</h1>
+<h1>ElinksNet</h1>
 <p><strong>IP & Network Toolbox</strong></p>
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
 ![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
-![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/elinksnet)
-
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
 🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
