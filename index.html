@@ -12,20 +12,11 @@
   <meta name="background-color" content="#ffffff" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="https://elinksapi.netdisc.bond/ELinks_One_UI_Improved%202.png" />
-  <title>Elinks Network Check - Check My IP Address and Geolocation - Check WebRTC Connection IP - DNS Leak Test - Speed Test - Ping/MTR Test</title>
-  <link rel="icon" href="https://elinksapi.netdisc.bond/ELinks_One_UI_Improved%202.png">
-  <link rel="icon" type="image/svg+xml" href="https://elinksapi.netdisc.bond/ELinks_One_UI_Improved%202.png">
+  <link rel="apple-touch-icon" href="/logos/ios-logo-192.png" />
+  <title>ElinksNet - Open Source IP & Network Toolbox</title>
+  <link rel="icon" href="/logos/ios-logo-192.png">
+  <link rel="icon" type="image/png" href="/logos/ios-logo-192.png">
 
-  <!-- Seed the `.dark` class on <html> BEFORE first paint.
-       Reads the user's stored theme preference from localStorage (key
-       `userPreferences`, field `theme`, values: "auto" / "light" / "dark"),
-       falling back to the OS `prefers-color-scheme` when on "auto" or when
-       there's no stored preference yet. Runs synchronously — must come before
-       the inline <style> block below and before the Vue bundle loads, so the
-       boot screen and the eventually-mounted app agree on the theme from
-       frame 1. Preferences.vue owns the class after mount via
-       `store.setDarkMode`. -->
   <script>
     (function () {
       try {
@@ -38,7 +29,6 @@
             window.matchMedia('(prefers-color-scheme: dark)').matches);
         if (isDark) document.documentElement.classList.add('dark');
       } catch (e) {
-        /* localStorage / JSON parse disabled — fall through, defaults to light. */
       }
     })();
   </script>
@@ -58,128 +48,13 @@
 
     html {
       line-height: 1.5;
-      -webkit-text-size-adjust: 100%;
-      -webkit-tap-highlight-color: transparent;
-      tab-size: 4;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
-        "Apple Color Emoji", "Segoe UI Emoji";
-      scrollbar-gutter: stable;
-      background: #ffffff;
-      color: #0a0a0a;
-    }
-
-    /* Dark mode is gated strictly on the `.dark` class — *never* on
-       `prefers-color-scheme` alone — so this inline CSS never fights with
-       Tailwind's dark variant or with Preferences.vue's explicit light/dark
-       selection. The `.dark` class is seeded by the script block below
-       before first paint, so boot-screen rendering already reflects the
-       right theme without a flash. */
-    html.dark {
-      background: #0a0a0a;
-      color: #fafafa;
-    }
-
-    /* Boot screen — shown until App.vue's setup hides it
-       (see `frontend/App.vue`: `document.getElementById('jn-loading')`).
-
-       Anchored to the upper third of the viewport rather than dead-center
-       because phones eat ~50-60px at the top with their status bar / notch,
-       which pushed "centered" content visually low. 15vh top padding + flex
-       top alignment puts the logo around ~1/6 to 1/5 from the top on phone
-       and desktop alike. */
-    .jn-loading {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 16px;
-      padding: 25vh 24px 24px;
-      text-align: center;
-    }
-
-    .jn-loading svg {
-      width: 96px;
-      height: 96px;
-      fill: currentColor;
-    }
-
-    .jn-loading p {
-      margin: 0;
-      font-size: 14px;
-      color: #6b7280;
-      line-height: 1.5;
-    }
-
-    .jn-loading a {
-      color: inherit;
-      text-decoration: underline;
-    }
-
-    /* Spinner — explicitly border-box so its rendered size stays 28×28 whether
-       Preflight has arrived or not. */
-    .jn-spinner {
-      width: 28px;
-      height: 28px;
-      border: 4px solid #16a34a;
-      border-left-color: transparent;
-      border-radius: 50%;
-      animation: jn-spin 1s linear infinite;
-    }
-
-    @keyframes jn-spin {
-      to {
-        transform: rotate(360deg);
-      }
     }
   </style>
-
-  <!-- Pre-Vue runtime:
-       1. Stash the PWA install-prompt event so the app can reuse it later
-         (the event fires exactly once, well before Vue mounts).
-       2. After 12s, reveal the slow-network fallback hint. -->
-  <script>
-    window.ipcheckInstallPromptEvent = null;
-    window.addEventListener('beforeinstallprompt', (event) => {
-      event.preventDefault();
-      window.ipcheckInstallPromptEvent = event;
-    });
-    setTimeout(() => {
-      const hint = document.getElementById('jn-loading-slow-hint');
-      if (hint) hint.hidden = false;
-    }, 12000);
-  </script>
 </head>
 
 <body>
-  <!-- Pre-Vue boot screen. App.vue hides this element in its setup() via
-       `document.getElementById('jn-loading').style.display = 'none'`, so the ID
-       name here is a load-bearing contract — keep them in sync. -->
-  <div id="jn-loading" class="jn-loading" role="status" aria-live="polite">
-    <img src="https://elinksapi.netdisc.bond/ELinks_One_UI_Improved%202.png" alt="Loading" style="width: 96px; height: 96px;">
-
-    <div>
-      <p>It may take a while for the first time, please wait&hellip;</p>
-    </div>
-
-    <div class="jn-spinner" aria-label="Loading"></div>
-
-    <p id="jn-loading-slow-hint" hidden>
-      Waiting too long? Try refreshing the page.
-    </p>
-  </div>
-
-  <noscript>
-    <p style="padding: 40px; text-align: center;">
-      Elinks Network Check requires JavaScript. Please enable it and refresh.
-    </p>
-  </noscript>
-
-  <!-- Vue mounts here. `vaul-drawer-wrapper` is the marker vaul-vue uses to scale
-       the page background when a bottom drawer is open (Advanced Tools panel). -->
-  <div id="app" vaul-drawer-wrapper></div>
-  <script type="module" src="/frontend/main.js"></script>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
 </body>
 
 </html>
