@@ -1,25 +1,25 @@
-# 🧰 IP 工具箱
+# 🧰 ElinksNet - IP 与网络工具箱
 
 <div align="center">
 
-![MyIP Banner](https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/github/gh_banner.png)
+![ElinksNet Logo](public/logos/elinks-logo.png)
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
-![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
-![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
-![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/myip)
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/ElinksNet)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/ElinksNet)
+![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/elinksnet)
 
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
-![CodeQL](https://github.com/ElinksTeam/MyIP/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
-![Docker Build and Push](https://github.com/ElinksTeam/MyIP/actions/workflows/docker-image.yml/badge.svg?branch=main)
+![CodeQL](https://github.com/ElinksTeam/ElinksNet/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
+![Docker Build and Push](https://github.com/ElinksTeam/ElinksNet/actions/workflows/docker-image.yml/badge.svg?branch=main)
 
-🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
+🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md)
 
-你可以自行部署 MyIP 实例。
+你可以自行部署 ElinksNet 实例。
 
-[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/myip)
+[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/ElinksNet/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/elinksnet)
 
 </div>
 
@@ -49,7 +49,7 @@
 * 📲 **支持 PWA**：可以添加为手机应用以及电脑里的桌面应用，方便使用
 * ⌨️ **支持快捷键**：可以随时输入 `?` 查看快捷键菜单
 * 🌍 根据可用性检测结果，返回目前是否可以访问全世界网络的提示
-* 🇺🇸 🇨🇳 🇫🇷 🇹🇷 支持中文、英文、法文、土耳其文
+* 🇺🇸 🇨🇳 🇫🇷 支持中文、英文、法文
 
 ## 📕 如何使用
 
@@ -60,7 +60,8 @@
 克隆代码:
 
 ```bash
-git clone https://github.com/ElinksTeam/MyIP.git
+git clone https://github.com/ElinksTeam/ElinksNet.git
+cd ElinksNet
 ```
 
 安装与编译:
@@ -82,7 +83,7 @@ npm start
 点击顶部的部署到 Docker 按钮，即可完成部署，又或者，直接输入下面的命令：
 
 ```bash
-docker run -d -p 18966:18966 --name myip --restart always elinksteam/myip:latest
+docker run -d -p 18966:18966 --name elinksnet --restart always elinksteam/elinksnet:latest
 ```
 
 ## 📚 环境变量
@@ -91,7 +92,7 @@ docker run -d -p 18966:18966 --name myip --restart always elinksteam/myip:latest
 
 ### MaxMind 数据库（必须配置）
 
-MyIP 依赖 MaxMind 提供的免费 **GeoLite2** 数据库（City + ASN）来进行 IP 地理位置查询、ASN / 组织归属查询，以及全站各处（IP 卡片、WebRTC ICE candidate 等）的国家/地区标识。MaxMind 配置是后端完整运行的前提。
+ElinksNet 依赖 MaxMind 提供的免费 **GeoLite2** 数据库（City + ASN）来进行 IP 地理位置查询、ASN / 组织归属查询，以及全站各处（IP 卡片、WebRTC ICE candidate 等）的国家/地区标识。MaxMind 配置是后端完整运行的前提。
 
 由于 MaxMind GeoLite2 协议不允许再分发，`.mmdb` 文件**没有被包含在本仓库里**，你需要自己准备。有两种做法：
 
@@ -174,8 +175,8 @@ docker run -d -p 18966:18966 \
   -e MAXMIND_AUTO_UPDATE="true" \
   -e GOOGLE_MAP_API_KEY="YOUR_KEY_HERE" \
   -e ALLOWED_DOMAINS="example.com" \
-  --name myip \
-  elinksteam/myip:latest
+  --name elinksnet \
+  elinksteam/elinksnet:latest
 
 ```
 
@@ -202,8 +203,8 @@ DOMAIN,ptest-8.ipcheck.ing,Proxy8
 
 ## 归属说明
 
-本项目由 ElinksTeam 维护。
+ElinksNet 由 ElinksTeam 维护。
 
-本项目基于 Jason Ng 的 MyIP，并继续遵循 MIT License。根据 MIT License 要求，原始版权声明已保留在 `LICENSE` 文件中。
+ElinksNet 基于 Jason Ng 的 MyIP，并继续遵循 MIT License。根据 MIT License 要求，原始版权声明已保留在 `LICENSE` 文件中。
 
 二次修改部分 Copyright (c) 2026 ElinksTeam。
