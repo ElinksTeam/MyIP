@@ -2,24 +2,18 @@
 
 <div align="center">
 
-![ElinksNet Logo](public/logos/elinks-logo.png)
+<h1>ElinksNet</h1>
+<p><strong>IP 与网络工具箱</strong></p>
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
-![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/ElinksNet)
-![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/ElinksNet)
-![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/elinksnet)
-
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
-![CodeQL](https://github.com/ElinksTeam/ElinksNet/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
-![Docker Build and Push](https://github.com/ElinksTeam/ElinksNet/actions/workflows/docker-image.yml/badge.svg?branch=main)
-
-🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md)
+🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
 
 你可以自行部署 ElinksNet 实例。
-
-[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/ElinksNet/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/elinksnet)
 
 </div>
 
@@ -49,7 +43,7 @@
 * 📲 **支持 PWA**：可以添加为手机应用以及电脑里的桌面应用，方便使用
 * ⌨️ **支持快捷键**：可以随时输入 `?` 查看快捷键菜单
 * 🌍 根据可用性检测结果，返回目前是否可以访问全世界网络的提示
-* 🇺🇸 🇨🇳 🇫🇷 支持中文、英文、法文
+* 🇺🇸 🇨🇳 🇫🇷 🇹🇷 支持中文、英文、法文、土耳其文
 
 ## 📕 如何使用
 
@@ -60,8 +54,8 @@
 克隆代码:
 
 ```bash
-git clone https://github.com/ElinksTeam/ElinksNet.git
-cd ElinksNet
+git clone https://github.com/ElinksTeam/MyIP.git
+cd MyIP
 ```
 
 安装与编译:
@@ -79,8 +73,6 @@ npm start
 程序会运行在 18966 端口。
 
 ### 使用 Docker
-
-点击顶部的部署到 Docker 按钮，即可完成部署，又或者，直接输入下面的命令：
 
 ```bash
 docker run -d -p 18966:18966 --name elinksnet --restart always elinksteam/elinksnet:latest
