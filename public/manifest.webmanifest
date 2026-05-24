@@ -1,8 +1,8 @@
 {
-  "name": "IPCheck.ing",
-  "short_name": "IPCheck.ing",
-  "description": "All in one IP Toolbox",
-  "id": "com.jasonng.myip",
+  "name": "ElinksNet",
+  "short_name": "ElinksNet",
+  "description": "Open source IP and network toolbox",
+  "id": "com.elinksteam.elinksnet",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
