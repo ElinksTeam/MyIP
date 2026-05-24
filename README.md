@@ -1,25 +1,25 @@
-# 🧰 MyIP - A Better IP Toolbox
+# 🧰 ElinksNet - IP & Network Toolbox
 
 <div align="center">
 
-![MyIP Banner](https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/github/gh_banner.png)
+![ElinksNet Banner](https://raw.githubusercontent.com/ElinksTeam/ElinksNet/main/public/github/gh_banner.png)
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
-![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
-![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
-![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/myip)
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/ElinksNet)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/ElinksNet)
+![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/elinksnet)
 
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
-![CodeQL](https://github.com/ElinksTeam/MyIP/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
-![Docker Build and Push](https://github.com/ElinksTeam/MyIP/actions/workflows/docker-image.yml/badge.svg?branch=main)
+![CodeQL](https://github.com/ElinksTeam/ElinksNet/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
+![Docker Build and Push](https://github.com/ElinksTeam/ElinksNet/actions/workflows/docker-image.yml/badge.svg?branch=main)
 
-🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
+🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md)
 
-Deploy your own MyIP instance.
+Deploy your own ElinksNet instance.
 
-[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/myip)
+[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/ElinksNet/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/elinksnet)
 
 </div>
 
@@ -49,7 +49,7 @@ Deploy your own MyIP instance.
 * 📲 **PWA Supported**：Can be added as a desktop app on your phone as well as a Chrome app on your computer.
 * ⌨️ **Keyboard Shortcuts**: Supports keyboard shortcuts for all functions, press `?` to view the shortcut list.
 * 🌍 Based on availability test results, it indicates whether global internet access is currently feasible.
-* 🇺🇸 🇨🇳 🇫🇷 🇹🇷 English, Chinese, French, and Turkish support.
+* 🇺🇸 🇨🇳 🇫🇷 English, Chinese, and French support.
 
 ## 📕 How to Use
 
@@ -60,7 +60,8 @@ Make sure you have Node.js installed.
 Clone the code:
 
 ```bash
-git clone https://github.com/ElinksTeam/MyIP.git
+git clone https://github.com/ElinksTeam/ElinksNet.git
+cd ElinksNet
 ```
 
 Install and build:
@@ -82,7 +83,7 @@ The program will run on port 18966.
 Click the 'Deploy to Docker' button at the top to complete the deployment. Or, use the following shell:
 
 ```bash
-docker run -d -p 18966:18966 --name myip --restart always elinksteam/myip:latest
+docker run -d -p 18966:18966 --name elinksnet --restart always elinksteam/elinksnet:latest
 ```
 
 ## 📚 Environment Variable
@@ -91,7 +92,7 @@ Variables marked **Yes** below must be set for the backend to function correctly
 
 ### MaxMind Databases (Required)
 
-MyIP relies on the free **GeoLite2** databases from MaxMind (City + ASN) for IP geolocation, ASN / organization lookup, and the country-code badges that appear throughout the app (IP cards, WebRTC ICE candidates, and more). A working MaxMind setup is required for the backend to serve a complete experience.
+ElinksNet relies on the free **GeoLite2** databases from MaxMind (City + ASN) for IP geolocation, ASN / organization lookup, and the country-code badges that appear throughout the app (IP cards, WebRTC ICE candidates, and more). A working MaxMind setup is required for the backend to serve a complete experience.
 
 The `.mmdb` files are **not checked into this repository** because MaxMind's GeoLite2 license does not allow redistribution. You need to provide them yourself. There are two paths:
 
@@ -174,8 +175,8 @@ docker run -d -p 18966:18966 \
   -e MAXMIND_AUTO_UPDATE="true" \
   -e GOOGLE_MAP_API_KEY="YOUR_KEY_HERE" \
   -e ALLOWED_DOMAINS="example.com" \
-  --name myip \
-  elinksteam/myip:latest
+  --name elinksnet \
+  elinksteam/elinksnet:latest
 
 ```
 
@@ -202,8 +203,8 @@ DOMAIN,ptest-8.ipcheck.ing,Proxy8
 
 ## Attribution
 
-This project is maintained by ElinksTeam.
+ElinksNet is maintained by ElinksTeam.
 
-This project is based on MyIP by Jason Ng and remains licensed under the MIT License. The original copyright notice is preserved in `LICENSE` as required by the MIT License.
+ElinksNet is based on MyIP by Jason Ng and remains licensed under the MIT License. The original copyright notice is preserved in `LICENSE` as required by the MIT License.
 
 Additional modifications Copyright (c) 2026 ElinksTeam.
