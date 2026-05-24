@@ -45,50 +45,71 @@ Déployez votre propre instance ElinksNet.
 * 🌍 Basé sur les résultats des tests de disponibilité, il indique si l'accès Internet mondial est actuellement réalisable.
 * 🇺🇸 🇨🇳 🇫🇷 🇹🇷 Prise en charge de l'anglais, du chinois, du français et du turc.
 
-## 📕 Comment utiliser
+## 🚀 Déploiement rapide
 
-### Déploiement dans un environnement Node
+### Docker Hub
 
-Assurez-vous d'avoir Node.js installé.
+```bash
+docker run -d \
+  --name elinksnet \
+  --restart unless-stopped \
+  -p 18966:18966 \
+  elinksteam/elinksnet:latest
+```
 
-Clonez le code :
+### GitHub Container Registry
+
+```bash
+docker run -d \
+  --name elinksnet \
+  --restart unless-stopped \
+  -p 18966:18966 \
+  ghcr.io/elinksteam/elinksnet:latest
+```
+
+### Docker Compose
 
 ```bash
 git clone https://github.com/ElinksTeam/MyIP.git
 cd MyIP
+docker compose up -d
 ```
 
-Installer & Construire :
+### Construction locale
+
+Utilisez cette option si les images Docker publiques ne sont pas encore publiées.
 
 ```bash
+git clone https://github.com/ElinksTeam/MyIP.git
+cd MyIP
+docker build -t elinksnet .
+docker run -d -p 18966:18966 --name elinksnet --restart unless-stopped elinksnet
+```
+
+## 📕 Déploiement manuel avec Node
+
+Assurez-vous d'avoir Node.js installé.
+
+```bash
+git clone https://github.com/ElinksTeam/MyIP.git
+cd MyIP
 npm install && npm run build
-```
-
-Exécuter:
-
-```bash
 npm start
 ```
 
 Le programme s'exécutera sur le port 18966.
 
-### Docker
-
-```bash
-docker run -d -p 18966:18966 --name elinksnet --restart always elinksteam/elinksnet:latest
-```
-
 ## 📚 Variables d'environnement
 
-Les variables marquées **Oui** ci-dessous doivent être définies pour que le backend fonctionne correctement. Les identifiants MaxMind sont particulièrement importants — lisez les notes de configuration ci-dessous avant de remplir le tableau.
+ElinksNet peut démarrer sans identifiants MaxMind, mais la géolocalisation IP complète, les informations ASN / organisation et les badges de pays nécessitent les bases MaxMind GeoLite2. Pour une meilleure expérience Docker, configurez les trois variables MaxMind ci-dessous.
 
-### Bases de données MaxMind (requis)
+### Bases de données MaxMind
 
-ElinksNet s'appuie sur les bases **GeoLite2** gratuites de MaxMind (City + ASN) pour la géolocalisation IP, la recherche ASN / organisation, et les badges de code pays qui apparaissent partout dans l'application (cartes IP, candidats ICE WebRTC, etc.). Une configuration MaxMind fonctionnelle est nécessaire pour que le backend offre une expérience complète.
+ElinksNet s'appuie sur les bases **GeoLite2** gratuites de MaxMind (City + ASN) pour fournir une géolocalisation IP et des informations ASN complètes.
 
 Les fichiers `.mmdb` ne sont **pas inclus dans ce dépôt** car la licence GeoLite2 de MaxMind interdit la redistribution. Vous devez les fournir vous-même. Deux options :
 
-**Option A — Automatique (recommandée, obligatoire pour Docker)**
+**Option A — Automatique (recommandée pour Docker)**
 
 1. Créez un compte gratuit sur [maxmind.com/en/geolite2/signup](https://www.maxmind.com/en/geolite2/signup).
 2. Générez une clé de licence depuis la page « Manage License Keys » de votre compte.
@@ -100,81 +121,41 @@ Les fichiers `.mmdb` ne sont **pas inclus dans ce dépôt** car la licence GeoLi
    ```
 4. Démarrez le backend. Environ 60 secondes après le premier démarrage, l'updater téléchargera les deux bases, puis les rafraîchira automatiquement toutes les 24 heures.
 
-> ⚠️ **Les déploiements Docker doivent utiliser l'option A.** Un conteneur neuf est livré avec un répertoire `common/maxmind-db/` vide — sans les trois variables ci-dessus, le backend démarre mais la source IP basée sur MaxMind et les badges de pays WebRTC ne fonctionneront pas, et vous verrez `MaxMind API will return 503...` dans les journaux à chaque démarrage.
+**Option B — Manuelle**
 
-**Option B — Manuelle (environnements isolés ou non-Docker)**
-
-Téléchargez `GeoLite2-City.mmdb` et `GeoLite2-ASN.mmdb` depuis votre compte MaxMind et placez-les dans `common/maxmind-db/` avant de démarrer le backend. Dans ce cas, `MAXMIND_AUTO_UPDATE` peut rester à `"false"`, mais vous devrez rafraîchir les fichiers manuellement à chaque nouvelle version publiée par MaxMind.
+Téléchargez `GeoLite2-City.mmdb` et `GeoLite2-ASN.mmdb` depuis votre compte MaxMind et placez-les dans `common/maxmind-db/` avant de démarrer le backend.
 
 ### Liste des variables d'environnement
 
 | Nom de la variable | Requis | Valeur par défaut | Description |
 | --- | --- | --- | --- |
-| `MAXMIND_ACCOUNT_ID` | **Oui** | `""` | ID de compte MaxMind, associé à `MAXMIND_LICENSE_KEY` pour télécharger les bases GeoLite2. Voir la section MaxMind ci-dessus. |
-| `MAXMIND_LICENSE_KEY` | **Oui** | `""` | Clé de licence MaxMind, associée à `MAXMIND_ACCOUNT_ID`. Voir la section MaxMind ci-dessus. |
-| `MAXMIND_AUTO_UPDATE` | **Oui** | `"false"` | Définissez sur `"true"` pour télécharger automatiquement les bases GeoLite2 environ 60 s après le démarrage et les rafraîchir toutes les 24 h. **Obligatoire pour Docker.** Peut rester à `"false"` uniquement si vous avez pré-déposé les fichiers `.mmdb` manuellement. |
-| `VITE_GOOGLE_ANALYTICS_ID` | **Oui** | `""` | Identifiant Google Analytics, utilisé pour l'analyse des utilisateurs |
-| `BACKEND_PORT` | Non | `"11966"` | Le port d'exécution de la partie backend du programme |
-| `FRONTEND_PORT` | Non | `"18966"` | Le port d'exécution de la partie frontend du programme |
-| `SECURITY_RATE_LIMIT` | Non | `"0"` | Contrôle le nombre de requêtes qu'une adresse IP peut faire au serveur backend toutes les 60 minutes (réglé sur 0 pour aucune limite) |
-| `SECURITY_DELAY_AFTER` | Non | `"0"` | Contrôle les premières X requêtes d'une adresse IP toutes les 20 minutes qui ne sont pas soumises à des limites de vitesse, et après X requêtes, le délai augmentera |
-| `SECURITY_BLACKLIST_LOG_FILE_PATH` | Non | `"logs/blacklist-ip.log"` | Paramètre de chemin. Enregistre la liste des adresses IP qui ont déclenché la limite après que `SECURITY_RATE_LIMIT` soit activé |
-| `ALLOWED_DOMAINS` | Non | `""` | Domaines autorisés pour l'accès, séparés par des virgules, utilisés pour empêcher une utilisation abusive de l'API backend |
-| `GOOGLE_MAP_API_KEY` | Non | `""` | Clé API pour Google Maps, utilisée pour afficher l'emplacement de l'adresse IP sur une carte |
-| `IPCHECKING_API_ENDPOINT` | Non | `""` | endpoint de l'API pour IPCheck.ing database, utilisée pour obtenir des informations de géolocalisation précises sur l'adresse IP |
-| `IPCHECKING_API_KEY` | Non | `""` | Clé API pour IPCheck.ing, utilisée pour obtenir des informations de géolocalisation précises sur l'adresse IP |
-| `IPINFO_API_TOKEN` | Non | `""` | Jeton API pour IPInfo.io, utilisé pour obtenir des informations de géolocalisation sur l'adresse IP via IPInfo.io |
-| `IPAPIIS_API_KEY` | Non | `""` | Clé API pour IPAPI.is, utilisée pour obtenir des informations de géolocalisation sur l'adresse IP via IPAPI.is |
-| `IP2LOCATION_API_KEY` | Non | `""` | Clé API pour IP2Location.io, utilisée pour obtenir des informations de géolocalisation sur l'adresse IP via IP2Location.io |
-| `CLOUDFLARE_API` | Non | `""` | Clé API pour Cloudflare, utilisée pour obtenir des informations sur le système AS via Cloudflare |
-| `MAC_LOOKUP_API_KEY` | Non | `""` | Clé API pour MAC Lookup, utilisée pour obtenir des informations sur l'adresse MAC via MAC Lookup |
-| `VITE_CURL_IPV4_DOMAIN` | Non | `""` | Fournit aux utilisateurs le domaine IPv4 pour l'API CURL |
-| `VITE_CURL_IPV6_DOMAIN` | Non | `""` | Fournit aux utilisateurs le domaine IPv6 pour l'API CURL |
-| `VITE_CURL_IPV64_DOMAIN` | Non | `""` | Fournit aux utilisateurs le domaine à pile double pour l'API CURL |
+| `MAXMIND_ACCOUNT_ID` | Recommandé | `""` | ID de compte MaxMind, associé à `MAXMIND_LICENSE_KEY` pour télécharger les bases GeoLite2. |
+| `MAXMIND_LICENSE_KEY` | Recommandé | `""` | Clé de licence MaxMind, associée à `MAXMIND_ACCOUNT_ID`. |
+| `MAXMIND_AUTO_UPDATE` | Recommandé | `"false"` | Définissez sur `"true"` pour télécharger automatiquement les bases GeoLite2 après le démarrage et les rafraîchir toutes les 24 h. |
+| `VITE_GOOGLE_ANALYTICS_ID` | Optionnel | `""` | Identifiant Google Analytics, utilisé pour l'analyse des utilisateurs |
+| `BACKEND_PORT` | Optionnel | `"11966"` | Le port d'exécution de la partie backend du programme |
+| `FRONTEND_PORT` | Optionnel | `"18966"` | Le port d'exécution de la partie frontend du programme |
+| `SECURITY_RATE_LIMIT` | Optionnel | `"0"` | Contrôle le nombre de requêtes qu'une adresse IP peut faire au serveur backend toutes les 60 minutes |
+| `SECURITY_DELAY_AFTER` | Optionnel | `"0"` | Contrôle le délai après des requêtes répétées depuis la même IP |
+| `SECURITY_BLACKLIST_LOG_FILE_PATH` | Optionnel | `"logs/blacklist-ip.log"` | Enregistre les IP ayant déclenché les limites |
+| `ALLOWED_DOMAINS` | Optionnel | `""` | Domaines autorisés, séparés par des virgules, pour éviter les abus de l'API backend |
+| `GOOGLE_MAP_API_KEY` | Optionnel | `""` | Clé API Google Maps pour afficher l'emplacement de l'IP |
+| `IPCHECKING_API_ENDPOINT` | Optionnel | `""` | Endpoint de l'API IPCheck.ing |
+| `IPCHECKING_API_KEY` | Optionnel | `""` | Clé API IPCheck.ing |
+| `IPINFO_API_TOKEN` | Optionnel | `""` | Jeton API IPInfo.io |
+| `IPAPIIS_API_KEY` | Optionnel | `""` | Clé API IPAPI.is |
+| `IP2LOCATION_API_KEY` | Optionnel | `""` | Clé API IP2Location.io |
+| `CLOUDFLARE_API` | Optionnel | `""` | Clé API Cloudflare |
+| `MAC_LOOKUP_API_KEY` | Optionnel | `""` | Clé API MAC Lookup |
+| `VITE_CURL_IPV4_DOMAIN` | Optionnel | `""` | Domaine IPv4 pour l'API CURL |
+| `VITE_CURL_IPV6_DOMAIN` | Optionnel | `""` | Domaine IPv6 pour l'API CURL |
+| `VITE_CURL_IPV64_DOMAIN` | Optionnel | `""` | Domaine double pile pour l'API CURL |
 
-Il est à noter que si l'une quelconque des variables d'environnement de la série CURL est manquante, l'API CURL ne sera pas activée.
-
-### Utilisation des variables d'environnement dans un environnement Node
-
-Créez les variables d'environnement :
-
-```bash
-cp .env.example .env
-```
-
-Modifiez le fichier `.env`, et par exemple, ajoutez ce qui suit :
-
-```bash
-BACKEND_PORT=11966
-FRONTEND_PORT=18966
-MAXMIND_ACCOUNT_ID="YOUR_ACCOUNT_ID"
-MAXMIND_LICENSE_KEY="YOUR_LICENSE_KEY"
-MAXMIND_AUTO_UPDATE="true"
-GOOGLE_MAP_API_KEY="YOUR_KEY_HERE"
-ALLOWED_DOMAINS="example.com"
-```
-
-Ensuite, redémarrez le service backend.
-
-### Utilisation des variables d'environnement dans Docker
-
-Vous pouvez ajouter des variables d'environnement lors de l'exécution de Docker, par exemple :
-
-```bash
-docker run -d -p 18966:18966 \
-  -e MAXMIND_ACCOUNT_ID="YOUR_ACCOUNT_ID" \
-  -e MAXMIND_LICENSE_KEY="YOUR_LICENSE_KEY" \
-  -e MAXMIND_AUTO_UPDATE="true" \
-  -e GOOGLE_MAP_API_KEY="YOUR_KEY_HERE" \
-  -e ALLOWED_DOMAINS="example.com" \
-  --name elinksnet \
-  elinksteam/elinksnet:latest
-
-```
+Si l'une des variables d'environnement de la série CURL est manquante, l'API CURL ne sera pas activée.
 
 ## 👩🏻‍💻 Utilisation avancée
 
-Si vous utilisez un proxy pour accéder à Internet, envisagez d'ajouter cette règle à votre configuration de proxy (modifiez-la en fonction de votre client). Cette configuration vous permet de vérifier à la fois votre véritable adresse IP et l'adresse IP lorsque vous utilisez le proxy :
+Si vous utilisez un proxy pour accéder à Internet, envisagez d'ajouter cette règle à votre configuration de proxy. Cette configuration vous permet de vérifier à la fois votre véritable adresse IP et l'adresse IP lorsque vous utilisez le proxy :
 
 ```ini
 # Test d'adresse IP
