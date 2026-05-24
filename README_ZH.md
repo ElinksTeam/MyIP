@@ -45,50 +45,71 @@
 * 🌍 根据可用性检测结果，返回目前是否可以访问全世界网络的提示
 * 🇺🇸 🇨🇳 🇫🇷 🇹🇷 支持中文、英文、法文、土耳其文
 
-## 📕 如何使用
+## 🚀 快速部署
 
-### 在 Node 环境部署
+### Docker Hub
 
-确保你系统里已经有 Node.js 环境。
+```bash
+docker run -d \
+  --name elinksnet \
+  --restart unless-stopped \
+  -p 18966:18966 \
+  elinksteam/elinksnet:latest
+```
 
-克隆代码:
+### GitHub Container Registry
+
+```bash
+docker run -d \
+  --name elinksnet \
+  --restart unless-stopped \
+  -p 18966:18966 \
+  ghcr.io/elinksteam/elinksnet:latest
+```
+
+### Docker Compose
 
 ```bash
 git clone https://github.com/ElinksTeam/MyIP.git
 cd MyIP
+docker compose up -d
 ```
 
-安装与编译:
+### 本地构建
+
+如果公开 Docker 镜像还没有发布，可以使用本地构建方式。
 
 ```bash
+git clone https://github.com/ElinksTeam/MyIP.git
+cd MyIP
+docker build -t elinksnet .
+docker run -d -p 18966:18966 --name elinksnet --restart unless-stopped elinksnet
+```
+
+## 📕 Node 手动部署
+
+确保你系统里已经有 Node.js 环境。
+
+```bash
+git clone https://github.com/ElinksTeam/MyIP.git
+cd MyIP
 npm install && npm run build
-```
-
-运行:
-
-```bash
 npm start
 ```
 
 程序会运行在 18966 端口。
 
-### 使用 Docker
-
-```bash
-docker run -d -p 18966:18966 --name elinksnet --restart always elinksteam/elinksnet:latest
-```
-
 ## 📚 环境变量
 
-下表中标记为 **是** 的变量必须配置，后端才能正常工作。其中 MaxMind 相关的三项尤其重要——填写环境变量之前请先阅读下面的 MaxMind 配置说明。
+ElinksNet 不配置 MaxMind 也可以启动，但完整的 IP 地理位置、ASN / 组织归属查询和国家/地区标识推荐配置 MaxMind GeoLite2 数据库。Docker 部署想获得完整体验，建议配置下面三个 MaxMind 变量。
 
-### MaxMind 数据库（必须配置）
+### MaxMind 数据库
 
-ElinksNet 依赖 MaxMind 提供的免费 **GeoLite2** 数据库（City + ASN）来进行 IP 地理位置查询、ASN / 组织归属查询，以及全站各处（IP 卡片、WebRTC ICE candidate 等）的国家/地区标识。MaxMind 配置是后端完整运行的前提。
+ElinksNet 依赖 MaxMind 提供的免费 **GeoLite2** 数据库（City + ASN）来提供完整的 IP 地理位置与 ASN 信息。
 
 由于 MaxMind GeoLite2 协议不允许再分发，`.mmdb` 文件**没有被包含在本仓库里**，你需要自己准备。有两种做法：
 
-**方案 A —— 自动下载（推荐，Docker 部署必选）**
+**方案 A —— 自动下载（推荐 Docker 部署）**
 
 1. 去 [maxmind.com/en/geolite2/signup](https://www.maxmind.com/en/geolite2/signup) 注册一个免费账号。
 2. 在账号的 "Manage License Keys" 页面生成一个 License Key。
@@ -100,81 +121,41 @@ ElinksNet 依赖 MaxMind 提供的免费 **GeoLite2** 数据库（City + ASN）�
    ```
 4. 启动后端。首次启动后约 60 秒内，程序会自动下载两个数据库，之后每 24 小时自动检查更新。
 
-> ⚠️ **Docker 部署必须使用方案 A。** 一个全新的容器里 `common/maxmind-db/` 目录是空的——如果不配置这三个变量，后端虽然能起来，但 MaxMind 相关的 IP 查询源和 WebRTC 国家标识将无法工作，并且每次启动日志里都会刷出 `MaxMind API will return 503...` 的报错。
+**方案 B —— 手动放置**
 
-**方案 B —— 手动放置（离线 / 非 Docker 场景）**
-
-从你的 MaxMind 账号下载 `GeoLite2-City.mmdb` 和 `GeoLite2-ASN.mmdb`，在启动后端前手动放入 `common/maxmind-db/` 目录。这种情况下 `MAXMIND_AUTO_UPDATE` 可以保持 `"false"`，但每次 MaxMind 发布新版本时你需要自己手动更新文件。
+从你的 MaxMind 账号下载 `GeoLite2-City.mmdb` 和 `GeoLite2-ASN.mmdb`，在启动后端前手动放入 `common/maxmind-db/` 目录。
 
 ### 环境变量一览
 
 | 变量名 | 是否必须 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `MAXMIND_ACCOUNT_ID` | **是** | `""` | MaxMind 账号 ID，和 `MAXMIND_LICENSE_KEY` 一起用于下载 GeoLite2 数据库。详见上方 MaxMind 配置说明。 |
-| `MAXMIND_LICENSE_KEY` | **是** | `""` | MaxMind License Key，和 `MAXMIND_ACCOUNT_ID` 配合使用。详见上方 MaxMind 配置说明。 |
-| `MAXMIND_AUTO_UPDATE` | **是** | `"false"` | 设置为 `"true"` 时，程序会在启动后 60 秒左右自动下载 GeoLite2 数据库，之后每 24 小时刷新一次。**Docker 部署必须设置为 `"true"`。** 只有当你已经手动放置了 `.mmdb` 文件时，才能保持为 `"false"`。 |
-| `VITE_GOOGLE_ANALYTICS_ID` | **是** | `""` | Google Analytics 的 ID，用于统计访问量 |
-| `BACKEND_PORT` | 否 | `"11966"` | 程序后端部分的运行端口 |
-| `FRONTEND_PORT` | 否 | `"18966"` | 程序前端部分的运行端口 |
-| `SECURITY_RATE_LIMIT` | 否 | `"0"` | 控制每 60 分钟一个 IP 可以对后端服务器请求的次数（设置为 0 则为不限制） |
-| `SECURITY_DELAY_AFTER` | 否 | `"0"` | 控制每 20 分钟一个 IP 的前 X 次请求不受速度限制，超过 X 次后会逐次增加延迟 |
-| `SECURITY_BLACKLIST_LOG_FILE_PATH` | 否 | `"logs/blacklist-ip.log"` | 路径设置。记录由 SECURITY_RATE_LIMIT 开启后，触发限制的 IP 列表 |
-| `ALLOWED_DOMAINS` | 否 | `""` | 允许访问的域名，用逗号分隔，用于防止后端 API 被滥用 |
-| `GOOGLE_MAP_API_KEY` | 否 | `""` | Google 地图的 API Key，用于展示 IP 所在地的地图 |
-| `IPCHECKING_API_ENDPOINT` | 否 | `""` | IPCheck.ing 数据库的 API 端点 URL |
-| `IPCHECKING_API_KEY` | 否 | `""` | IPCheck.ing 数据库的 API Key，用于获取精准的 IP 归属地信息 |
-| `IPINFO_API_TOKEN` | 否 | `""` | IPInfo.io 的 API Token，用于通过 IPInfo.io 获取 IP 归属地信息 |
-| `IPAPIIS_API_KEY` | 否 | `""` | IPAPI.is 的 API Key，用于通过 IPAPI.is 获取 IP 归属地信息 |
-| `IP2LOCATION_API_KEY` | 否 | `""` | IP2Location.io 的 API Key，用于通过 IP2Location.io 获取 IP 归属地信息 |
-| `CLOUDFLARE_API` | 否 | `""` | Cloudflare 的 API Key，用于通过 Cloudflare 获取 AS 系统的信息 |
-| `MAC_LOOKUP_API_KEY` | 否 | `""` | MAC 查询的 API Key，用于通过 MAC Lookup 获取 MAC 地址的归属信息 |
-| `VITE_CURL_IPV4_DOMAIN` | 否 | `""` | 为用户提供 CURL API 的 IPv4 域名 |
-| `VITE_CURL_IPV6_DOMAIN` | 否 | `""` | 为用户提供 CURL API 的 IPv6 域名 |
-| `VITE_CURL_IPV64_DOMAIN` | 否 | `""` | 为用户提供 CURL API 的双网络栈域名 |
+| `MAXMIND_ACCOUNT_ID` | 推荐 | `""` | MaxMind 账号 ID，和 `MAXMIND_LICENSE_KEY` 一起用于下载 GeoLite2 数据库。 |
+| `MAXMIND_LICENSE_KEY` | 推荐 | `""` | MaxMind License Key，和 `MAXMIND_ACCOUNT_ID` 配合使用。 |
+| `MAXMIND_AUTO_UPDATE` | 推荐 | `"false"` | 设置为 `"true"` 时，程序会自动下载 GeoLite2 数据库，并每 24 小时刷新一次。 |
+| `VITE_GOOGLE_ANALYTICS_ID` | 可选 | `""` | Google Analytics 的 ID，用于统计访问量 |
+| `BACKEND_PORT` | 可选 | `"11966"` | 程序后端部分的运行端口 |
+| `FRONTEND_PORT` | 可选 | `"18966"` | 程序前端部分的运行端口 |
+| `SECURITY_RATE_LIMIT` | 可选 | `"0"` | 控制每 60 分钟一个 IP 可以对后端服务器请求的次数（设置为 0 则为不限制） |
+| `SECURITY_DELAY_AFTER` | 可选 | `"0"` | 控制同一 IP 重复请求后的延迟行为 |
+| `SECURITY_BLACKLIST_LOG_FILE_PATH` | 可选 | `"logs/blacklist-ip.log"` | 记录触发速率限制的 IP |
+| `ALLOWED_DOMAINS` | 可选 | `""` | 允许访问的域名，用逗号分隔，用于防止后端 API 被滥用 |
+| `GOOGLE_MAP_API_KEY` | 可选 | `""` | Google 地图 API Key，用于展示 IP 所在地地图 |
+| `IPCHECKING_API_ENDPOINT` | 可选 | `""` | IPCheck.ing 数据库 API 端点 |
+| `IPCHECKING_API_KEY` | 可选 | `""` | IPCheck.ing 数据库 API Key |
+| `IPINFO_API_TOKEN` | 可选 | `""` | IPInfo.io API Token |
+| `IPAPIIS_API_KEY` | 可选 | `""` | IPAPI.is API Key |
+| `IP2LOCATION_API_KEY` | 可选 | `""` | IP2Location.io API Key |
+| `CLOUDFLARE_API` | 可选 | `""` | Cloudflare API Key |
+| `MAC_LOOKUP_API_KEY` | 可选 | `""` | MAC Lookup API Key |
+| `VITE_CURL_IPV4_DOMAIN` | 可选 | `""` | 为 CURL API 提供 IPv4 域名 |
+| `VITE_CURL_IPV6_DOMAIN` | 可选 | `""` | 为 CURL API 提供 IPv6 域名 |
+| `VITE_CURL_IPV64_DOMAIN` | 可选 | `""` | 为 CURL API 提供双栈域名 |
 
-需要注意的是，如果 CURL 系列的环境变量任意一个缺失，都不会启用 CURL API。
-
-### 在 Node 环境里使用环境变量
-
-创建环境变量：
-
-```bash
-cp .env.example .env
-```
-
-修改 `.env` 里的内容，比如：
-
-```bash
-BACKEND_PORT=11966
-FRONTEND_PORT=18966
-MAXMIND_ACCOUNT_ID="YOUR_ACCOUNT_ID"
-MAXMIND_LICENSE_KEY="YOUR_LICENSE_KEY"
-MAXMIND_AUTO_UPDATE="true"
-GOOGLE_MAP_API_KEY="YOUR_KEY_HERE"
-ALLOWED_DOMAINS="example.com"
-```
-
-然后重新启动后端服务。
-
-### 在 Docker 里使用环境变量
-
-你可以在运行 Docker 的时候，添加环境变量，比如：
-
-```bash
-docker run -d -p 18966:18966 \
-  -e MAXMIND_ACCOUNT_ID="YOUR_ACCOUNT_ID" \
-  -e MAXMIND_LICENSE_KEY="YOUR_LICENSE_KEY" \
-  -e MAXMIND_AUTO_UPDATE="true" \
-  -e GOOGLE_MAP_API_KEY="YOUR_KEY_HERE" \
-  -e ALLOWED_DOMAINS="example.com" \
-  --name elinksnet \
-  elinksteam/elinksnet:latest
-
-```
+如果 CURL 系列环境变量任意一个缺失，则不会启用 CURL API。
 
 ## 👩🏻‍💻 高级用法
 
-如果你在通过代理上网，可以考虑在你的代理配置里，增加下面的规则（请根据你使用的客户端进行修改），这样就可以实现同时查询真实 IP 和代理后的 IP：
+如果你在通过代理上网，可以考虑在你的代理配置里增加下面的规则（请根据你使用的客户端进行修改），这样可以同时查询真实 IP 和代理后的 IP：
 
 ```ini
 # IP Testing
