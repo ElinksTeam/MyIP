@@ -2,29 +2,24 @@
 
 <div align="center">
 
-![IPCheck.ing Banner](https://raw.githubusercontent.com/jason5ng32/MyIP/main/public/github/gh_banner.png)
-
-<a href="https://trendshift.io/repositories/5332" target="_blank"><img src="https://trendshift.io/api/badge/repositories/5332" alt="jason5ng32%2FMyIP | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+![MyIP Banner](https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/github/gh_banner.png)
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
-![GitHub Repo stars](https://img.shields.io/github/stars/jason5ng32/MyIP)
-![GitHub forks](https://img.shields.io/github/forks/jason5ng32/myip)
-![Docker Pulls](https://img.shields.io/docker/pulls/jason5ng32/myip)
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
+![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/myip)
 
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Fipcheck.ing&up_message=online&label=IPCheck.ing 'IPCheck.ing')](https://ipcheck.ing)
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
-![CodeQL](https://github.com/jason5ng32/MyIP/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
-![Docker Build and Push](https://github.com/jason5ng32/MyIP/actions/workflows/docker-image.yml/badge.svg?branch=main)
+![CodeQL](https://github.com/ElinksTeam/MyIP/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
+![Docker Build and Push](https://github.com/ElinksTeam/MyIP/actions/workflows/docker-image.yml/badge.svg?branch=main)
 
 🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
 
-👉 Démo: [https://ipcheck.ing](https://ipcheck.ing)
+Déployez votre propre instance MyIP.
 
-Notes: Vous pouvez utiliser ma démo gratuitement et vous pouvez également la déployer vous-même.
-
-[![Deploy with Docker](https://raw.githubusercontent.com/jason5ng32/MyIP/main/public/github/Docker.svg)](https://hub.docker.com/r/jason5ng32/myip)
+[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/myip)
 
 </div>
 
@@ -65,7 +60,7 @@ Assurez-vous d'avoir Node.js installé.
 Clonez le code :
 
 ```bash
-git clone https://github.com/jason5ng32/MyIP.git
+git clone https://github.com/ElinksTeam/MyIP.git
 ```
 
 Installer & Construire :
@@ -87,7 +82,7 @@ Le programme s'exécutera sur le port 18966.
 Cliquez sur le bouton 'Déployer sur Docker' en haut pour terminer le déploiement. Ou utilisez le shell suivant :
 
 ```bash
-docker run -d -p 18966:18966 --name myip --restart always jason5ng32/myip:latest
+docker run -d -p 18966:18966 --name myip --restart always elinksteam/myip:latest
 ```
 
 ## 📚 Variables d'environnement
@@ -180,7 +175,7 @@ docker run -d -p 18966:18966 \
   -e GOOGLE_MAP_API_KEY="YOUR_KEY_HERE" \
   -e ALLOWED_DOMAINS="example.com" \
   --name myip \
-  jason5ng32/myip:latest
+  elinksteam/myip:latest
 
 ```
 
@@ -205,24 +200,10 @@ DOMAIN,ptest-7.ipcheck.ing,Proxy7
 DOMAIN,ptest-8.ipcheck.ing,Proxy8
 ```
 
-## 😶‍🌫️ Explications supplémentaires
+## Attribution
 
-Lors de la sortie de la version 2.0, j'avais dit que 70% du code de ce programme n'était pas de moi, mais écrit par AI. Après environ 90 interactions, plus quelques ajustements manuels mineurs, tout le code a été complété.
+Ce projet est maintenu par ElinksTeam.
 
-Bien sûr, l'architecture et l'UI nécessitaient toujours ma propre conception.
+Ce projet est basé sur MyIP de Jason Ng et reste sous licence MIT. L'avis de copyright original est conservé dans `LICENSE`, comme l'exige la licence MIT.
 
-Avec la sortie de la version 3.0 et des versions ultérieures, la proportion de code écrit avec l'aide de AI a progressivement diminué, maintenant estimée entre 40% et 50%. Au contraire, dans ce processus, je suis passé de ne rien savoir sur JavaScript et Vue à pouvoir comprendre la plupart des codes JS, et maintenant je peux même en écrire moi-même.
-
-Merci à l'IA, qui m'a donné, à moi, un chef de produit au chômage, une opportunité rapide d'apprendre la programmation.
-
-## 🌟 Historique des étoiles
-
-[![Star History Chart](https://api.star-history.com/svg?repos=jason5ng32/MyIP&type=Date)](https://star-history.com/#jason5ng32/MyIP&Date)
-
-## 💖 Sponsors
-
-En tant que projet open source, je suis très reconnaissant aux sponsors suivants pour leur soutien :
-
-<a href="https://www.digitalocean.com/?refcode=fd2634a3981b&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" height="40px" title="DigitalOcean" /></a>
-
-<a href="https://www.cloudflare.com/lp/project-alexandria/"><img src="https://cf-assets.www.cloudflare.com/zkvhlag99gkb/69RwBidpiEHCDZ9rFVVk7T/092507edbed698420b89658e5a6d5105/CF_logo_stacked_blktype.png" alt="Cloudflare Project Alexandria" title="Cloudflare Project Alexandria" height="60px" /></a>
+Modifications supplémentaires Copyright (c) 2026 ElinksTeam.
