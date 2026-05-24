@@ -2,24 +2,18 @@
 
 <div align="center">
 
-![ElinksNet Logo](public/logos/elinks-logo.png)
+<h1>ElinksNet</h1>
+<p><strong>Boîte à outils IP et réseau</strong></p>
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
-![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/ElinksNet)
-![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/ElinksNet)
-![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/elinksnet)
-
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
-![CodeQL](https://github.com/ElinksTeam/ElinksNet/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
-![Docker Build and Push](https://github.com/ElinksTeam/ElinksNet/actions/workflows/docker-image.yml/badge.svg?branch=main)
-
-🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md)
+🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
 
 Déployez votre propre instance ElinksNet.
-
-[![Deploy with Docker](https://raw.githubusercontent.com/ElinksTeam/ElinksNet/main/public/github/Docker.svg)](https://hub.docker.com/r/elinksteam/elinksnet)
 
 </div>
 
@@ -49,7 +43,7 @@ Déployez votre propre instance ElinksNet.
 * 📲 **Prise en charge de PWA** : Peut être ajouté en tant qu'application de bureau sur votre téléphone ainsi qu'en tant qu'application Chrome sur votre ordinateur.
 * ⌨️ **Raccourcis clavier** : Prend en charge les raccourcis clavier pour toutes les fonctions, appuyez sur `?` pour afficher la liste des raccourcis.
 * 🌍 Basé sur les résultats des tests de disponibilité, il indique si l'accès Internet mondial est actuellement réalisable.
-* 🇺🇸 🇨🇳 🇫🇷 Prise en charge de l'anglais, du chinois et du français.
+* 🇺🇸 🇨🇳 🇫🇷 🇹🇷 Prise en charge de l'anglais, du chinois, du français et du turc.
 
 ## 📕 Comment utiliser
 
@@ -60,8 +54,8 @@ Assurez-vous d'avoir Node.js installé.
 Clonez le code :
 
 ```bash
-git clone https://github.com/ElinksTeam/ElinksNet.git
-cd ElinksNet
+git clone https://github.com/ElinksTeam/MyIP.git
+cd MyIP
 ```
 
 Installer & Construire :
@@ -78,9 +72,7 @@ npm start
 
 Le programme s'exécutera sur le port 18966.
 
-### Using Docker
-
-Cliquez sur le bouton 'Déployer sur Docker' en haut pour terminer le déploiement. Ou utilisez le shell suivant :
+### Docker
 
 ```bash
 docker run -d -p 18966:18966 --name elinksnet --restart always elinksteam/elinksnet:latest
