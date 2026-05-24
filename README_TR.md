@@ -2,11 +2,11 @@
 
 <div align="center">
 
-![ElinksNet Logo](public/logos/elinks-logo.png)
+<h1>ElinksNet</h1>
+<p><strong>IP ve Ağ Araç Kutusu</strong></p>
 
-![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/ElinksNet)
-![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/ElinksNet)
-![Docker Pulls](https://img.shields.io/docker/pulls/elinksteam/elinksnet)
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
 English: [README.md](README.md) | 中文: [README_ZH.md](README_ZH.md) | Français: [README_FR.md](README_FR.md) | Türkçe: [README_TR.md](README_TR.md)
@@ -35,8 +35,8 @@ ElinksNet kendi kendine barındırılabilen açık kaynaklı bir IP ve ağ araç
 ### Node ortamı
 
 ```bash
-git clone https://github.com/ElinksTeam/ElinksNet.git
-cd ElinksNet
+git clone https://github.com/ElinksTeam/MyIP.git
+cd MyIP
 npm install && npm run build
 npm start
 ```
