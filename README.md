@@ -2,7 +2,9 @@
 
 <div align="center">
 
-![ElinksNet Banner](https://raw.githubusercontent.com/ElinksTeam/ElinksNet/main/public/github/gh_banner.png)
+<img src="https://raw.githubusercontent.com/ElinksTeam/MyIP/main/public/logos/elinks-logo.png" alt="ElinksNet Logo" width="420" />
+
+<br />
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
@@ -15,7 +17,7 @@
 ![CodeQL](https://github.com/ElinksTeam/ElinksNet/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
 ![Docker Build and Push](https://github.com/ElinksTeam/ElinksNet/actions/workflows/docker-image.yml/badge.svg?branch=main)
 
-🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md)
+🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
 
 Deploy your own ElinksNet instance.
 
@@ -49,7 +51,7 @@ Deploy your own ElinksNet instance.
 * 📲 **PWA Supported**：Can be added as a desktop app on your phone as well as a Chrome app on your computer.
 * ⌨️ **Keyboard Shortcuts**: Supports keyboard shortcuts for all functions, press `?` to view the shortcut list.
 * 🌍 Based on availability test results, it indicates whether global internet access is currently feasible.
-* 🇺🇸 🇨🇳 🇫🇷 English, Chinese, and French support.
+* 🇺🇸 🇨🇳 🇫🇷 🇹🇷 English, Chinese, French, and Turkish support.
 
 ## 📕 How to Use
 
