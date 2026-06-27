@@ -176,8 +176,8 @@ DOMAIN,ptest-8.ipcheck.ing,Proxy8
 
 ## Attribution
 
-ElinksNet est maintenu par ElinksTeam.
+ElinksNet est maintenu par Elinks.
 
 ElinksNet est basé sur MyIP de Jason Ng et reste sous licence MIT. L'avis de copyright original est conservé dans `LICENSE`, comme l'exige la licence MIT.
 
-Modifications supplémentaires Copyright (c) 2026 ElinksTeam.
+Modifications supplémentaires Copyright (c) 2026 Elinks.

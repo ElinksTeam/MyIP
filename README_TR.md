@@ -161,8 +161,8 @@ DOMAIN,ptest-8.ipcheck.ing,Proxy8
 
 ## Atıf
 
-ElinksNet, ElinksTeam tarafından sürdürülmektedir.
+ElinksNet, Elinks tarafından sürdürülmektedir.
 
 ElinksNet, Jason Ng tarafından geliştirilen MyIP projesine dayanmaktadır ve MIT lisansı altında kalmaya devam eder. Orijinal telif hakkı bildirimi, MIT lisansının gerektirdiği şekilde `LICENSE` dosyasında korunmaktadır.
 
-Ek değişiklikler Copyright (c) 2026 ElinksTeam.
+Ek değişiklikler Copyright (c) 2026 Elinks.

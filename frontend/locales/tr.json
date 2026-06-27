@@ -658,13 +658,13 @@
     "SecurityChecklist": "Güvenlik Kontrol Listesi panelini aç"
   },
   "page": {
-    "title": "IPCheck.ing - IP Adresimi ve Coğrafi Konumumu Kontrol Et - WebRTC Bağlantı IP'sini Kontrol Et - DNS Sızıntı Testi - Hız Testi - Jason Ng Açık Kaynak",
+    "title": "ElinksNet - Elinks açık kaynak IP ve ağ araç kutusu",
     "description": "Daha iyi ve açık kaynaklı bir IP Araç Kutusu. IP'lerinizin ne olduğunu, IP bilgilerini, DNS sızıntılarını kontrol etmek, WebRTC bağlantılarını incelemek, web sitesi kullanılabilirliğini test etmek, DNS kaydını aramak, Whois'i aramak ve dünyanın dört bir yanından gecikmeyi test etmek kolaydır.",
     "keywords": "IPim, IP Aracı, IP Adresim, IP kontrol, IP arama, DNS sızıntı testi, WebRTC testi, Hız testi, DNS arama, Whois arama, Ping testi, gizlilik testi",
-    "footerLink": "https://github.com/jason5ng32/MyIP",
-    "copyRightName": "Orijinal Kaynak ",
-    "copyRightLink": "https://ipcheck.ing",
-    "copyRightLinkName": "IPCheck.ing"
+    "footerLink": "https://github.com/ElinksTeam/MyIP",
+    "copyRightName": "Telif hakkı © 2026 ",
+    "copyRightLink": "https://github.com/ElinksTeam",
+    "copyRightLinkName": "Elinks"
   },
   "helpModal": {
     "Title": "Klavye Kısayolları"
@@ -675,13 +675,13 @@
     "product2": "Bu açık kaynaklı bir projedir ve kaynak kodunu sayfanın altındaki GitHub simgesine tıklayarak görüntüleyebilirsiniz.",
     "product3": "Başlangıçta bu, Vue.js öğrenmem ve AI kullanarak nasıl kod yazacağımı öğrenmem için kişisel bir projeydi. Zamanla GitHub'da daha fazla yıldız kazandı, bu yüzden çok fazla yeniden düzenleme yaptım ve birçok faydalı özellik ekledim. Umarım beğenirsiniz.",
     "meTitle": "Hakkımda",
-    "me1": "Benim adım Jason Ng, internette Achán olarak da bilinirim. Profesyonel bir programcı değilim ama kodlamayı, açık kaynağı ve paylaşmayı seviyorum.",
-    "me2": "Çoğu zaman bir ürün yöneticisi, blog yazarı, motosiklet sürücüsü ve bir 'geek' olarak çalışıyorum.",
-    "me3": "Hakkımda daha detaylı bir tanıtımı aşağıdaki linkte bulabilirsiniz:",
+    "me1": "Elinks, ElinksNet'i açık kaynaklı bir IP ve ağ araç kutusu olarak sürdürür.",
+    "me2": "Pratik ağ tanılama, gizlilik kontrolleri ve kendi sunucunda barındırmaya odaklanıyoruz.",
+    "me3": "Kaynak koduna ve güncellemelere aşağıdaki bağlantılardan ulaşabilirsiniz:",
     "contactTitle": "Bana Ulaşın",
-    "contact": "Herhangi bir sorunuz veya öneriniz varsa, lütfen benimle e-posta yoluyla iletişime geçin: jason[AT]kenengba.com.",
-    "personal": "Kişisel Web Sitesi",
-    "blog": "Blogum",
+    "contact": "Sorularınız veya önerileriniz için ElinksTeam/MyIP deposunda bir issue açın.",
+    "personal": "ElinksTeam",
+    "blog": "Proje Deposu",
     "retiremoney": "Gelecek Planlayıcısı",
     "twitter": "Twitter",
     "Sponsor": "Sponsor"

@@ -28,9 +28,6 @@ const sourceChunkGroups = {
     '/frontend/utils/country-name',
     '/frontend/utils/speedtest-colos'
   ],
-  'utils-auth': [
-    '/frontend/utils/authenticated-fetch'
-  ],
   'utils-analytics': [
     '/frontend/utils/use-analytics'
   ]
@@ -66,7 +63,7 @@ function manualChunks(id) {
   return undefined;
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue({
       template: {
@@ -85,14 +82,14 @@ export default defineConfig({
         '*.{js,css,png,svg,jpg,webp}',
       ],
     }),
-    CodeInspectorPlugin({
+    mode === 'development' && CodeInspectorPlugin({
       bundler: 'vite',
       hideDomPathAttr: true,
       behavior: {
         copy: '{file}',
       },
     }),
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': '/frontend',
@@ -128,4 +125,4 @@ export default defineConfig({
       '/api': `http://localhost:${backEndPort}`
     }
   }
-})
+}))

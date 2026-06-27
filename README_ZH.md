@@ -176,8 +176,8 @@ DOMAIN,ptest-8.ipcheck.ing,Proxy8
 
 ## 归属说明
 
-ElinksNet 由 ElinksTeam 维护。
+ElinksNet 由 Elinks 维护。
 
 ElinksNet 基于 Jason Ng 的 MyIP，并继续遵循 MIT License。根据 MIT License 要求，原始版权声明已保留在 `LICENSE` 文件中。
 
-二次修改部分 Copyright (c) 2026 ElinksTeam。
+二次修改部分 Copyright (c) 2026 Elinks。

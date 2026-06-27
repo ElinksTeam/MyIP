@@ -1,7 +1,6 @@
 // store.js
 import { defineStore } from 'pinia';
-import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged } from "firebase/auth";
-import { auth } from './firebase-init.js';
+import { getFirebaseAuth, isFireBaseSet } from './firebase-init.js';
 import i18n from './locales/i18n.js';
 import { createInitialAchievementsState } from './data/achievements.js';
 import { createInitialIpDBs, buildDbUrl } from './data/ip-databases.js';
@@ -162,16 +161,14 @@ export const useMainStore = defineStore('main', {
     },
     // check Firebase environment
     checkFirebaseEnv() {
-      const env = import.meta.env ?? {};
-      const envConfigs = {
-        key: env.VITE_FIREBASE_API_KEY,
-        domain: env.VITE_FIREBASE_AUTH_DOMAIN,
-        project: env.VITE_FIREBASE_PROJECT_ID,
-      }
-      this.isFireBaseSet = !!envConfigs.key && !!envConfigs.domain && !!envConfigs.project;
+      this.isFireBaseSet = isFireBaseSet;
     },
     // sign in with Google
     async signInWithGoogle() {
+      const [{ GoogleAuthProvider, signInWithPopup }, auth] = await Promise.all([
+        import('firebase/auth'),
+        getFirebaseAuth(),
+      ]);
       const provider = new GoogleAuthProvider();
       provider.addScope('email');
       try {
@@ -186,6 +183,10 @@ export const useMainStore = defineStore('main', {
     },
     // sign in with GitHub
     async signInWithGithub() {
+      const [{ GithubAuthProvider, signInWithPopup }, auth] = await Promise.all([
+        import('firebase/auth'),
+        getFirebaseAuth(),
+      ]);
       const provider = new GithubAuthProvider();
       provider.addScope('user:email');
       try {
@@ -201,7 +202,11 @@ export const useMainStore = defineStore('main', {
     // sign out
     async signOut() {
       try {
-        await firebaseSignOut(auth);
+        const [{ signOut }, auth] = await Promise.all([
+          import('firebase/auth'),
+          getFirebaseAuth(),
+        ]);
+        await signOut(auth);
         this.user = null;
         this.isSignedIn = false;
       } catch (error) {
@@ -209,7 +214,11 @@ export const useMainStore = defineStore('main', {
       }
     },
     // initialize Auth listener
-    initializeAuthListener() {
+    async initializeAuthListener() {
+      const [{ onAuthStateChanged }, auth] = await Promise.all([
+        import('firebase/auth'),
+        getFirebaseAuth(),
+      ]);
       return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
           this.user = currentUser;

@@ -1,9 +1,4 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-
-let auth;
-// import.meta.env only exists in Vite; Node / test environment may not have it, use optional chaining to fallback
+// import.meta.env only exists in Vite; Node / test environments fall back to an empty object.
 const env = import.meta.env ?? {};
 const firebaseConfig = {
     apiKey: env.VITE_FIREBASE_API_KEY,
@@ -12,14 +7,20 @@ const firebaseConfig = {
 };
 
 const isFireBaseSet = !!firebaseConfig.apiKey && !!firebaseConfig.authDomain && !!firebaseConfig.projectId;
+let authPromise;
 
-if (isFireBaseSet) {
-
-const app = initializeApp(firebaseConfig);
-auth = getAuth(app);
-
-} else {
-    auth = null;
+async function getFirebaseAuth() {
+    if (!isFireBaseSet) return null;
+    if (!authPromise) {
+        authPromise = Promise.all([
+            import('firebase/app'),
+            import('firebase/auth'),
+        ]).then(([{ initializeApp, getApps }, { getAuth }]) => {
+            const app = getApps()[0] || initializeApp(firebaseConfig);
+            return getAuth(app);
+        });
+    }
+    return authPromise;
 }
 
-export { auth };
+export { getFirebaseAuth, isFireBaseSet };
