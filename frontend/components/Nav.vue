@@ -16,9 +16,8 @@
           class="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-lg font-semibold text-foreground no-underline hover:opacity-80 transition-opacity">
           <brandIcon />
           <span class="tracking-tight">
-            <span class="font-bold">IP</span><span class="font-extralight">Check.</span><span
-              class="font-extralight"
-              :class="{ 'jn-shimmer-light': !loaded && !isDarkMode, 'jn-shimmer-dark': !loaded && isDarkMode }">ing</span>
+            <span class="font-bold">Elinks</span><span class="font-extralight"
+              :class="{ 'jn-shimmer-light': !loaded && !isDarkMode, 'jn-shimmer-dark': !loaded && isDarkMode }">Net</span>
           </span>
         </a>
       </div>

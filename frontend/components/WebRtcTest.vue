@@ -144,16 +144,13 @@ const checkSTUNServer = async (stun) => {
           const ipMatch = /([0-9a-f]{1,4}(:[0-9a-f]{1,4}){7}|[0-9a-f]{0,4}(:[0-9a-f]{1,4}){0,6}::[0-9a-f]{0,4}|::[0-9a-f]{1,4}(:[0-9a-f]{1,4}){0,6}|[0-9]{1,3}(\.[0-9]{1,3}){3})/i.exec(candidate);
           if (ipMatch) {
             stun.ip = ipMatch[0];
-            try {
-              const countryInfo = await fetchCountryCode(stun.ip);
+            const countryInfo = await fetchCountryCode(stun.ip);
+            if (countryInfo) {
               stun.country_code = countryInfo[0];
               stun.country = countryInfo[1];
-            } catch (error) {
-              console.error('Error fetching country code:', error);
+            } else {
+              stun.country_code = '';
               stun.country = t('webrtc.StatusError');
-              reject(error);
-              pc.close();
-              return;
             }
             IPArray.value = [...IPArray.value, stun.ip];
             stun.natType = determineNATType(candidate);
@@ -202,21 +199,23 @@ const fetchCountryCode = async (ip) => {
   let setLang = lang.value;
   if (setLang === 'zh') setLang = 'zh-CN';
   const source = store.ipDBs.find((s) => s.text === 'MaxMind');
+  if (!source) return null;
 
   try {
     const url = store.getDbUrl(source.id, ip, setLang);
     const response = await fetch(url);
+    if (!response.ok) return null;
     const data = await response.json();
     const ipData = transformDataFromIPapi(data, source.id, t, lang.value);
-    if (ipData) {
+    if (ipData?.country_code && ipData.country_code !== 'N/A') {
       const country_code = ipData.country_code.toLowerCase();
-      let country = ipData.country_code || 'N/A';
-      if (country !== 'N/A') country = getCountryName(ipData.country_code, lang.value);
+      const country = getCountryName(ipData.country_code, lang.value) || ipData.country_code;
       return [country_code, country];
     }
-  } catch (error) {
-    console.error('Error fetching IP country code', error);
+  } catch {
+    return null;
   }
+  return null;
 };
 
 // Test all STUN servers

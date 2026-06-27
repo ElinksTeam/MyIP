@@ -184,7 +184,7 @@ const checkAllIPs = async () => {
 
 // Get IP details from IP address
 const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
-  sourceID = sourceID || ipGeoSource.value;
+  sourceID = sourceID ?? ipGeoSource.value;
   const card = ipDataCards[cardIndex];
   card.ip = ip;
   let setLang = lang.value;
@@ -211,8 +211,12 @@ const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
 
   const fetchPromise = (async () => {
     const sources = store.ipDBs.filter(source => source.enabled);
+    if (sources.length === 0) {
+      throw new Error('No IP data sources are currently available');
+    }
 
     let currentSourceIndex = sourceID !== null ? sources.findIndex(source => source.id === sourceID) : 0;
+    if (currentSourceIndex < 0) currentSourceIndex = 0;
     let attempts = 0;
 
     while (attempts < sources.length) {

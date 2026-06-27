@@ -3,13 +3,20 @@
 // Avoid the duplicate call to keep this a pure, fast function.
 
 function refererCheck(referer) {
-    const allowedDomains = ['localhost', ...(process.env.ALLOWED_DOMAINS || '').split(',')];
+    if (!referer) return false;
 
-    if (referer) {
-        const domain = new URL(referer).hostname;
-        return allowedDomains.includes(domain);
+    const configuredDomains = (process.env.ALLOWED_DOMAINS || '')
+        .split(',')
+        .map((domain) => domain.trim().toLowerCase())
+        .filter(Boolean);
+    const allowedDomains = new Set(['localhost', '127.0.0.1', '::1', '[::1]', ...configuredDomains]);
+
+    try {
+        const domain = new URL(referer).hostname.toLowerCase();
+        return allowedDomains.has(domain);
+    } catch {
+        return false;
     }
-    return false;  // if no referer is provided, return false
 }
 
 export { refererCheck };
