@@ -72,12 +72,12 @@ const ipDataCards = reactive([
   {
     ...createDefaultCard(),
     id: "ipchecking_v4",
-    source: "IPCheck.ing IPv4",
+    source: "ElinksNet IPv4",
   },
   {
     ...createDefaultCard(),
     id: "ipchecking_v6",
-    source: "IPCheck.ing IPv6",
+    source: "ElinksNet IPv6",
   },
   {
     ...createDefaultCard(),
@@ -97,7 +97,7 @@ const ipDataCards = reactive([
   {
     ...createDefaultCard(),
     id: "ipchecking_v64",
-    source: "IPCheck.ing IPv6/4",
+    source: "ElinksNet IPv6/4",
   },
 ]);
 

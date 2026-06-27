@@ -7,7 +7,7 @@
 // - enabled initial enabled state (user can toggle in Preferences, store will write back this field)
 
 export const IP_DATABASES = [
-  { id: 0, text: 'IPCheck.ing', url: '/api/ipchecking?ip={{ip}}&lang={{lang}}', enabled: true },
+  { id: 0, text: 'ElinksNet', url: '/api/ipchecking?ip={{ip}}&lang={{lang}}', enabled: true },
   { id: 1, text: 'IPinfo.io', url: '/api/ipinfo?ip={{ip}}', enabled: true },
   { id: 2, text: 'IP-API.com', url: '/api/ipapicom?ip={{ip}}&lang={{lang}}', enabled: true },
   { id: 3, text: 'IPAPI.is', url: '/api/ipapiis?ip={{ip}}', enabled: true },

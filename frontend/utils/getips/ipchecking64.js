@@ -6,24 +6,24 @@ const getIPFromIPChecking64 = async (originalSite) => {
     try {
         let ip;
         originalSite ? ip = await getFromJson() : ip = await getFromTrace();
-        const source = "IPCheck.ing IPv6/4";
+        const source = "ElinksNet IPv6/4";
         if (isValidIP(ip)) {
             return {
                 ip: ip,
                 source: source
             };
         } else {
-            console.error("Invalid IP from IPCheck.ing IPv6/4:", ip);
+            console.error("Invalid IP from ElinksNet IPv6/4:", ip);
             return {
                 ip: null,
                 source: source
             };
         }
     } catch (error) {
-        console.error("Error fetching IP from IPCheck.ing IPv6/4:", error);
+        console.error("Error fetching IP from ElinksNet IPv6/4:", error);
         return {
             ip: null,
-            source: "IPCheck.ing IPv6/4"
+            source: "ElinksNet IPv6/4"
         };
     }
 };

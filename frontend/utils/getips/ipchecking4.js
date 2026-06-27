@@ -7,21 +7,21 @@ const getIPFromIPChecking4 = async (originalSite) => {
     try {
         let ip;
         originalSite ? ip = await getFromJson() : ip = await getFromTrace();
-        const source = "IPCheck.ing IPv4";
+        const source = "ElinksNet IPv4";
         if (isValidIP(ip)) {
             return {
                 ip: ip,
                 source: source
             };
         } else {
-            console.error("Invalid IP from IPCheck.ing IPv4:", ip);
+            console.error("Invalid IP from ElinksNet IPv4:", ip);
             return {
                 ip: null,
                 source: source
             };
         }
     } catch (error) {
-        console.error("Error fetching IP from IPCheck.ing IPv4:", error);
+        console.error("Error fetching IP from ElinksNet IPv4:", error);
     }
     // Fallback
     const { ip, source } = await getIPFromIpify_V4();
