@@ -198,6 +198,14 @@
     "ShowChecked": "Afficher les éléments cochés",
     "Loading": "Chargement..."
   },
+  "additional": {
+    "OpenSource": "Open Source",
+    "OpenSourceNote": "Voir le code sur GitHub",
+    "Docker": "Prêt pour Docker",
+    "DockerNote": "Déployer ElinksNet rapidement",
+    "Curl": "Ligne de commande",
+    "CurlNote": "Interroger votre IP avec curl"
+  },
   "curl": {
     "Title": "API de ligne de commande",
     "Note1": "Eh bien, il s'avère que toi aussi tu aimes utiliser le terminal ?",

@@ -42,27 +42,39 @@
         </DialogContent>
     </Dialog>
 
-    <!-- Additional Tools: external product link bar -->
-    <div class="mx-auto text-center max-w-[98%]">
-        <div id="morefromipchecking" class="flex justify-center items-center gap-2 sm:gap-4 flex-wrap">
-            <a href="https://www.raycast.com/jason5ng32/ipcheck-ing" target="_blank" rel="noopener"
-                @click="trackEvent('Additional', 'AdditionalClick', 'Raycast')">
-                <img src="/additional/raycast.webp" alt="IPCheck.ing on Raycast"
-                    class="w-[108px] sm:w-[180px] h-auto">
+    <!-- Elinks project links -->
+    <div class="mx-auto max-w-3xl px-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <a href="https://github.com/ElinksTeam/MyIP" target="_blank" rel="noopener"
+                class="elinks-link-card"
+                @click="trackEvent('Additional', 'AdditionalClick', 'GitHub')">
+                <Github class="size-5 text-[#165dff]" />
+                <span>
+                    <strong>{{ t('additional.OpenSource') }}</strong>
+                    <small>{{ t('additional.OpenSourceNote') }}</small>
+                </span>
+                <ExternalLink class="ml-auto size-4 opacity-40" />
             </a>
 
-            <button type="button" @click="openCurlModal"
-                aria-label="IPCheck.ing for Curl"
-                class="cursor-pointer bg-transparent border-0 p-0">
-                <img src="/additional/curl.webp" alt="IPCheck.ing for Curl"
-                    class="w-[108px] sm:w-[180px] h-auto">
+            <a href="https://hub.docker.com/r/elinksteam/elinksnet" target="_blank" rel="noopener"
+                class="elinks-link-card"
+                @click="trackEvent('Additional', 'AdditionalClick', 'Docker')">
+                <Container class="size-5 text-[#008cd5]" />
+                <span>
+                    <strong>{{ t('additional.Docker') }}</strong>
+                    <small>{{ t('additional.DockerNote') }}</small>
+                </span>
+                <ExternalLink class="ml-auto size-4 opacity-40" />
+            </a>
+
+            <button type="button" class="elinks-link-card text-left" @click="openCurlModal">
+                <Terminal class="size-5 text-[#00bfd8]" />
+                <span>
+                    <strong>{{ t('additional.Curl') }}</strong>
+                    <small>{{ t('additional.CurlNote') }}</small>
+                </span>
+                <ChevronRight class="ml-auto size-4 opacity-40" />
             </button>
-
-            <a href="https://lite.ipcheck.ing" target="_blank" rel="noopener"
-                @click="trackEvent('Additional', 'AdditionalClick', 'Lite')">
-                <img src="/additional/lite.webp" alt="IPCheck.ing lite"
-                    class="w-[108px] sm:w-[180px] h-auto">
-            </a>
         </div>
     </div>
 </template>
@@ -73,7 +85,7 @@ import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
-import { Terminal } from 'lucide-vue-next';
+import { ChevronRight, Container, ExternalLink, Github, Terminal } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge';
 
 const { t } = useI18n();
@@ -110,5 +122,47 @@ defineExpose({
     color: var(--muted-foreground);
     font-weight: 500;
     opacity: 0.7;
+}
+
+.elinks-link-card {
+    display: flex;
+    min-height: 4rem;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--foreground);
+    background:
+        linear-gradient(var(--background), var(--background)) padding-box,
+        linear-gradient(135deg, rgb(22 93 255 / 0.35), rgb(0 213 232 / 0.35)) border-box;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.elinks-link-card:hover {
+    transform: translateY(-2px);
+    border-color: transparent;
+    box-shadow: 0 8px 24px rgb(22 93 255 / 0.10);
+}
+
+.elinks-link-card span {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.elinks-link-card strong {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.elinks-link-card small {
+    overflow: hidden;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>

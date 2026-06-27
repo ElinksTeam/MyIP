@@ -198,6 +198,14 @@
     "ShowChecked": "İşaretlileri Göster",
     "Loading": "Yükleniyor..."
   },
+  "additional": {
+    "OpenSource": "Açık Kaynak",
+    "OpenSourceNote": "Kodu GitHub'da görüntüleyin",
+    "Docker": "Docker Hazır",
+    "DockerNote": "ElinksNet'i hızla dağıtın",
+    "Curl": "Komut Satırı",
+    "CurlNote": "IP adresinizi curl ile sorgulayın"
+  },
   "curl": {
     "Title": "Komut Satırı API'si",
     "Note1": "Hey, görünüşe göre siz de terminal kullanmayı seviyorsunuz?",
