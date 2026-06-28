@@ -22,6 +22,7 @@ import macCheckerHandler from '../server/handlers/mac-checker.js';
 import updateAchievementHandler from '../server/handlers/update-user-achievement.js';
 import elinksNetIpHandler from '../server/handlers/elinksnet-ip.js';
 import aiSecurityAdviceHandler from '../server/handlers/ai-security-advice.js';
+import ipWhoIsHandler, { normalizeIpWhoIs } from '../server/handlers/ipwho-is.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -82,10 +83,46 @@ describe('configs handler', () => {
         const res = createResponse();
         configsHandler(createRequest(), res);
         assert.equal(res.statusCode, 200);
-        for (const key of ['map', 'ipInfo', 'elinksNet', 'ip2location', 'originalSite', 'cloudFlare', 'ipapiis', 'elinksAi']) {
+        for (const key of ['map', 'ipInfo', 'elinksNet', 'ip2location', 'originalSite', 'cloudFlare', 'ipapiis', 'elinksAi', 'maxmind']) {
             assert.equal(typeof res.body[key], 'boolean');
         }
         assert.equal(res.body.originalSite, false);
+    });
+});
+
+describe('IPWho.is handler', () => {
+    it('rejects non-GET requests before contacting the provider', async () => {
+        const res = createResponse();
+        await ipWhoIsHandler(createRequest({
+            method: 'POST',
+            query: { ip: '1.1.1.1' },
+        }), res);
+        assert.equal(res.statusCode, 405);
+        assert.deepEqual(res.body, { message: 'Method Not Allowed' });
+    });
+
+    it('normalizes provider data to the shared IP source shape', () => {
+        assert.deepEqual(normalizeIpWhoIs({
+            ip: '1.1.1.1',
+            city: 'Sydney',
+            region: 'New South Wales',
+            country: 'Australia',
+            country_code: 'AU',
+            latitude: -33.86,
+            longitude: 151.2,
+            connection: { asn: 13335, org: 'Cloudflare, Inc.' },
+        }), {
+            ip: '1.1.1.1',
+            city: 'Sydney',
+            region: 'New South Wales',
+            country: 'AU',
+            country_name: 'Australia',
+            country_code: 'AU',
+            latitude: -33.86,
+            longitude: 151.2,
+            asn: 'AS13335',
+            org: 'Cloudflare, Inc.',
+        });
     });
 });
 

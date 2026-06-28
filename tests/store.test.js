@@ -255,7 +255,7 @@ describe('store — getDbUrl delegates to buildDbUrl', () => {
     const url = s.getDbUrl(db.id, '1.1.1.1', 'en');
     // db.url is a template like /api/x?ip={{ip}}&lang={{lang}} — verify substitution
     assert.match(url, /1\.1\.1\.1/);
-    assert.match(url, /en/);
+    assert.equal(url, '/api/ipwhois?ip=1.1.1.1');
   });
 
   it('returns a falsy value when id is unknown', () => {

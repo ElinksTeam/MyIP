@@ -8,10 +8,12 @@ import {
 } from '../frontend/data/ip-databases.js';
 
 describe('IP_DATABASES', () => {
-  it('has 7 unique sequential ids', () => {
-    assert.equal(IP_DATABASES.length, 7);
+  it('has 8 unique ids and keeps keyless sources first', () => {
+    assert.equal(IP_DATABASES.length, 8);
     const ids = IP_DATABASES.map((d) => d.id);
-    assert.deepEqual(ids, [0, 1, 2, 3, 4, 5, 6]);
+    assert.deepEqual([...ids].sort((a, b) => a - b), [0, 1, 2, 3, 4, 5, 6, 7]);
+    assert.deepEqual(ids.slice(0, 3), [7, 5, 2]);
+    assert.ok(IP_DATABASES.slice(0, 3).every((source) => source.enabled));
   });
 
   it('every entry has url + text + enabled fields', () => {

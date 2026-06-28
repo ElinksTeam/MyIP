@@ -17,6 +17,7 @@ import elinksNetIpHandler from './server/handlers/elinksnet-ip.js';
 import ipapiisHandler from './server/handlers/ipapi-is.js';
 import ip2locationHandler from './server/handlers/ip2location-io.js';
 import ipsbHandler from './server/handlers/ip-sb.js';
+import ipWhoIsHandler from './server/handlers/ipwho-is.js';
 import maxmindHandler from './server/handlers/maxmind.js';
 // Others
 import cfHander from './server/handlers/cf-radar.js';
@@ -163,6 +164,7 @@ app.get('/api/elinksnet', requireValidIP(), elinksNetIpHandler);
 // Compatibility alias for older clients.
 app.get('/api/ipchecking', requireValidIP(), elinksNetIpHandler);
 app.get('/api/ipsb', requireValidIP(), ipsbHandler);
+app.get('/api/ipwhois', requireValidIP(), ipWhoIsHandler);
 app.get('/api/cfradar', cfHander);
 app.get('/api/dnsresolver', dnsResolver);
 app.get('/api/whois', getWhois);

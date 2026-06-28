@@ -228,6 +228,7 @@ const updateIPDBs = () => {
         store.updateIPDBs({ id: 1, enabled: configs.value.ipInfo });
         store.updateIPDBs({ id: 3, enabled: configs.value.ipapiis });
         store.updateIPDBs({ id: 4, enabled: configs.value.ip2location });
+        store.updateIPDBs({ id: 6, enabled: configs.value.maxmind });
     }
 };
 

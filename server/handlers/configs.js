@@ -1,4 +1,5 @@
 import { getElinksNetApiConfig } from '../../common/elinksnet-config.js';
+import { isMaxMindReady } from '../../common/maxmind-service.js';
 
 // Validate environment variables exist to enable/disable frontend features
 export default (req, res) => {
@@ -25,6 +26,7 @@ export default (req, res) => {
         cloudFlare: process.env.CLOUDFLARE_API,
         ipapiis: process.env.IPAPIIS_API_KEY,
         elinksAi: process.env.GEMINI_API_KEY,
+        maxmind: isMaxMindReady(),
     };
     let result = {};
     for (const key in envConfigs) {
