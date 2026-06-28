@@ -1,26 +1,76 @@
 <template>
   <TooltipProvider :delay-duration="150">
-    <NavBar ref="navBarRef" />
-    <User ref="userRef" />
-    <Achievements ref="achievementsRef" />
-    <Preferences ref="preferencesRef" />
-    <Alert />
-    <div id="mainpart" class="mx-auto w-full px-4 jn-container">
-      <div class="rounded-md" tabindex="0">
-        <IPCheck ref="IPCheckRef" />
-        <Connectivity ref="connectivityRef" />
-        <WebRTC ref="webRTCRef" />
-        <DNSLeaks ref="dnsLeaksRef" />
-        <SpeedTest ref="speedTestRef" />
-        <AdvancedTools ref="advancedToolsRef" />
+    <div class="dashboard-shell min-h-screen bg-muted/30">
+      <DashboardSidebar />
+
+      <div class="min-w-0 flex-1">
+        <NavBar ref="navBarRef" />
+        <User ref="userRef" />
+        <Achievements ref="achievementsRef" />
+        <Preferences ref="preferencesRef" />
+        <Alert />
+
+        <main id="mainpart" class="w-full px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
+          <div class="mx-auto w-full max-w-[1440px]">
+            <!-- Dashboard overview -->
+            <Card class="mb-6 overflow-hidden border-border/70 shadow-xs">
+              <CardContent class="relative p-5 sm:p-7">
+                <div class="absolute inset-y-0 right-0 hidden w-1/3 opacity-40 lg:block dashboard-grid-pattern" />
+                <div class="relative max-w-3xl">
+                  <Badge variant="outline" class="mb-4 gap-1.5 bg-background/70">
+                    <Activity class="size-3.5 text-success" />
+                    ElinksNet
+                  </Badge>
+                  <h1 class="mb-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+                    {{ t('page.title') }}
+                  </h1>
+                  <p class="mb-5 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                    {{ t('page.description') }}
+                  </p>
+                  <div class="flex flex-wrap gap-2">
+                    <Badge variant="secondary" class="gap-1.5 px-2.5 py-1">
+                      <span class="size-1.5 rounded-full bg-success" />
+                      {{ t('nav.Connectivity') }}
+                    </Badge>
+                    <Badge variant="secondary" class="gap-1.5 px-2.5 py-1">
+                      <span class="size-1.5 rounded-full bg-info" />
+                      {{ t('nav.DNSLeakTest') }}
+                    </Badge>
+                    <Badge variant="secondary" class="gap-1.5 px-2.5 py-1">
+                      <span class="size-1.5 rounded-full bg-action" />
+                      {{ t('nav.AdvancedTools') }}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <ProductOverview />
+            <ElinksAiAdvisor />
+
+            <!-- Existing network tools, restyled as the dashboard canvas -->
+            <div class="dashboard-sections rounded-md" tabindex="0">
+              <IPCheck ref="IPCheckRef" />
+              <Connectivity ref="connectivityRef" />
+              <WebRTC ref="webRTCRef" />
+              <DNSLeaks ref="dnsLeaksRef" />
+              <SpeedTest ref="speedTestRef" />
+              <AdvancedTools ref="advancedToolsRef" />
+            </div>
+          </div>
+        </main>
+
+        <div class="mx-auto w-full max-w-[1440px] px-3 sm:px-5 lg:px-8">
+          <Additional ref="additionalRef" />
+        </div>
+        <Footer ref="footerRef" />
       </div>
     </div>
+
     <InfoMask :showMaskButton.value="showMaskButton" :infoMaskLevel.value="infoMaskLevel"
       :toggleInfoMask="toggleInfoMask" />
     <QueryIP ref="queryIPRef" />
     <HelpModal ref="helpModalRef" />
-    <Additional ref="additionalRef" />
-    <Footer ref="footerRef" />
     <PWA />
   </TooltipProvider>
 </template>
@@ -28,6 +78,9 @@
 <script setup>
 // Components
 import NavBar from './components/Nav.vue';
+import DashboardSidebar from './components/DashboardSidebar.vue';
+import ProductOverview from './components/ProductOverview.vue';
+import ElinksAiAdvisor from './components/ElinksAiAdvisor.vue';
 import IPCheck from './components/IpInfos.vue';
 import Connectivity from './components/ConnectivityTest.vue';
 import WebRTC from './components/WebRtcTest.vue';
@@ -49,6 +102,9 @@ import InfoMask from './components/widgets/InfoMask.vue';
 
 // UI
 import { TooltipProvider } from './components/ui/tooltip';
+import { Badge } from './components/ui/badge';
+import { Card, CardContent } from './components/ui/card';
+import { Activity } from 'lucide-vue-next';
 
 // Vue + Store
 import { ref, computed, onMounted } from 'vue';

@@ -3,11 +3,11 @@
   <header
     class="sticky top-0 z-40 w-full border-b bg-background/80 supports-[backdrop-filter:blur(0px)]:bg-background/60 backdrop-blur">
     <nav id="navbar-top"
-      class="mx-auto flex w-full max-w-[1600px] items-center gap-2 px-3 sm:px-4 h-14">
+      class="flex h-14 w-full items-center gap-2 px-3 sm:px-5 lg:px-8">
 
-      <!-- Left: Hamburger (only mobile) + Brand -->
-      <div class="flex items-center gap-2">
-        <Button v-if="isMobile" variant="ghost" size="icon" class="size-8"
+      <!-- Mobile identity -->
+      <div v-if="isMobile" class="flex items-center gap-2">
+        <Button variant="ghost" size="icon" class="size-8"
           :aria-expanded="isNavMenuOpen" aria-label="Toggle navigation menu"
           @click="store.toggleSheet('navMenu')">
           <Menu />
@@ -22,19 +22,11 @@
         </a>
       </div>
 
-      <!-- Middle: Desktop nav links + GitHub star badge (left aligned, next to brand) -->
-      <div v-if="!isMobile" class="flex items-center gap-0.5">
-        <a v-for="item in navItems" :key="item" href="#"
-          :class="navLinkClass(item)"
-          @click.prevent="scrollToSection(item); trackEvent('Nav', 'NavClick', item)">
-          {{ t(`nav.${item}`) }}
-        </a>
-        <a :href="t('page.footerLink')" target="_blank" rel="noopener"
-          class="ml-2 inline-flex items-center hover:opacity-80 transition-opacity"
-          aria-label="View source on GitHub">
-          <img src="https://img.shields.io/github/stars/ElinksTeam/ElinksNet"
-            alt="GitHub stars" class="h-5">
-        </a>
+      <!-- Desktop dashboard breadcrumb -->
+      <div v-else class="flex min-w-0 items-center gap-2 text-sm">
+        <span class="font-medium text-muted-foreground">ElinksNet</span>
+        <ChevronRight class="size-3.5 text-muted-foreground/60" />
+        <span class="truncate font-semibold">{{ t(`nav.${currentSection}`) }}</span>
       </div>
 
       <!-- Right: Action area (ml-auto push to the right) -->
@@ -185,7 +177,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
-  Award, ChevronDown, Chrome, Github, HeartHandshake,
+  Award, ChevronDown, ChevronRight, Chrome, Github, HeartHandshake,
   LogOut, Menu, SlidersHorizontal,
 } from 'lucide-vue-next';
 import brandIcon from './svgicons/Brand.vue';
@@ -269,6 +261,7 @@ const handleLogoClick = (e) => {
 const scrollToSection = (el, offset = 70) => {
   const element = typeof el === 'string' ? document.getElementById(el) : el;
   if (!element) return;
+  if (typeof el === 'string') store.changeSection(el);
   const y = element.getBoundingClientRect().top + window.scrollY - offset;
   window.scrollTo({ top: y, behavior: 'smooth' });
 };

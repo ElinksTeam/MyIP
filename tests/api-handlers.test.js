@@ -21,6 +21,7 @@ import invisibilityHandler from '../server/handlers/invisibility-test.js';
 import macCheckerHandler from '../server/handlers/mac-checker.js';
 import updateAchievementHandler from '../server/handlers/update-user-achievement.js';
 import elinksNetIpHandler from '../server/handlers/elinksnet-ip.js';
+import aiSecurityAdviceHandler from '../server/handlers/ai-security-advice.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -51,6 +52,7 @@ const ENV_KEYS = [
     'MAC_LOOKUP_API_KEY', 'IPAPIIS_API_KEY',
     'IPINFO_API_TOKEN', 'IP2LOCATION_API_KEY',
     'CLOUDFLARE_API',
+    'GEMINI_API_KEY', 'ELINKS_AI_MODEL',
 ];
 let envBackup = {};
 
@@ -80,10 +82,39 @@ describe('configs handler', () => {
         const res = createResponse();
         configsHandler(createRequest(), res);
         assert.equal(res.statusCode, 200);
-        for (const key of ['map', 'ipInfo', 'elinksNet', 'ip2location', 'originalSite', 'cloudFlare', 'ipapiis']) {
+        for (const key of ['map', 'ipInfo', 'elinksNet', 'ip2location', 'originalSite', 'cloudFlare', 'ipapiis', 'elinksAi']) {
             assert.equal(typeof res.body[key], 'boolean');
         }
         assert.equal(res.body.originalSite, false);
+    });
+});
+
+describe('Elinks AI security advice handler', () => {
+    it('rejects non-POST requests', async () => {
+        const res = createResponse();
+        await aiSecurityAdviceHandler(createRequest(), res);
+        assert.equal(res.statusCode, 405);
+    });
+
+    it('rejects unsupported languages before contacting the provider', async () => {
+        const res = createResponse();
+        await aiSecurityAdviceHandler(createRequest({
+            method: 'POST',
+            body: { language: 'xx' },
+        }), res);
+        assert.equal(res.statusCode, 400);
+        assert.deepEqual(res.body, { error: 'Unsupported language' });
+    });
+
+    it('reports missing API configuration without exposing a key', async () => {
+        delete process.env.GEMINI_API_KEY;
+        const res = createResponse();
+        await aiSecurityAdviceHandler(createRequest({
+            method: 'POST',
+            body: { language: 'zh' },
+        }), res);
+        assert.equal(res.statusCode, 503);
+        assert.deepEqual(res.body, { error: 'Elinks AI is not configured' });
     });
 });
 

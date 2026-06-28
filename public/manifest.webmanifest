@@ -6,25 +6,27 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "theme_color": "#f8f9fa",
-  "background_color": "#ffffff",
-  "orientation": "portrait",
+  "theme_color": "#0b1220",
+  "background_color": "#0b1220",
+  "orientation": "any",
   "icons": [
     {
-      "src": "/logos/logo-192.webp",
+      "src": "/logos/elinks-pwa-192.png",
       "sizes": "192x192",
-      "type": "image/webp",
-      "purpose": "maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/logos/ios-logo-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/logos/ios-logo-512.png",
+      "src": "/logos/elinks-pwa-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logos/elinks-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

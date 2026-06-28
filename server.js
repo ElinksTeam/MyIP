@@ -24,6 +24,7 @@ import dnsResolver from './server/handlers/dns-resolver.js';
 import getWhois from './server/handlers/get-whois.js';
 import invisibilitytestHandler from './server/handlers/invisibility-test.js';
 import macChecker from './server/handlers/mac-checker.js';
+import aiSecurityAdvice from './server/handlers/ai-security-advice.js';
 // User
 import validateConfigs from './server/handlers/configs.js';
 import getUserinfo from './server/handlers/get-user-info.js';
@@ -172,6 +173,7 @@ app.get('/api/macchecker', macChecker);
 app.get('/api/maxmind', requireValidIP(), maxmindHandler);
 app.get('/api/getuserinfo', getUserinfo);
 app.put('/api/updateuserachievement', updateUserAchievement);
+app.post('/api/ai/security-advice', aiSecurityAdvice);
 
 // Handle all configuration requests using query parameters
 app.get('/api/configs', validateConfigs);

@@ -24,6 +24,7 @@ export default (req, res) => {
         originalSite,
         cloudFlare: process.env.CLOUDFLARE_API,
         ipapiis: process.env.IPAPIIS_API_KEY,
+        elinksAi: process.env.GEMINI_API_KEY,
     };
     let result = {};
     for (const key in envConfigs) {

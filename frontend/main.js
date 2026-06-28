@@ -36,7 +36,9 @@ const os = detectOS();
 
 // Handle window size change
 function handleResize() {
-    store.setIsMobile(window.innerWidth < 768 || os.isAndroid || os.isIOS );
+    // The dashboard sidebar starts at the lg breakpoint; narrower screens use
+    // the mobile navigation drawer so navigation never disappears on tablets.
+    store.setIsMobile(window.innerWidth < 1024 || os.isAndroid || os.isIOS );
 }
 handleResize();
 
