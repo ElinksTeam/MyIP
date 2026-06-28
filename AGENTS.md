@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Single source of truth for anyone — human or AI — contributing to MyIP.
+Single source of truth for anyone — human or AI — contributing to ElinksNet.
 
 For area-specific details, see:
 
@@ -9,7 +9,7 @@ For area-specific details, see:
 
 ## Overview
 
-**MyIP** (IPCheck.ing) is an open-source IP toolbox: IP lookup, connectivity tests, WebRTC / DNS-leak detection, speed test, MTR, Whois, security checklist, browser fingerprint, anonymity checks, and more.
+**ElinksNet** is an open-source IP toolbox maintained by Elinks: IP lookup, connectivity tests, WebRTC / DNS-leak detection, speed test, MTR, Whois, security checklist, browser fingerprint, anonymity checks, and more.
 
 Single repo, two halves: a Vue 3 SPA front-end and an Express 5 back-end API, served side by side.
 

@@ -140,8 +140,8 @@ ElinksNet 依赖 MaxMind 提供的免费 **GeoLite2** 数据库（City + ASN）�
 | `SECURITY_BLACKLIST_LOG_FILE_PATH` | 可选 | `"logs/blacklist-ip.log"` | 记录触发速率限制的 IP |
 | `ALLOWED_DOMAINS` | 可选 | `""` | 允许访问的域名，用逗号分隔，用于防止后端 API 被滥用 |
 | `GOOGLE_MAP_API_KEY` | 可选 | `""` | Google 地图 API Key，用于展示 IP 所在地地图 |
-| `IPCHECKING_API_ENDPOINT` | 可选 | `""` | IPCheck.ing 数据库 API 端点 |
-| `IPCHECKING_API_KEY` | 可选 | `""` | IPCheck.ing 数据库 API Key |
+| `ELINKSNET_API_ENDPOINT` | 可选 | `""` | ElinksNet 私有 API 端点 |
+| `ELINKSNET_API_KEY` | 可选 | `""` | ElinksNet 私有 API 密钥 |
 | `IPINFO_API_TOKEN` | 可选 | `""` | IPInfo.io API Token |
 | `IPAPIIS_API_KEY` | 可选 | `""` | IPAPI.is API Key |
 | `IP2LOCATION_API_KEY` | 可选 | `""` | IP2Location.io API Key |

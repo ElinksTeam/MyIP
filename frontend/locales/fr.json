@@ -27,9 +27,9 @@
     "Benefits": {
       "Title": "Avantages Utilisateurs",
       "Benefit": "Avantage",
-      "Note1": "En tant que produit open-source, l'utilisation de IPCheck.ing est gratuite.",
+      "Note1": "En tant que produit open-source, l'utilisation de ElinksNet est gratuite.",
       "Note2": "Cependant, afin de prévenir les abus, nous limitons certaines fonctionnalités. En vous connectant, vous obtiendrez les avantages suivants :",
-      "Benefit1": "Lorsque vous utilisez IPCheck.ing comme source de données IP, tous les champs sont affichés intégralement.",
+      "Benefit1": "Lorsque vous utilisez ElinksNet comme source de données IP, tous les champs sont affichés intégralement.",
       "Benefit2": "Peut utiliser le test d'invisibilité.",
       "Benefit3": "Peut voir les badges de réussite qu'il a obtenus",
       "Benefit4": "Réduit les restrictions d'accès à certaines fonctionnalités.",
@@ -37,7 +37,7 @@
     },
     "Achievements": {
       "Title": "Succès",
-      "Note": "En utilisant IPCheck.ing, vous pouvez déclencher certains succès. Ici, vous pouvez voir tous vos succès.",
+      "Note": "En utilisant ElinksNet, vous pouvez déclencher certains succès. Ici, vous pouvez voir tous vos succès.",
       "Get": "obtenus",
       "GetCount": "Succès obtenus:",
       "NotGet": "non obtenus",
@@ -49,7 +49,7 @@
       "Type": {
         "IAmHuman": {
           "Title": "Je suis humain",
-          "Meet": "Utiliser IPCheck.ing après s'être connecté"
+          "Meet": "Utiliser ElinksNet après s'être connecté"
         },
         "BarelyEnough": {
           "Title": "Tout juste suffisant",
@@ -117,7 +117,7 @@
         },
         "GenerousDonor": {
           "Title": "Généreux donateur",
-          "Meet": "Avoir fait un don au projet IPCheck.ing"
+          "Meet": "Avoir fait un don au projet ElinksNet"
         },
         "ItIsOpen": {
           "Title": "C'est ouvert",
@@ -125,7 +125,7 @@
         },
         "CuriousCat": {
           "Title": "Chat curieux",
-          "Meet": "Rechercher les informations de IPCheck.ing dans la recherche Whois"
+          "Meet": "Rechercher les informations de ElinksNet dans la recherche Whois"
         },
         "CrossingTheWall": {
           "Title": "Huit personnes traversent la muraille",
@@ -136,7 +136,7 @@
   },
   "nav": {
     "id": "nav",
-    "Title": "IPCheck.ing",
+    "Title": "ElinksNet",
     "Navigation": "Navigation",
     "IPInfo": "Infos IP",
     "Connectivity": "Connectivité",
@@ -212,7 +212,7 @@
     "Note2_1": "Tu peux, dans le terminal, via",
     "Note2_2": "commande, obtenir l'adresse IP de cette machine",
     "Note3": "est un chemin optionnel, son ajout permettra d'obtenir les informations géographiques de l'IP",
-    "Note4": "est votre clé API IPCheck.ing",
+    "Note4": "est votre clé API ElinksNet",
     "getIPv4": "Obtenir l'adresse IPv4 de la machine locale",
     "getIPv6": "Obtenir l'adresse IPv6 de la machine locale",
     "get6and4": "Obtenir l'adresse IP de sortie de réseau préférée de la machine locale",
@@ -441,7 +441,7 @@
   "ruletest": {
     "Title": "Test de règles",
     "Name": "Test",
-    "Note": "Le test de règles est utilisé pour déterminer si les paramètres de règles basées sur le nom de domaine de votre logiciel proxy sont corrects. Avant de procéder au test, veuillez vous référer à la carte ci-dessous et configurer des règles de redirection de domaine différentes pour les 8 URL différentes d'IPCheck.ing dans votre logiciel proxy. Généralement, les paramètres de règles peuvent utiliser un format comme : DOMAIN, ptest-3.ipcheck.ing, POLICY. Le format spécifique peut varier en fonction du logiciel proxy que vous utilisez.",
+    "Note": "Le test de règles est utilisé pour déterminer si les paramètres de règles basées sur le nom de domaine de votre logiciel proxy sont corrects. Avant de procéder au test, veuillez vous référer à la carte ci-dessous et configurer des règles de redirection de domaine différentes pour les 8 URL différentes d'ElinksNet dans votre logiciel proxy. Généralement, les paramètres de règles peuvent utiliser un format comme : DOMAIN, ptest-3.ipcheck.ing, POLICY. Le format spécifique peut varier en fonction du logiciel proxy que vous utilisez.",
     "StatusWait": "En attente du test ou erreur de connexion",
     "StatusError": "Erreur de test",
     "Country": "Région de proxy",
@@ -586,7 +586,7 @@
     "id": "pingtest",
     "Title": "Test de latence mondiale",
     "Note": "Le test de ping est un outil réseau utilisé pour mesurer le temps aller-retour des paquets de données de votre appareil vers des cibles spécifiques (dans ce cas, nos serveurs situés sur différents continents et régions). Il s'agit d'une mesure clé pour évaluer les performances du réseau.",
-    "Note2": "Dans ce processus, IPCheck.ing envoie de petits paquets de données depuis des serveurs du monde entier vers votre adresse IP et mesure le temps qu'il faut à ces paquets pour voyager du serveur à votre appareil et vice versa. Grâce à ces tests de ping depuis différentes localisations géographiques, vous pouvez obtenir une vue complète de la vitesse et de la stabilité de la connexion de votre appareil au réseau mondial.",
+    "Note2": "Dans ce processus, ElinksNet envoie de petits paquets de données depuis des serveurs du monde entier vers votre adresse IP et mesure le temps qu'il faut à ces paquets pour voyager du serveur à votre appareil et vice versa. Grâce à ces tests de ping depuis différentes localisations géographiques, vous pouvez obtenir une vue complète de la vitesse et de la stabilité de la connexion de votre appareil au réseau mondial.",
     "Note3": "Veuillez sélectionner votre adresse IP pour le test.",
     "SelectIP": "Choisissez un IP",
     "Region": "Région",
@@ -680,7 +680,7 @@
   },
   "about": {
     "Title": "À propos",
-    "product1": "IPCheck.ing est une boîte à outils IP gratuite qui vous aide à vérifier vos informations IP, tester la disponibilité des sites web, examiner les informations de sortie DNS, effectuer des tests de vitesse, des tests de latence mondiale, des tests MTR, et plus encore.",
+    "product1": "ElinksNet est une boîte à outils IP gratuite qui vous aide à vérifier vos informations IP, tester la disponibilité des sites web, examiner les informations de sortie DNS, effectuer des tests de vitesse, des tests de latence mondiale, des tests MTR, et plus encore.",
     "product2": "Il s'agit d'un projet open-source, et vous pouvez consulter le code source en cliquant sur l'icône GitHub en bas de la page.",
     "product3": "Au départ, il s'agissait d'un projet personnel pour moi afin d'apprendre Vue.js et comment écrire du code en utilisant AI. Au fil du temps, il a gagné en popularité sur GitHub, j'ai donc effectué beaucoup de refactoring et ajouté de nombreuses fonctionnalités utiles. J'espère que vous l'apprécierez.",
     "meTitle": "À propos de moi",

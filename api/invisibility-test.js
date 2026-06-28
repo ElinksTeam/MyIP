@@ -1,4 +1,5 @@
 import { fetchUpstream } from '../common/fetch-with-timeout.js';
+import { getElinksNetApiConfig } from '../common/elinksnet-config.js';
 
 // If length is not 28 and is not a combination of letters and numbers, return false
 function isValidUserID(userID) {
@@ -24,14 +25,13 @@ export default async (req, res) => {
         return res.status(400).json({ error: 'Invalid ID' });
     }
 
-    const apikey = process.env.IPCHECKING_API_KEY;
+    const { endpoint, key: apikey } = getElinksNetApiConfig();
 
     if (!apikey) {
         return res.status(500).json({ error: 'API key is missing' });
     }
 
-    const apiEndpoint = process.env.IPCHECKING_API_ENDPOINT;
-    const url = new URL(`${apiEndpoint}/getpdresult/${id}?apikey=${apikey}`);
+    const url = new URL(`${endpoint}/getpdresult/${id}?apikey=${apikey}`);
 
     try {
         const apiResponse = await fetchUpstream(url, {

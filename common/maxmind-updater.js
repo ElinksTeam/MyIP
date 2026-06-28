@@ -96,7 +96,7 @@ export async function updateMaxMindDatabases({ reload } = {}) {
         return { updated: false, reason: 'locked' };
     }
 
-    const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'myip-maxmind-'));
+    const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'elinksnet-maxmind-'));
 
     try {
         const result = await downloadAndReplaceDatabases(dbDir, tempDir);

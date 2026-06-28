@@ -32,7 +32,14 @@ import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
 import { isValidIP } from '@/utils/valid-ip.js';
 import { transformDataFromIPapi } from '@/utils/transform-ip-data.js';
-import { getIPFromIPIP, getIPFromCloudflare_V4, getIPFromCloudflare_V6, getIPFromIPChecking64, getIPFromIPChecking4, getIPFromIPChecking6 } from '@/utils/getips';
+import {
+  getIPFromIPIP,
+  getIPFromCloudflare_V4,
+  getIPFromCloudflare_V6,
+  getIPFromElinksNetDualStack,
+  getIPFromElinksNetV4,
+  getIPFromElinksNetV6,
+} from '@/utils/getips';
 import { authenticatedFetch } from '@/utils/authenticated-fetch';
 import IPCard from './ip-infos/IPCard.vue';
 
@@ -71,12 +78,12 @@ const createDefaultCard = () => ({
 const ipDataCards = reactive([
   {
     ...createDefaultCard(),
-    id: "ipchecking_v4",
+    id: "elinksnet_v4",
     source: "ElinksNet IPv4",
   },
   {
     ...createDefaultCard(),
-    id: "ipchecking_v6",
+    id: "elinksnet_v6",
     source: "ElinksNet IPv6",
   },
   {
@@ -96,7 +103,7 @@ const ipDataCards = reactive([
   },
   {
     ...createDefaultCard(),
-    id: "ipchecking_v64",
+    id: "elinksnet_dual_stack",
     source: "ElinksNet IPv6/4",
   },
 ]);
@@ -130,7 +137,7 @@ const fetchIP = async (cardID, getFromSource) => {
     IPArray.value = [...IPArray.value, ip];
     await fetchIPDetails(cardID, ip);
   } else if (cardID === 1 || cardID === 3) {
-    // v6 cards in the new order: ipchecking_v6 (1), cloudflare_v6 (3)
+    // v6 cards in the new order: elinksnet_v6 (1), cloudflare_v6 (3)
     ipDataCards[cardID].ip = t('ipInfos.IPv6Error');
   } else {
     ipDataCards[cardID].ip = t('ipInfos.IPv4Error');
@@ -160,12 +167,12 @@ const trackFetchStatus = (status) => {
 // Check all IP addresses
 const checkAllIPs = async () => {
   const ipFunctions = [
-    () => fetchIP(0, getIPFromIPChecking4),
-    () => fetchIP(1, getIPFromIPChecking6),
+    () => fetchIP(0, getIPFromElinksNetV4),
+    () => fetchIP(1, getIPFromElinksNetV6),
     () => fetchIP(2, getIPFromCloudflare_V4),
     () => fetchIP(3, getIPFromCloudflare_V6),
     () => fetchIP(4, getIPFromIPIP),
-    () => fetchIP(5, getIPFromIPChecking64),
+    () => fetchIP(5, getIPFromElinksNetDualStack),
   ];
 
   // Limit the number of functions to execute to the length of ipCardsToShow
@@ -292,10 +299,10 @@ const refreshCard = (card, index) => {
   clearCardData(card);
   switch (index) {
     case 0:
-      fetchIP(0, getIPFromIPChecking4);
+      fetchIP(0, getIPFromElinksNetV4);
       break;
     case 1:
-      fetchIP(1, getIPFromIPChecking6);
+      fetchIP(1, getIPFromElinksNetV6);
       break;
     case 2:
       fetchIP(2, getIPFromCloudflare_V4);
@@ -307,7 +314,7 @@ const refreshCard = (card, index) => {
       fetchIP(4, getIPFromIPIP);
       break;
     case 5:
-      fetchIP(5, getIPFromIPChecking64);
+      fetchIP(5, getIPFromElinksNetDualStack);
       break;
     default:
       console.error("Undefind Source:");

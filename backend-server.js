@@ -12,7 +12,7 @@ import mapHandler from './api/google-map.js';
 // IP Info
 import ipinfoHandler from './api/ipinfo-io.js';
 import ipapicomHandler from './api/ipapi-com.js';
-import ipCheckingHandler from './api/ipcheck-ing.js';
+import elinksNetIpHandler from './api/elinksnet-ip.js';
 import ipapiisHandler from './api/ipapi-is.js';
 import ip2locationHandler from './api/ip2location-io.js';
 import ipsbHandler from './api/ip-sb.js';
@@ -157,7 +157,9 @@ app.use('/api', requireReferer);
 app.get('/api/map', mapHandler);
 app.get('/api/ipinfo', requireValidIP(), ipinfoHandler);
 app.get('/api/ipapicom', requireValidIP(), ipapicomHandler);
-app.get('/api/ipchecking', requireValidIP(), ipCheckingHandler);
+app.get('/api/elinksnet', requireValidIP(), elinksNetIpHandler);
+// Compatibility alias for older clients.
+app.get('/api/ipchecking', requireValidIP(), elinksNetIpHandler);
 app.get('/api/ipsb', requireValidIP(), ipsbHandler);
 app.get('/api/cfradar', cfHander);
 app.get('/api/dnsresolver', dnsResolver);

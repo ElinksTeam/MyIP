@@ -19,8 +19,8 @@ api/
 ├── configs.js                   ← /api/configs — reports which env-gated features are on
 ├── google-map.js                ← /api/map — Google Static Maps image proxy (binary stream)
 ├── ipinfo-io.js, ipapi-com.js, ipapi-is.js, ip2location-io.js, ip-sb.js,
-│   ipcheck-ing.js, maxmind.js   ← IP geolocation source handlers (route per source)
-├── invisibility-test.js         ← /api/invisibility — proxy to private IPCheck.ing endpoint
+│   elinksnet-ip.js, maxmind.js  ← IP geolocation source handlers (route per source)
+├── invisibility-test.js         ← /api/invisibility — proxy to private ElinksNet endpoint
 ├── mac-checker.js               ← /api/macchecker — MAC vendor lookup
 ├── get-whois.js                 ← /api/whois — whoiser wrapper
 ├── cf-radar.js                  ← /api/cfradar — ASN details via Cloudflare Radar
@@ -65,7 +65,7 @@ common/
 
 ### Private-API header pass-through (intentional exception)
 
-Handlers that call our own private IPCheck.ing API (`ipcheck-ing.js`, `invisibility-test.js`, `update-user-achievement.js`, `get-user-info.js`) forward the caller's request headers to the upstream:
+Handlers that call our own private ElinksNet API (`elinksnet-ip.js`, `invisibility-test.js`, `update-user-achievement.js`, `get-user-info.js`) forward the caller's request headers to the upstream:
 
 ```js
 const apiResponse = await fetchUpstream(url, { headers: { ...req.headers } });

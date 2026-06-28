@@ -1,10 +1,11 @@
 import { fetchUpstream } from '../common/fetch-with-timeout.js';
+import { getElinksNetApiConfig } from '../common/elinksnet-config.js';
 
 export default async (req, res) => {
     // IP presence + validity guaranteed by requireValidIP middleware.
     const ipAddress = req.query.ip;
 
-    const key = process.env.IPCHECKING_API_KEY;
+    const { endpoint, key } = getElinksNetApiConfig();
 
     if (!key) {
         return res.status(500).json({ error: 'API key is missing' });
@@ -12,8 +13,7 @@ export default async (req, res) => {
 
     // Build request
     const lang = req.query.lang || 'en';
-    const apiEndpoint = process.env.IPCHECKING_API_ENDPOINT;
-    const url = new URL(`${apiEndpoint}/ipinfo?key=${key}&ip=${ipAddress}&lang=${lang}`);
+    const url = new URL(`${endpoint}/ipinfo?key=${key}&ip=${ipAddress}&lang=${lang}`);
 
     try {
         const apiResponse = await fetchUpstream(url, {

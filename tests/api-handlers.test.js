@@ -20,7 +20,7 @@ import cfRadarHandler from '../api/cf-radar.js';
 import invisibilityHandler from '../api/invisibility-test.js';
 import macCheckerHandler from '../api/mac-checker.js';
 import updateAchievementHandler from '../api/update-user-achievement.js';
-import ipcheckIngHandler from '../api/ipcheck-ing.js';
+import elinksNetIpHandler from '../api/elinksnet-ip.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -46,6 +46,7 @@ function createResponse() {
 
 // Back up env keys touched by any test here; restore after each case.
 const ENV_KEYS = [
+    'ELINKSNET_API_KEY', 'ELINKSNET_API_ENDPOINT',
     'IPCHECKING_API_KEY', 'IPCHECKING_API_ENDPOINT',
     'MAC_LOOKUP_API_KEY', 'IPAPIIS_API_KEY',
     'IPINFO_API_TOKEN', 'IP2LOCATION_API_KEY',
@@ -79,7 +80,7 @@ describe('configs handler', () => {
         const res = createResponse();
         configsHandler(createRequest(), res);
         assert.equal(res.statusCode, 200);
-        for (const key of ['map', 'ipInfo', 'ipChecking', 'ip2location', 'originalSite', 'cloudFlare', 'ipapiis']) {
+        for (const key of ['map', 'ipInfo', 'elinksNet', 'ip2location', 'originalSite', 'cloudFlare', 'ipapiis']) {
             assert.equal(typeof res.body[key], 'boolean');
         }
         assert.equal(res.body.originalSite, false);
@@ -192,6 +193,7 @@ describe('invisibility-test handler', () => {
     });
 
     it('reports missing API key after param validation passes', async () => {
+        delete process.env.ELINKSNET_API_KEY;
         delete process.env.IPCHECKING_API_KEY;
         const res = createResponse();
         await invisibilityHandler(createRequest({ query: { id: 'a'.repeat(28) } }), res);
@@ -229,6 +231,7 @@ describe('update-user-achievement handler', () => {
     });
 
     it('reports missing API key before forwarding', async () => {
+        delete process.env.ELINKSNET_API_KEY;
         delete process.env.IPCHECKING_API_KEY;
         const res = createResponse();
         await updateAchievementHandler(createRequest({ method: 'PUT', body: { name: 'X' } }), res);
@@ -241,6 +244,7 @@ describe('update-user-achievement handler', () => {
 
 describe('get-user-info handler', () => {
     it('reports missing API key before fetch', async () => {
+        delete process.env.ELINKSNET_API_KEY;
         delete process.env.IPCHECKING_API_KEY;
         const res = createResponse();
         await getUserInfoHandler(createRequest(), res);
@@ -249,13 +253,14 @@ describe('get-user-info handler', () => {
     });
 });
 
-// -- ipcheck-ing handler --------------------------------------------------
+// -- ElinksNet IP handler -------------------------------------------------
 
-describe('ipcheck-ing handler', () => {
+describe('ElinksNet IP handler', () => {
     it('reports missing API key after IP passes validation', async () => {
+        delete process.env.ELINKSNET_API_KEY;
         delete process.env.IPCHECKING_API_KEY;
         const res = createResponse();
-        await ipcheckIngHandler(createRequest({ query: { ip: '1.1.1.1' } }), res);
+        await elinksNetIpHandler(createRequest({ query: { ip: '1.1.1.1' } }), res);
         assert.equal(res.statusCode, 500);
         assert.deepEqual(res.body, { error: 'API key is missing' });
     });

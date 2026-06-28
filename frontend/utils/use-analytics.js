@@ -85,7 +85,7 @@ const analytics = {
     }
 };
 
-// Compatible with MyIP old version helper
+// Compatibility helper for earlier ElinksNet releases.
 function trackEvent(category, action, label) {
     analytics.track(action, { category, label });
 }

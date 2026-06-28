@@ -57,7 +57,7 @@
         </template>
     </dl>
 
-    <!-- Advanced block (IPCheck.ing source only): locked CTA for signed-out, label-value grid for signed-in. -->
+    <!-- Advanced block (ElinksNet source only): locked CTA for signed-out, label-value grid for signed-in. -->
     <div v-if="!collapsed" v-show="showAdvancedBlock"
         class="px-4 pb-3 border-t pt-3 space-y-2.5">
 
@@ -232,7 +232,7 @@ const props = defineProps({
 const isAsnOpen = ref(false);
 const isMapDialogOpen = ref(false);
 
-// Advanced block only surfaces for the IPCheck.ing source (ipGeoSource === 0).
+// Advanced block only surfaces for the ElinksNet source (ipGeoSource === 0).
 const showAdvancedBlock = computed(() => props.ipGeoSource === 0 && Boolean(props.data));
 
 // Map button is gated on the deployment having a Google Maps key (configs.map) + location data.

@@ -1,8 +1,8 @@
 import { isValidIP } from '@/utils/valid-ip.js';
 import { fetchWithTimeout } from '@/utils/fetch-with-timeout.js';
 
-// Get IPv6/4 address from IPCheck.ing
-const getIPFromIPChecking64 = async (originalSite) => {
+// Get a dual-stack address from the ElinksNet edge endpoint.
+const getIPFromElinksNetDualStack = async (originalSite) => {
     try {
         let ip;
         originalSite ? ip = await getFromJson() : ip = await getFromTrace();
@@ -39,7 +39,7 @@ const getFromJson = async () => {
         const ip = data.ip;
         return ip;
     } catch (error) {
-        console.error("Error fetching IP from IPCheck.ing IPv6 JSON:", error);
+        console.error("Error fetching IP from ElinksNet IPv6 JSON:", error);
     }
     return getFromTrace();
 };
@@ -56,9 +56,9 @@ const getFromTrace = async () => {
         }
         return ip;
     } catch (error) {
-        console.error("Error fetching IP from IPCheck.ing IPv6 Trace:", error);
+        console.error("Error fetching IP from ElinksNet IPv6 Trace:", error);
         throw error;
     }
 };
 
-export { getIPFromIPChecking64 };
+export { getIPFromElinksNetDualStack };

@@ -140,8 +140,8 @@ Téléchargez `GeoLite2-City.mmdb` et `GeoLite2-ASN.mmdb` depuis votre compte Ma
 | `SECURITY_BLACKLIST_LOG_FILE_PATH` | Optionnel | `"logs/blacklist-ip.log"` | Enregistre les IP ayant déclenché les limites |
 | `ALLOWED_DOMAINS` | Optionnel | `""` | Domaines autorisés, séparés par des virgules, pour éviter les abus de l'API backend |
 | `GOOGLE_MAP_API_KEY` | Optionnel | `""` | Clé API Google Maps pour afficher l'emplacement de l'IP |
-| `IPCHECKING_API_ENDPOINT` | Optionnel | `""` | Endpoint de l'API IPCheck.ing |
-| `IPCHECKING_API_KEY` | Optionnel | `""` | Clé API IPCheck.ing |
+| `ELINKSNET_API_ENDPOINT` | Optionnel | `""` | Endpoint privé de l'API ElinksNet |
+| `ELINKSNET_API_KEY` | Optionnel | `""` | Clé privée de l'API ElinksNet |
 | `IPINFO_API_TOKEN` | Optionnel | `""` | Jeton API IPInfo.io |
 | `IPAPIIS_API_KEY` | Optionnel | `""` | Clé API IPAPI.is |
 | `IP2LOCATION_API_KEY` | Optionnel | `""` | Clé API IP2Location.io |

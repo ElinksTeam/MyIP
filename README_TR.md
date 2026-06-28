@@ -125,8 +125,8 @@ MaxMind hesabınızdan `GeoLite2-City.mmdb` ve `GeoLite2-ASN.mmdb` dosyalarını
 | `SECURITY_BLACKLIST_LOG_FILE_PATH` | İsteğe bağlı | `"logs/blacklist-ip.log"` | Hız sınırını tetikleyen IP'leri kaydeder |
 | `ALLOWED_DOMAINS` | İsteğe bağlı | `""` | Backend API kötüye kullanımını önlemek için izin verilen alan adları |
 | `GOOGLE_MAP_API_KEY` | İsteğe bağlı | `""` | IP konumunu haritada göstermek için Google Maps API Key |
-| `IPCHECKING_API_ENDPOINT` | İsteğe bağlı | `""` | IPCheck.ing API endpoint'i |
-| `IPCHECKING_API_KEY` | İsteğe bağlı | `""` | IPCheck.ing API Key |
+| `ELINKSNET_API_ENDPOINT` | İsteğe bağlı | `""` | Özel ElinksNet API uç noktası |
+| `ELINKSNET_API_KEY` | İsteğe bağlı | `""` | Özel ElinksNet API anahtarı |
 | `IPINFO_API_TOKEN` | İsteğe bağlı | `""` | IPInfo.io API Token |
 | `IPAPIIS_API_KEY` | İsteğe bağlı | `""` | IPAPI.is API Key |
 | `IP2LOCATION_API_KEY` | İsteğe bağlı | `""` | IP2Location.io API Key |

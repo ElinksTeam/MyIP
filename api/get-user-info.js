@@ -1,15 +1,15 @@
 import { fetchUpstream } from '../common/fetch-with-timeout.js';
+import { getElinksNetApiConfig } from '../common/elinksnet-config.js';
 
 export default async (req, res) => {
-    const key = process.env.IPCHECKING_API_KEY;
+    const { endpoint, key } = getElinksNetApiConfig();
 
     if (!key) {
         return res.status(500).json({ error: 'API key is missing' });
     }
 
     // Build request
-    const apiEndpoint = process.env.IPCHECKING_API_ENDPOINT;
-    const url = new URL(`${apiEndpoint}/userinfo?key=${key}`);
+    const url = new URL(`${endpoint}/userinfo?key=${key}`);
 
     try {
         const apiResponse = await fetchUpstream(url, {
