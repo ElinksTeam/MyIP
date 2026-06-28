@@ -1,13 +1,14 @@
-# api/AGENTS.md
+# server/handlers/AGENTS.md
 
-Conventions for Express 5 back-end handlers under `api/` and the shared back-end
-code under `common/`. See ../AGENTS.md for universal project rules
+Conventions for Express 5 back-end handlers under `server/handlers/` and the shared back-end
+code under `common/`. See ../../AGENTS.md for universal project rules
 (language, commits, testing expectations).
 
 ## Overview
 
-The Express app is defined in `backend-server.js` at the repo root. Every route
-is wired there and delegated to a handler module under `api/`. Shared code
+The shared Express app is defined in `server.js` at the repo root, while
+`backend-server.js` starts the local listener. Every route is wired in
+`server.js` and delegated to a handler module under `server/handlers/`. Shared code
 (referer check, IP validator, fetch helper, Express middleware, MaxMind service)
 lives under `common/` and is also consumed by the frontend where it makes sense
 (e.g. `valid-ip.js`, `fetch-with-timeout.js`).
@@ -15,7 +16,7 @@ lives under `common/` and is also consumed by the frontend where it makes sense
 ## Project layout
 
 ```
-api/
+server/handlers/
 ├── configs.js                   ← /api/configs — reports which env-gated features are on
 ├── google-map.js                ← /api/map — Google Static Maps image proxy (binary stream)
 ├── ipinfo-io.js, ipapi-com.js, ipapi-is.js, ip2location-io.js, ip-sb.js,
@@ -44,7 +45,7 @@ common/
 - **Every upstream HTTP call uses `fetchUpstream`** from `common/fetch-with-timeout.js`:
 
   ```js
-  import { fetchUpstream } from '../common/fetch-with-timeout.js';
+  import { fetchUpstream } from '../../common/fetch-with-timeout.js';
 
   const apiRes = await fetchUpstream(url);
   const json = await apiRes.json();
@@ -59,9 +60,9 @@ common/
 
 ### Guards live in middleware, not in handlers
 
-- `requireReferer` is mounted globally on `/api/*` in `backend-server.js`. It rejects any request whose `Referer` header isn't on the `ALLOWED_DOMAINS` list (plus `localhost` always). **Handlers must not repeat the referer check.**
+- `requireReferer` is mounted globally on `/api/*` in `server.js`. It rejects any request whose `Referer` header isn't on the `ALLOWED_DOMAINS` list (plus `localhost` always). **Handlers must not repeat the referer check.**
 - `requireValidIP()` is attached per-route to every handler that takes `?ip=`. It rejects missing or malformed IPs before the handler runs. **Handlers must not repeat the IP check** — inside the handler body, `req.query.ip` is already known to be a well-formed string.
-- If you add a new handler that needs a different-shape param guard, add the guard to `common/guards.js` and attach it in `backend-server.js` rather than open-coding the check in the handler.
+- If you add a new handler that needs a different-shape param guard, add the guard to `common/guards.js` and attach it in `server.js` rather than open-coding the check in the handler.
 
 ### Private-API header pass-through (intentional exception)
 

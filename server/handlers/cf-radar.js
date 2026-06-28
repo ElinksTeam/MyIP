@@ -1,4 +1,4 @@
-import { fetchUpstream } from '../common/fetch-with-timeout.js';
+import { fetchUpstream } from '../../common/fetch-with-timeout.js';
 
 // Common fetch request function
 async function fetchFromCloudflare(endpoint) {

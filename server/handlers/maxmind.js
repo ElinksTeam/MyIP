@@ -1,4 +1,4 @@
-import { lookupMaxMind } from '../common/maxmind-service.js';
+import { lookupMaxMind } from '../../common/maxmind-service.js';
 
 export default (req, res) => {
     // IP presence + validity guaranteed by requireValidIP middleware.

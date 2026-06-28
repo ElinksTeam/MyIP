@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream';
-import { fetchUpstream } from '../common/fetch-with-timeout.js';
+import { fetchUpstream } from '../../common/fetch-with-timeout.js';
 
 // Validate request legitimacy
 function isValidRequest(req) {

@@ -1,5 +1,5 @@
 import whoiser from 'whoiser';
-import { isValidIP } from '../common/valid-ip.js';
+import { isValidIP } from '../../common/valid-ip.js';
 
 function isValidDomain(domain) {
     const domainPattern = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;

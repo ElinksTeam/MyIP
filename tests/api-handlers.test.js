@@ -1,4 +1,4 @@
-// Smoke coverage for every Express handler under api/.
+// Smoke coverage for every Express handler under server/handlers/.
 // Verifies method gating, param-presence checks, param-validity checks,
 // and the "API key missing" early-return paths. We never hit the real
 // upstream APIs — every assertion is on a branch that returns before
@@ -11,16 +11,16 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 
-import configsHandler from '../api/configs.js';
-import googleMapHandler from '../api/google-map.js';
-import dnsResolverHandler from '../api/dns-resolver.js';
-import getUserInfoHandler from '../api/get-user-info.js';
-import getWhoisHandler from '../api/get-whois.js';
-import cfRadarHandler from '../api/cf-radar.js';
-import invisibilityHandler from '../api/invisibility-test.js';
-import macCheckerHandler from '../api/mac-checker.js';
-import updateAchievementHandler from '../api/update-user-achievement.js';
-import elinksNetIpHandler from '../api/elinksnet-ip.js';
+import configsHandler from '../server/handlers/configs.js';
+import googleMapHandler from '../server/handlers/google-map.js';
+import dnsResolverHandler from '../server/handlers/dns-resolver.js';
+import getUserInfoHandler from '../server/handlers/get-user-info.js';
+import getWhoisHandler from '../server/handlers/get-whois.js';
+import cfRadarHandler from '../server/handlers/cf-radar.js';
+import invisibilityHandler from '../server/handlers/invisibility-test.js';
+import macCheckerHandler from '../server/handlers/mac-checker.js';
+import updateAchievementHandler from '../server/handlers/update-user-achievement.js';
+import elinksNetIpHandler from '../server/handlers/elinksnet-ip.js';
 
 // -- shared test utilities ------------------------------------------------
 

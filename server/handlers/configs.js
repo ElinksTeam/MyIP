@@ -1,4 +1,4 @@
-import { getElinksNetApiConfig } from '../common/elinksnet-config.js';
+import { getElinksNetApiConfig } from '../../common/elinksnet-config.js';
 
 // Validate environment variables exist to enable/disable frontend features
 export default (req, res) => {

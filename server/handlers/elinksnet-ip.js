@@ -1,5 +1,5 @@
-import { fetchUpstream } from '../common/fetch-with-timeout.js';
-import { getElinksNetApiConfig } from '../common/elinksnet-config.js';
+import { fetchUpstream } from '../../common/fetch-with-timeout.js';
+import { getElinksNetApiConfig } from '../../common/elinksnet-config.js';
 
 export default async (req, res) => {
     // IP presence + validity guaranteed by requireValidIP middleware.
