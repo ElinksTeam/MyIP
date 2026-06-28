@@ -7,8 +7,8 @@
 
 [![Mentioned in Awesome Self Hosted](https://awesome.re/mentioned-badge.svg)](https://github.com/awesome-selfhosted/awesome-selfhosted)
 
-![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
-![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/ElinksNet)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/ElinksNet)
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
 🇺🇸 [English](README.md) | 🇨🇳 [简体中文](README_ZH.md) | 🇫🇷 [Français](README_FR.md) | 🇹🇷 [Türkçe](README_TR.md)
@@ -70,8 +70,8 @@ docker run -d \
 ### Docker Compose
 
 ```bash
-git clone https://github.com/ElinksTeam/MyIP.git
-cd MyIP
+git clone https://github.com/ElinksTeam/ElinksNet.git
+cd ElinksNet
 docker compose up -d
 ```
 
@@ -80,8 +80,8 @@ docker compose up -d
 Use this option if the public Docker images have not been published yet.
 
 ```bash
-git clone https://github.com/ElinksTeam/MyIP.git
-cd MyIP
+git clone https://github.com/ElinksTeam/ElinksNet.git
+cd ElinksNet
 docker build -t elinksnet .
 docker run -d -p 18966:18966 --name elinksnet --restart unless-stopped elinksnet
 ```
@@ -93,8 +93,8 @@ Make sure you have Node.js installed.
 Clone the code:
 
 ```bash
-git clone https://github.com/ElinksTeam/MyIP.git
-cd MyIP
+git clone https://github.com/ElinksTeam/ElinksNet.git
+cd ElinksNet
 ```
 
 Install and build:

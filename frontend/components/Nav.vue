@@ -32,7 +32,7 @@
         <a :href="t('page.footerLink')" target="_blank" rel="noopener"
           class="ml-2 inline-flex items-center hover:opacity-80 transition-opacity"
           aria-label="View source on GitHub">
-          <img src="https://img.shields.io/github/stars/ElinksTeam/MyIP"
+          <img src="https://img.shields.io/github/stars/ElinksTeam/ElinksNet"
             alt="GitHub stars" class="h-5">
         </a>
       </div>

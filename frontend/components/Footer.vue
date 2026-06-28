@@ -167,7 +167,7 @@ const sheetBody = ref(null);
 
 const personalLinks = [
   { href: 'https://github.com/ElinksTeam', labelKey: 'about.personal' },
-  { href: 'https://github.com/ElinksTeam/MyIP', labelKey: 'about.blog' },
+  { href: 'https://github.com/ElinksTeam/ElinksNet', labelKey: 'about.blog' },
 ];
 
 const thanksList = [

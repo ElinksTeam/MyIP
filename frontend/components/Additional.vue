@@ -45,7 +45,7 @@
     <!-- Elinks project links -->
     <div class="mx-auto max-w-3xl px-4">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <a href="https://github.com/ElinksTeam/MyIP" target="_blank" rel="noopener"
+            <a href="https://github.com/ElinksTeam/ElinksNet" target="_blank" rel="noopener"
                 class="elinks-link-card"
                 @click="trackEvent('Additional', 'AdditionalClick', 'GitHub')">
                 <Github class="size-5 text-[#165dff]" />

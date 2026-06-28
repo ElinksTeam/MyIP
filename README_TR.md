@@ -5,8 +5,8 @@
 <h1>ElinksNet</h1>
 <p><strong>IP ve Ağ Araç Kutusu</strong></p>
 
-![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/MyIP)
-![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/MyIP)
+![GitHub Repo stars](https://img.shields.io/github/stars/ElinksTeam/ElinksNet)
+![GitHub forks](https://img.shields.io/github/forks/ElinksTeam/ElinksNet)
 ![PWA](https://img.shields.io/badge/PWA-Supported-blue)
 
 English: [README.md](README.md) | 中文: [README_ZH.md](README_ZH.md) | Français: [README_FR.md](README_FR.md) | Türkçe: [README_TR.md](README_TR.md)
@@ -55,8 +55,8 @@ docker run -d \
 ### Docker Compose
 
 ```bash
-git clone https://github.com/ElinksTeam/MyIP.git
-cd MyIP
+git clone https://github.com/ElinksTeam/ElinksNet.git
+cd ElinksNet
 docker compose up -d
 ```
 
@@ -65,8 +65,8 @@ docker compose up -d
 Genel Docker imajları henüz yayınlanmadıysa bu yöntemi kullanabilirsiniz.
 
 ```bash
-git clone https://github.com/ElinksTeam/MyIP.git
-cd MyIP
+git clone https://github.com/ElinksTeam/ElinksNet.git
+cd ElinksNet
 docker build -t elinksnet .
 docker run -d -p 18966:18966 --name elinksnet --restart unless-stopped elinksnet
 ```
@@ -76,8 +76,8 @@ docker run -d -p 18966:18966 --name elinksnet --restart unless-stopped elinksnet
 Node.js kurulu olduğundan emin olun.
 
 ```bash
-git clone https://github.com/ElinksTeam/MyIP.git
-cd MyIP
+git clone https://github.com/ElinksTeam/ElinksNet.git
+cd ElinksNet
 npm install && npm run build
 npm start
 ```
