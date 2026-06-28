@@ -15,10 +15,7 @@ const getIPFromElinksNetV6 = async (originalSite) => {
             };
         } else {
             console.error("Invalid IP from ElinksNet IPv6:", ip);
-            return {
-                ip: null,
-                source: source
-            };
+            throw new Error('ElinksNet IPv6 returned an invalid address');
         }
     } catch (error) {
         console.error("Error fetching IP from ElinksNet IPv6:", error);

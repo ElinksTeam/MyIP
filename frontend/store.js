@@ -132,8 +132,12 @@ export const useMainStore = defineStore('main', {
       let preferencesToStore;
 
       if (storedPreferences) {
-        const currentPreferences = JSON.parse(storedPreferences);
-        preferencesToStore = { ...defaultPreferences, ...currentPreferences };
+        try {
+          const currentPreferences = JSON.parse(storedPreferences);
+          preferencesToStore = { ...defaultPreferences, ...currentPreferences };
+        } catch {
+          preferencesToStore = defaultPreferences;
+        }
       } else {
         preferencesToStore = defaultPreferences;
       }
@@ -141,19 +145,39 @@ export const useMainStore = defineStore('main', {
       localStorage.setItem('userPreferences', JSON.stringify(preferencesToStore));
       this.setPreferences(preferencesToStore);
     },
+    applyIpSourceAvailability(configs = {}) {
+      const configuredSources = {
+        0: Boolean(configs.elinksNet),
+        1: Boolean(configs.ipInfo),
+        3: Boolean(configs.ipapiis),
+        4: Boolean(configs.ip2location),
+        6: Boolean(configs.maxmind),
+      };
+
+      for (const [id, enabled] of Object.entries(configuredSources)) {
+        this.updateIPDBs({ id: Number(id), enabled });
+      }
+
+      const selectedSource = this.ipDBs.find(db => db.id === this.userPreferences.ipGeoSource);
+      if (!selectedSource?.enabled) {
+        this.updatePreference('ipGeoSource', 7);
+      }
+    },
     // fetch configs from server
-    fetchConfigs() {
-      fetch('/api/configs')
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          this.configs = data;
-        })
-        .catch(error => console.error('Fetching configs failed: ', error));
+    async fetchConfigs() {
+      try {
+        const response = await fetch('/api/configs', { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        this.configs = await response.json();
+        this.applyIpSourceAvailability(this.configs);
+        return this.configs;
+      } catch (error) {
+        console.error('Fetching configs failed: ', error);
+        this.applyIpSourceAvailability({});
+        return {};
+      }
     },
     // Change Section
     changeSection(section) {

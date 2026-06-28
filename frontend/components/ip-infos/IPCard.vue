@@ -97,7 +97,7 @@ defineEmits(['refresh-card']);
 
 // Three state check: has data (normal) / error / loading
 const hasData = computed(() =>
-    Boolean(props.card.asn) || props.card.ip === '2001:4860:4860::8888'
+    isValidIP(props.card.ip)
 );
 const isErrorState = computed(() =>
     props.card.ip === t('ipInfos.IPv4Error') || props.card.ip === t('ipInfos.IPv6Error')

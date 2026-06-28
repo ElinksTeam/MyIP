@@ -129,24 +129,32 @@ let ipDataCache = new Map();
 
 // Shared method to get IP address
 const fetchIP = async (cardID, getFromSource) => {
-  const { ip, source } = await getFromSource(configs.value.originalSite);
-  let fetchingStatus = false;
-  if (ip !== null) {
-    ipDataCards[cardID].ip = ip;
-    ipDataCards[cardID].source = source;
-    IPArray.value = [...IPArray.value, ip];
-    await fetchIPDetails(cardID, ip);
-  } else if (cardID === 1 || cardID === 3) {
-    // v6 cards in the new order: elinksnet_v6 (1), cloudflare_v6 (3)
-    ipDataCards[cardID].ip = t('ipInfos.IPv6Error');
-  } else {
-    ipDataCards[cardID].ip = t('ipInfos.IPv4Error');
+  try {
+    const { ip, source } = await getFromSource(configs.value.originalSite);
+    if (isValidIP(ip)) {
+      ipDataCards[cardID].ip = ip;
+      ipDataCards[cardID].source = source;
+      IPArray.value = [...IPArray.value, ip];
+      try {
+        await fetchIPDetails(cardID, ip);
+      } catch (error) {
+        // Keep the valid IP visible even if every optional geo provider fails.
+        console.error(`IP details unavailable for card ${cardID}:`, error);
+      }
+    } else if (cardID === 1 || cardID === 3) {
+      ipDataCards[cardID].ip = t('ipInfos.IPv6Error');
+    } else {
+      ipDataCards[cardID].ip = t('ipInfos.IPv4Error');
+    }
+  } catch (error) {
+    console.error(`IP detection failed for card ${cardID}:`, error);
+    ipDataCards[cardID].ip = cardID === 1 || cardID === 3
+      ? t('ipInfos.IPv6Error')
+      : t('ipInfos.IPv4Error');
+  } finally {
+    fetchStatus[cardID] = { [cardID]: true };
+    trackFetchStatus(fetchStatus);
   }
-  // Always return true, even if fetching IP fails
-  // for tracking fetch status
-  fetchingStatus = true;
-  fetchStatus[cardID] = { [cardID]: fetchingStatus };
-  trackFetchStatus(fetchStatus);
 };
 
 // Report data fetch status, and send to store

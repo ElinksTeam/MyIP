@@ -122,7 +122,7 @@ const openModal = () => onOpenChange(true);
 const fetchIPForModal = async (ip, sourceID = null) => {
     let selectedLang = lang.value === 'zh' ? 'zh-CN' : lang.value;
     sourceID = ipGeoSource.value;
-    const sources = store.ipDBs;
+    const sources = store.ipDBs.filter(source => source.enabled);
 
     for (const source of sources) {
         if (sourceID && source.id !== sourceID) continue;

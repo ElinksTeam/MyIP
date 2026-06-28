@@ -1,6 +1,6 @@
 // Service Worker configuration
 
-import { CacheFirst, ExpirationPlugin, NetworkFirst, Serwist, StaleWhileRevalidate } from 'serwist';
+import { CacheFirst, ExpirationPlugin, NetworkFirst, Serwist } from 'serwist';
 
 const serwist = new Serwist({
     precacheEntries: self.__SW_MANIFEST,
@@ -43,18 +43,6 @@ const serwist = new Serwist({
                     new ExpirationPlugin({
                         maxEntries: 60,
                         maxAgeSeconds: 7 * 24 * 60 * 60,
-                    }),
-                ],
-            }),
-        },
-        {
-            matcher: /\.(?:js|css)$/,
-            handler: new StaleWhileRevalidate({
-                cacheName: 'assets',
-                plugins: [
-                    new ExpirationPlugin({
-                        maxEntries: 30,
-                        maxAgeSeconds: 3 * 24 * 60 * 60,
                     }),
                 ],
             }),

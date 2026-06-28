@@ -82,8 +82,7 @@
                             <SelectValue>{{ currentIpDB?.text || '—' }}</SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem v-for="ipdb in ipDBs" :key="ipdb.id" :value="String(ipdb.id)"
-                                :disabled="!ipdb.enabled" :class="{ 'line-through cursor-not-allowed': !ipdb.enabled }">
+                            <SelectItem v-for="ipdb in availableIpDBs" :key="ipdb.id" :value="String(ipdb.id)">
                                 {{ ipdb.text }}
                             </SelectItem>
                         </SelectContent>
@@ -149,9 +148,9 @@ const { t } = useI18n();
 const store = useMainStore();
 const isDarkMode = computed(() => store.isDarkMode);
 const isMobile = computed(() => store.isMobile);
-const configs = computed(() => store.configs);
 const userPreferences = computed(() => store.userPreferences);
 const ipDBs = computed(() => store.ipDBs);
+const availableIpDBs = computed(() => store.ipDBs.filter(db => db.enabled));
 const isSignedIn = computed(() => store.isSignedIn);
 
 const isOpen = computed(() => store.openSheet === 'preferences');
@@ -222,16 +221,6 @@ const PWAColor = () => {
     backgroundColor.setAttribute('content', bgColor);
 };
 
-const updateIPDBs = () => {
-    if (configs.value && Object.keys(configs.value).length > 0) {
-        store.updateIPDBs({ id: 0, enabled: configs.value.elinksNet });
-        store.updateIPDBs({ id: 1, enabled: configs.value.ipInfo });
-        store.updateIPDBs({ id: 3, enabled: configs.value.ipapiis });
-        store.updateIPDBs({ id: 4, enabled: configs.value.ip2location });
-        store.updateIPDBs({ id: 6, enabled: configs.value.maxmind });
-    }
-};
-
 const prefTheme = (value) => {
     // Persist first so applyTheme() reads the new value, then apply.
     store.updatePreference('theme', value);
@@ -284,7 +273,6 @@ const prefipGeoSource = (value) => {
 onMounted(() => {
     mediaQueryList.addEventListener('change', handleMediaChange);
     applyTheme();
-    setTimeout(updateIPDBs, 4000);
 });
 
 // Clean up the OS listener if this component is ever torn down (it normally
