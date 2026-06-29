@@ -41,6 +41,8 @@ function createResponse() {
     return {
         statusCode: 200,
         body: undefined,
+        headers: {},
+        setHeader(name, value) { this.headers[name] = value; return this; },
         status(code) { this.statusCode = code; return this; },
         json(payload) { this.body = payload; return this; },
         send(payload) { this.body = payload; return this; },
@@ -136,8 +138,6 @@ describe('public CLI API handlers', () => {
 
     it('returns plain text by default and JSON on request', () => {
         const plain = createResponse();
-        plain.set = function set() { return this; };
-        plain.type = function type() { return this; };
         cliIpHandler({
             method: 'GET',
             headers: { 'x-forwarded-for': '1.1.1.1' },
@@ -147,7 +147,6 @@ describe('public CLI API handlers', () => {
         assert.equal(plain.body, '1.1.1.1\n');
 
         const json = createResponse();
-        json.set = function set() { return this; };
         cliIpHandler({
             method: 'GET',
             headers: { 'x-forwarded-for': '2001:4860:4860::8888' },

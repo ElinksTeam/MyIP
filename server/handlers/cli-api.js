@@ -20,11 +20,12 @@ export function cliIpHandler(req, res) {
     if (!isValidIP(ip)) {
         return res.status(503).json({ error: 'Client IP is unavailable' });
     }
-    res.set('Cache-Control', 'no-store');
+    res.setHeader('Cache-Control', 'no-store');
     if (req.query?.format === 'json') {
         return res.status(200).json({ ip });
     }
-    return res.status(200).type('text/plain').send(`${ip}\n`);
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    return res.status(200).send(`${ip}\n`);
 }
 
 export async function cliGeoHandler(req, res) {
@@ -38,7 +39,7 @@ export async function cliGeoHandler(req, res) {
     }
     try {
         const result = await lookupKeylessGeo(ip);
-        res.set('Cache-Control', 'no-store');
+        res.setHeader('Cache-Control', 'no-store');
         return res.status(200).json(result);
     } catch {
         return res.status(502).json({ error: 'Geolocation providers are unavailable' });
