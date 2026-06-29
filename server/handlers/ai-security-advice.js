@@ -7,6 +7,12 @@ const LANGUAGE_NAMES = {
     tr: 'Turkish',
     zh: 'Simplified Chinese',
 };
+const LANGUAGE_INSTRUCTIONS = {
+    en: 'Write every title and detail in natural English.',
+    fr: 'Écris chaque titre et chaque détail en français naturel.',
+    tr: 'Her başlığı ve açıklamayı doğal Türkçe yaz.',
+    zh: '所有标题和说明必须使用自然、完整的简体中文，不要使用英文缩写作为标题。示例标题：检查 DNS 泄漏、及时更新浏览器、加固家庭路由器、识别钓鱼网站。',
+};
 
 export default async function aiSecurityAdvice(req, res) {
     if (req.method !== 'POST') {
@@ -47,7 +53,7 @@ export default async function aiSecurityAdvice(req, res) {
                         },
                         {
                             role: 'user',
-                            content: `Provide four online safety recommendations in ${LANGUAGE_NAMES[language]}. Focus on DNS/WebRTC privacy, browser updates, router security, and phishing. Each title must be under 36 characters and detail under 140 characters.`,
+                            content: `${LANGUAGE_INSTRUCTIONS[language]} Provide exactly four online safety recommendations in ${LANGUAGE_NAMES[language]}, one each for DNS/WebRTC privacy, browser updates, router security, and phishing awareness. Make every detail a complete, useful sentence. Each title must be under 36 characters and each detail under 140 characters.`,
                         },
                     ],
                 }),
@@ -62,7 +68,8 @@ export default async function aiSecurityAdvice(req, res) {
         const parsed = JSON.parse(text || '{}');
         const suggestions = Array.isArray(parsed.suggestions)
             ? parsed.suggestions
-                .filter(item => typeof item?.title === 'string' && typeof item?.detail === 'string')
+                .filter(item => typeof item?.title === 'string' && item.title.trim()
+                    && typeof item?.detail === 'string' && item.detail.trim())
                 .slice(0, 4)
             : [];
 
