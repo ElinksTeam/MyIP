@@ -26,6 +26,7 @@ import getWhois from './server/handlers/get-whois.js';
 import invisibilitytestHandler from './server/handlers/invisibility-test.js';
 import macChecker from './server/handlers/mac-checker.js';
 import aiSecurityAdvice from './server/handlers/ai-security-advice.js';
+import { cliGeoHandler, cliIpHandler } from './server/handlers/cli-api.js';
 // User
 import validateConfigs from './server/handlers/configs.js';
 import getUserinfo from './server/handlers/get-user-info.js';
@@ -150,6 +151,20 @@ if (speedLimitSet !== 0) {
 }
 
 app.use(express.json());
+
+const cliRateLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    handler: (req, res) => {
+        res.status(429).type('text/plain').send('Too Many Requests\n');
+    },
+});
+
+// Public CLI endpoints intentionally work without a Referer or API key.
+app.get('/api/cli/ip', cliRateLimiter, cliIpHandler);
+app.get('/api/cli/geo', cliRateLimiter, cliGeoHandler);
 
 // Global referer gate for all /api/* routes. Handlers no longer repeat this
 // check individually — see common/guards.js.

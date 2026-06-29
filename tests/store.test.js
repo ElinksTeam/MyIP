@@ -265,11 +265,6 @@ describe('store — getters', () => {
     assert.ok(!active.find((db) => db.id === firstId));
   });
 
-  it('curlDomainsHadSet is false when env not set', () => {
-    const s = useMainStore();
-    // In Node tests we don't inject VITE_CURL_* → curl.* is undefined → getter is falsy
-    assert.equal(Boolean(s.curlDomainsHadSet), false);
-  });
 });
 
 describe('store — getDbUrl delegates to buildDbUrl', () => {

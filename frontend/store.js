@@ -25,11 +25,6 @@ export const useMainStore = defineStore('main', {
     remoteUserInfoFetched: false,
     currentPath: {},
     mountingStatus: createMountingStatus(),
-    curl: {
-      ipv4Domain: import.meta.env?.VITE_CURL_IPV4_DOMAIN,
-      ipv6Domain: import.meta.env?.VITE_CURL_IPV6_DOMAIN,
-      ipv64Domain: import.meta.env?.VITE_CURL_IPV64_DOMAIN,
-    },
     isFireBaseSet: false,
     openSheet: null,
     loadingStatus: createLoadingStatus(),
@@ -55,9 +50,6 @@ export const useMainStore = defineStore('main', {
     allHasLoaded: (state) => {
       return Object.values(state.loadingStatus).every(status => status);
     },
-    curlDomainsHadSet: (state) => {
-      return state.curl.ipv4Domain && state.curl.ipv6Domain && state.curl.ipv64Domain;
-    }
   },
 
   actions: {

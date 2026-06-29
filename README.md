@@ -159,11 +159,17 @@ Download `GeoLite2-City.mmdb` and `GeoLite2-ASN.mmdb` from your MaxMind account 
 | `IP2LOCATION_API_KEY` | Optional | `""` | API Key for IP2Location.io |
 | `CLOUDFLARE_API` | Optional | `""` | API Key for Cloudflare |
 | `MAC_LOOKUP_API_KEY` | Optional | `""` | API Key for MAC Lookup |
-| `VITE_CURL_IPV4_DOMAIN` | Optional | `""` | Provides the IPv4 domain for the CURL API |
-| `VITE_CURL_IPV6_DOMAIN` | Optional | `""` | Provides the IPv6 domain for the CURL API |
-| `VITE_CURL_IPV64_DOMAIN` | Optional | `""` | Provides the dual-stack domain for the CURL API |
+## Public CLI API
 
-Note that if any of the CURL series environment variables are missing, the CURL API will not be enabled.
+The deployment exposes a same-origin, keyless CLI API. Requests are limited to
+60 per minute per client IP.
+
+```bash
+curl https://your-domain.example/api/cli/ip
+curl "https://your-domain.example/api/cli/ip?format=json"
+curl https://your-domain.example/api/cli/geo
+curl "https://your-domain.example/api/cli/geo?ip=8.8.8.8"
+```
 
 ## 👩🏻‍💻 Advanced Usage
 

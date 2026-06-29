@@ -23,6 +23,7 @@ import updateAchievementHandler from '../server/handlers/update-user-achievement
 import elinksNetIpHandler from '../server/handlers/elinksnet-ip.js';
 import aiSecurityAdviceHandler from '../server/handlers/ai-security-advice.js';
 import ipWhoIsHandler, { normalizeIpWhoIs } from '../server/handlers/ipwho-is.js';
+import { cliGeoHandler, cliIpHandler, getRequestIp } from '../server/handlers/cli-api.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -123,6 +124,47 @@ describe('IPWho.is handler', () => {
             asn: 'AS13335',
             org: 'Cloudflare, Inc.',
         });
+    });
+});
+
+describe('public CLI API handlers', () => {
+    it('extracts and normalizes the first forwarded client IP', () => {
+        assert.equal(getRequestIp({
+            headers: { 'x-forwarded-for': '::ffff:1.1.1.1, 10.0.0.1' },
+        }), '1.1.1.1');
+    });
+
+    it('returns plain text by default and JSON on request', () => {
+        const plain = createResponse();
+        plain.set = function set() { return this; };
+        plain.type = function type() { return this; };
+        cliIpHandler({
+            method: 'GET',
+            headers: { 'x-forwarded-for': '1.1.1.1' },
+            query: {},
+        }, plain);
+        assert.equal(plain.statusCode, 200);
+        assert.equal(plain.body, '1.1.1.1\n');
+
+        const json = createResponse();
+        json.set = function set() { return this; };
+        cliIpHandler({
+            method: 'GET',
+            headers: { 'x-forwarded-for': '2001:4860:4860::8888' },
+            query: { format: 'json' },
+        }, json);
+        assert.deepEqual(json.body, { ip: '2001:4860:4860::8888' });
+    });
+
+    it('rejects invalid explicit geo IPs without contacting providers', async () => {
+        const res = createResponse();
+        await cliGeoHandler({
+            method: 'GET',
+            headers: {},
+            query: { ip: 'not-an-ip' },
+        }, res);
+        assert.equal(res.statusCode, 400);
+        assert.deepEqual(res.body, { error: 'Invalid IP address' });
     });
 });
 

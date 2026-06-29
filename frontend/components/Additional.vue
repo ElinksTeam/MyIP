@@ -4,40 +4,27 @@
         <DialogContent :title="t('curl.Title')">
             <DialogHeader :icon="Terminal" :title="t('curl.Title')" />
 
-            <div v-if="curlDomainsHadSet" class="space-y-3">
-                <!-- Description -->
-                <div class="space-y-1 text-xs font-mono">
-                    <p class="jn-comment"><span class="text-muted-foreground">{{ t('curl.Note1') }}</span></p>
-                    <p class="jn-comment">
-                        <span class="text-muted-foreground">{{ t('curl.Note2_1') }}
-                            <Badge variant="outline" class="text-success">curl</Badge> {{ t('curl.Note2_2') }}</span>
-                    </p>
-                    <p class="jn-comment">
-                        <span class="text-muted-foreground"><Badge variant="outline" class="text-success">geo</Badge> {{ t('curl.Note3') }}</span>
-                    </p>
-                    <p class="jn-comment">
-                        <span class="text-muted-foreground"><Badge variant="outline" class="text-success">YOUR_API_KEY</Badge> {{ t('curl.Note4') }}</span>
-                    </p>
+            <div class="space-y-4">
+                <div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                    <span>{{ apiCopy.description }}</span>
+                    <Badge variant="outline" class="text-success">{{ apiCopy.noKey }}</Badge>
+                    <Badge variant="outline">60 / min</Badge>
                 </div>
 
-                <!-- 3 curl command blocks -->
                 <div class="space-y-3">
-                    <div>
-                        <p class="jn-comment text-xs font-mono mb-1.5 text-muted-foreground">{{ t('curl.getIPv4') }}</p>
-                        <pre class="jn-curl bg-black text-neutral-100 rounded-md p-3 text-xs font-mono overflow-x-auto">curl {{ ipv4Domain }}<span class="text-success">/geo</span> -H 'x-key: <span class="text-yellow-400">YOUR_API_KEY</span>'</pre>
-                    </div>
-                    <div>
-                        <p class="jn-comment text-xs font-mono mb-1.5 text-muted-foreground">{{ t('curl.getIPv6') }}</p>
-                        <pre class="jn-curl bg-black text-neutral-100 rounded-md p-3 text-xs font-mono overflow-x-auto">curl {{ ipv6Domain }}<span class="text-success">/geo</span> -H 'x-key: <span class="text-yellow-400">YOUR_API_KEY</span>'</pre>
-                    </div>
-                    <div>
-                        <p class="jn-comment text-xs font-mono mb-1.5 text-muted-foreground">{{ t('curl.get6and4') }}</p>
-                        <pre class="jn-curl bg-black text-neutral-100 rounded-md p-3 text-xs font-mono overflow-x-auto">curl {{ ipv64Domain }}<span class="text-success">/geo</span> -H 'x-key: <span class="text-yellow-400">YOUR_API_KEY</span>'</pre>
+                    <div v-for="(item, index) in commands" :key="item.label" class="space-y-1.5">
+                        <p class="text-xs font-medium text-muted-foreground">{{ item.label }}</p>
+                        <div class="flex items-center gap-2 rounded-lg border bg-zinc-950 p-2 pl-3">
+                            <code class="min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-xs text-zinc-100">$ {{ item.command }}</code>
+                            <Button type="button" variant="ghost" size="icon"
+                                class="size-8 shrink-0 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                                :aria-label="apiCopy.copy" @click="copyCommand(item.command, index)">
+                                <Check v-if="copiedIndex === index" class="size-4 text-emerald-400" />
+                                <Copy v-else class="size-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div v-else class="py-6 text-center">
-                <p class="text-sm text-muted-foreground">{{ t('curl.notAvailable') }}</p>
             </div>
         </DialogContent>
     </Dialog>
@@ -80,22 +67,39 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useMainStore } from '@/store';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
-import { ChevronRight, Container, ExternalLink, Github, Terminal } from 'lucide-vue-next';
+import { Check, ChevronRight, Container, Copy, ExternalLink, Github, Terminal } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
-const { t } = useI18n();
-
-const store = useMainStore();
-
-const ipv4Domain = computed(() => store.curl.ipv4Domain);
-const ipv6Domain = computed(() => store.curl.ipv6Domain);
-const ipv64Domain = computed(() => store.curl.ipv64Domain);
-const curlDomainsHadSet = computed(() => store.curlDomainsHadSet);
+const { locale, t } = useI18n();
+const origin = window.location.origin;
+const copiedIndex = ref(-1);
+const copyByLocale = {
+    zh: { description: '同域公共 API，无需注册或 API Key。', noKey: '免 Key', copy: '复制命令', ip: '查询当前 IP', ipv4: '强制 IPv4', ipv6: '强制 IPv6', json: 'JSON 格式', geo: '查询当前 IP 地理信息', target: '查询指定 IP' },
+    en: { description: 'Same-origin public API. No signup or API key.', noKey: 'No key', copy: 'Copy command', ip: 'Current IP', ipv4: 'Force IPv4', ipv6: 'Force IPv6', json: 'JSON format', geo: 'Current IP geolocation', target: 'Look up an IP' },
+    fr: { description: 'API publique du même domaine, sans clé.', noKey: 'Sans clé', copy: 'Copier', ip: 'IP actuelle', ipv4: 'Forcer IPv4', ipv6: 'Forcer IPv6', json: 'Format JSON', geo: 'Géolocalisation actuelle', target: 'Rechercher une IP' },
+    tr: { description: 'Aynı alan adı API’si, anahtar gerekmez.', noKey: 'Anahtarsız', copy: 'Komutu kopyala', ip: 'Geçerli IP', ipv4: 'IPv4 kullan', ipv6: 'IPv6 kullan', json: 'JSON biçimi', geo: 'Geçerli IP konumu', target: 'Bir IP sorgula' },
+};
+const apiCopy = computed(() => copyByLocale[locale.value] || copyByLocale.en);
+const commands = computed(() => [
+    { label: apiCopy.value.ip, command: `curl ${origin}/api/cli/ip` },
+    { label: apiCopy.value.ipv4, command: `curl -4 ${origin}/api/cli/ip` },
+    { label: apiCopy.value.ipv6, command: `curl -6 ${origin}/api/cli/ip` },
+    { label: apiCopy.value.json, command: `curl "${origin}/api/cli/ip?format=json"` },
+    { label: apiCopy.value.geo, command: `curl ${origin}/api/cli/geo` },
+    { label: apiCopy.value.target, command: `curl "${origin}/api/cli/geo?ip=8.8.8.8"` },
+]);
+const copyCommand = async (command, index) => {
+    await navigator.clipboard.writeText(command);
+    copiedIndex.value = index;
+    window.setTimeout(() => {
+        if (copiedIndex.value === index) copiedIndex.value = -1;
+    }, 1600);
+};
 
 const isOpen = ref(false);
 const openCurlModal = () => {
@@ -109,21 +113,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.jn-curl::before {
-    content: '$ ';
-    color: var(--muted-foreground);
-    font-weight: 500;
-    margin-right: 0.25rem;
-    opacity: 0.7;
-}
-
-.jn-comment::before {
-    content: '// ';
-    color: var(--muted-foreground);
-    font-weight: 500;
-    opacity: 0.7;
-}
-
 .elinks-link-card {
     display: flex;
     min-height: 4rem;
