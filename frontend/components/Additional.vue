@@ -74,6 +74,7 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Check, ChevronRight, Container, Copy, ExternalLink, Github, Terminal } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useProductCopy } from '@/composables/use-product-copy.js';
 
 const { locale, t } = useI18n();
 const origin = window.location.origin;
@@ -84,7 +85,8 @@ const copyByLocale = {
     fr: { description: 'API publique du même domaine, sans clé.', noKey: 'Sans clé', copy: 'Copier', ip: 'IP actuelle', ipv4: 'Forcer IPv4', ipv6: 'Forcer IPv6', json: 'Format JSON', geo: 'Géolocalisation actuelle', target: 'Rechercher une IP' },
     tr: { description: 'Aynı alan adı API’si, anahtar gerekmez.', noKey: 'Anahtarsız', copy: 'Komutu kopyala', ip: 'Geçerli IP', ipv4: 'IPv4 kullan', ipv6: 'IPv6 kullan', json: 'JSON biçimi', geo: 'Geçerli IP konumu', target: 'Bir IP sorgula' },
 };
-const apiCopy = computed(() => copyByLocale[locale.value] || copyByLocale.en);
+const productCopy = useProductCopy();
+const apiCopy = computed(() => productCopy.value.api);
 const commands = computed(() => [
     { label: apiCopy.value.ip, command: `curl ${origin}/api/cli/ip` },
     { label: apiCopy.value.ipv4, command: `curl -4 ${origin}/api/cli/ip` },

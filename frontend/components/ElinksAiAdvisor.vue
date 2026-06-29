@@ -48,6 +48,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useMainStore } from '@/store';
+import { useProductCopy } from '@/composables/use-product-copy.js';
 import { Sparkles, LockKeyhole, LoaderCircle, ShieldCheck } from 'lucide-vue-next';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -57,6 +58,7 @@ const store = useMainStore();
 const loading = ref(false);
 const suggestions = ref([]);
 const notice = ref('');
+const productCopy = useProductCopy();
 
 const COPY = {
   zh: {
@@ -113,7 +115,10 @@ const COPY = {
   },
 };
 
-const copy = computed(() => COPY[store.lang] || COPY.en);
+const copy = computed(() => ({
+  ...(COPY[store.lang] || COPY.en),
+  ...productCopy.value.ai,
+}));
 
 async function generate() {
   loading.value = true;

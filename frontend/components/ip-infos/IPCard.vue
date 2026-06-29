@@ -38,6 +38,23 @@
                         </button>
                     </JnTooltip>
                 </div>
+                <div class="mx-4 mb-3 grid grid-cols-2 gap-2 rounded-lg border bg-muted/25 p-2.5">
+                    <div class="min-w-0">
+                        <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <ShieldCheck class="size-3" /> {{ productCopy.proxy.proxy }}
+                        </span>
+                        <p class="mt-1 truncate text-xs font-medium">{{ proxyValue }}</p>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Gauge class="size-3" /> {{ productCopy.proxy.quality }}
+                        </span>
+                        <div class="mt-1 flex items-center gap-2">
+                            <span class="size-2 rounded-full" :class="qualityClass" />
+                            <p class="truncate text-xs font-medium">{{ qualityValue }}</p>
+                        </div>
+                    </div>
+                </div>
 
                 <IpDetailPanel :data="card" :index="index" :ip-geo-source="ipGeoSource" :asn-infos="asnInfos"
                     :configs="configs" :is-dark-mode="isDarkMode" :collapsed="isMobile && isCardsCollapsed"
@@ -63,6 +80,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useProductCopy } from '@/composables/use-product-copy.js';
 import { isValidIP } from '@/utils/valid-ip.js';
 import { heroIpSizeClass } from '@/utils/hero-ip-size.js';
 import IPErrorIcon from '../svgicons/IPError.vue';
@@ -73,11 +91,14 @@ import { Card } from '@/components/ui/card';
 import {
     ClipboardCheck,
     ClipboardPlus,
+    Gauge,
     Monitor,
     RotateCw,
+    ShieldCheck,
 } from 'lucide-vue-next';
 
 const { t } = useI18n();
+const productCopy = useProductCopy();
 
 const placeholderSizes = [12, 8, 6, 8, 4];
 
@@ -102,6 +123,23 @@ const hasData = computed(() =>
 const isErrorState = computed(() =>
     props.card.ip === t('ipInfos.IPv4Error') || props.card.ip === t('ipInfos.IPv6Error')
 );
+const proxyValue = computed(() => {
+    const value = props.card.isProxy;
+    return value && value !== 'sign_in_required' ? value : productCopy.value.proxy.unknown;
+});
+const qualityValue = computed(() => {
+    const value = props.card.qualityScore;
+    return value !== undefined && value !== 'unknown' && value !== 'sign_in_required'
+        ? `${value}/100`
+        : productCopy.value.proxy.unknown;
+});
+const qualityClass = computed(() => {
+    const score = Number(props.card.qualityScore);
+    if (!Number.isFinite(score)) return 'bg-muted-foreground/40';
+    if (score >= 80) return 'bg-success';
+    if (score >= 50) return 'bg-warning';
+    return 'bg-destructive';
+});
 
 const copyToClipboard = (ip, id) => {
     navigator.clipboard.writeText(ip).then(() => {

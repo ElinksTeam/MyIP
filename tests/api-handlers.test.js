@@ -56,7 +56,7 @@ const ENV_KEYS = [
     'MAC_LOOKUP_API_KEY', 'IPAPIIS_API_KEY',
     'IPINFO_API_TOKEN', 'IP2LOCATION_API_KEY',
     'CLOUDFLARE_API',
-    'GEMINI_API_KEY', 'ELINKS_AI_MODEL',
+    'GROQ_API_KEY', 'ELINKS_AI_MODEL',
 ];
 let envBackup = {};
 
@@ -185,7 +185,7 @@ describe('Elinks AI security advice handler', () => {
     });
 
     it('reports missing API configuration without exposing a key', async () => {
-        delete process.env.GEMINI_API_KEY;
+        delete process.env.GROQ_API_KEY;
         const res = createResponse();
         await aiSecurityAdviceHandler(createRequest({
             method: 'POST',

@@ -36,31 +36,10 @@
       </div>
 
       <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <Card v-for="(card, index) in group.cards" :key="card.path" :data-adv-path="card.path"
-          class="keyboard-shortcut-card jn-card group relative cursor-pointer overflow-hidden border-border/70 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md data-[keyboard-hover=true]:ring-2 data-[keyboard-hover=true]:ring-primary/50"
-          role="button" tabindex="0" @click.prevent="navigateAndToggleOffcanvas(card.path)"
-          @keydown.enter.prevent="navigateAndToggleOffcanvas(card.path)"
-          @keydown.space.prevent="navigateAndToggleOffcanvas(card.path)">
-          <CardContent class="p-4">
-            <div class="mb-5 flex items-start justify-between gap-3">
-              <span class="flex size-10 items-center justify-center rounded-lg border bg-muted/60 text-foreground transition-colors group-hover:border-primary/25 group-hover:bg-primary/10 group-hover:text-primary">
-                <component :is="card.icon" class="size-5" />
-              </span>
-              <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                LAB-{{ String(index + 1).padStart(2, '0') }}
-              </span>
-            </div>
-            <div class="flex items-end justify-between gap-3">
-              <div class="min-w-0">
-                <h4 class="text-base font-semibold">{{ t(card.titleKey) }}</h4>
-                <p class="mt-1 line-clamp-2 min-h-10 text-xs leading-5 text-muted-foreground">
-                  {{ t(card.noteKey) }}
-                </p>
-              </div>
-              <ArrowUpRight class="mb-0.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
-            </div>
-          </CardContent>
-        </Card>
+        <ToolCard v-for="(card, index) in group.cards" :key="card.path" :data-adv-path="card.path"
+          :icon="card.icon" :code="`LAB-${String(index + 1).padStart(2, '0')}`"
+          :title="t(card.titleKey)" :note="t(card.noteKey)"
+          @open="navigateAndToggleOffcanvas(card.path)" />
       </div>
     </div>
 
@@ -116,10 +95,11 @@ import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Card, CardContent } from '@/components/ui/card';
+import ToolCard from './advanced-tools/ToolCard.vue';
+import { useProductCopy } from '@/composables/use-product-copy.js';
 import { Badge } from '@/components/ui/badge';
 import {
-  ArrowUpRight, Cable, CircleGauge, FileSearch, Fingerprint,
+  BookOpen, Cable, CircleGauge, Container, FileSearch, Fingerprint,
   ListChecks, Maximize, Minimize, MonitorCog, Network, Radar, Route, ServerCog,
   ShieldCheck, TerminalSquare, Waypoints,
 } from 'lucide-vue-next';
@@ -142,6 +122,8 @@ const cards = reactive([
   { path: '/browserinfo', icon: MonitorCog, group: 'intelligence', titleKey: 'browserinfo.Title', noteKey: 'advancedtools.BrowserInfo', enabled: true },
   { path: '/securitychecklist', icon: ListChecks, group: 'intelligence', titleKey: 'securitychecklist.Title', noteKey: 'advancedtools.SecurityChecklist', enabled: true },
   { path: '/invisibilitytest', icon: Fingerprint, group: 'intelligence', titleKey: 'invisibilitytest.Title', noteKey: 'advancedtools.InvisibilityTest', enabled: false },
+  { path: '/cli', icon: BookOpen, group: 'platform', titleKey: 'curl.Title', noteKey: 'additional.CurlNote', enabled: true },
+  { path: '/docker', icon: Container, group: 'platform', titleKey: 'additional.Docker', noteKey: 'additional.DockerNote', enabled: true },
 ]);
 
 const enabledCards = computed(() => cards.filter(card => card.enabled));
@@ -154,10 +136,12 @@ const COPY = {
   fr: { diagnostics: 'Diagnostic réseau', diagnosticsNote: 'Routes, latence, règles et DNS', intelligence: 'Renseignement et sécurité', intelligenceNote: 'Propriété, filtrage, appareils et vie privée', tools: 'Outils', live: 'Espace en direct', ready: 'Toujours prêt', local: 'Confidentiel' },
   tr: { diagnostics: 'Ağ tanılama', diagnosticsNote: 'Rota, gecikme, kural ve DNS', intelligence: 'İstihbarat ve güvenlik', intelligenceNote: 'Sahiplik, filtreleme, cihazlar ve gizlilik', tools: 'Araç', live: 'Canlı çalışma alanı', ready: 'Her zaman açık', local: 'Gizlilik odaklı' },
 };
-const workspaceCopy = computed(() => COPY[store.lang] || COPY.en);
+const productCopy = useProductCopy();
+const workspaceCopy = computed(() => productCopy.value.workspace);
 const toolGroups = computed(() => [
   { id: 'diagnostics', icon: Network, title: workspaceCopy.value.diagnostics, note: workspaceCopy.value.diagnosticsNote, cards: enabledCards.value.filter(card => card.group === 'diagnostics') },
   { id: 'intelligence', icon: ShieldCheck, title: workspaceCopy.value.intelligence, note: workspaceCopy.value.intelligenceNote, cards: enabledCards.value.filter(card => card.group === 'intelligence') },
+  { id: 'platform', icon: TerminalSquare, title: 'Platform', note: 'CLI · API · Docker', cards: enabledCards.value.filter(card => card.group === 'platform') },
 ]);
 const workspaceMetrics = computed(() => [
   { value: enabledCards.value.length, label: workspaceCopy.value.tools },

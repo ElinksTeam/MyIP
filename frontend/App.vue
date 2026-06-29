@@ -41,6 +41,7 @@
                       {{ t('nav.AdvancedTools') }}
                     </Badge>
                   </div>
+                  <DashboardActions class="mt-4" :get-cards="getReportCards" />
                 </div>
               </CardContent>
             </Card>
@@ -79,14 +80,11 @@
 // Components
 import NavBar from './components/Nav.vue';
 import DashboardSidebar from './components/DashboardSidebar.vue';
-import ProductOverview from './components/ProductOverview.vue';
-import ElinksAiAdvisor from './components/ElinksAiAdvisor.vue';
+import DashboardActions from './components/DashboardActions.vue';
 import IPCheck from './components/IpInfos.vue';
 import Connectivity from './components/ConnectivityTest.vue';
 import WebRTC from './components/WebRtcTest.vue';
 import DNSLeaks from './components/DnsLeaksTest.vue';
-import SpeedTest from './components/SpeedTest.vue';
-import AdvancedTools from './components/Advanced.vue';
 import Additional from './components/Additional.vue';
 import Footer from './components/Footer.vue';
 import User from './components/User.vue';
@@ -107,7 +105,7 @@ import { Card, CardContent } from './components/ui/card';
 import { Activity } from 'lucide-vue-next';
 
 // Vue + Store
-import { ref, computed, onMounted } from 'vue';
+import { defineAsyncComponent, ref, computed, onMounted } from 'vue';
 import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 
@@ -118,6 +116,10 @@ import { useShortcuts } from '@/composables/use-shortcuts.js';
 import { useSectionTracking } from '@/composables/use-section-tracking.js';
 
 const { t } = useI18n();
+const ProductOverview = defineAsyncComponent(() => import('./components/ProductOverview.vue'));
+const ElinksAiAdvisor = defineAsyncComponent(() => import('./components/ElinksAiAdvisor.vue'));
+const SpeedTest = defineAsyncComponent(() => import('./components/SpeedTest.vue'));
+const AdvancedTools = defineAsyncComponent(() => import('./components/Advanced.vue'));
 const store = useMainStore();
 const configs = computed(() => store.configs);
 const userPreferences = computed(() => store.userPreferences);
@@ -139,6 +141,7 @@ const IPCheckRef = ref(null);
 const connectivityRef = ref(null);
 const webRTCRef = ref(null);
 const dnsLeaksRef = ref(null);
+const getReportCards = () => IPCheckRef.value?.ipDataCards || [];
 
 // Hide loading mask on first screen
 const loadingElement = document.getElementById('jn-loading');

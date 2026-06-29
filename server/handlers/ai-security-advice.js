@@ -1,5 +1,5 @@
 const SUPPORTED_LANGUAGES = new Set(['en', 'fr', 'tr', 'zh']);
-const DEFAULT_MODEL = 'gemini-2.5-flash-lite';
+const DEFAULT_MODEL = 'llama-3.1-8b-instant';
 
 const LANGUAGE_NAMES = {
     en: 'English',
@@ -18,7 +18,7 @@ export default async function aiSecurityAdvice(req, res) {
         return res.status(400).json({ error: 'Unsupported language' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
         return res.status(503).json({ error: 'Elinks AI is not configured' });
     }
@@ -28,61 +28,37 @@ export default async function aiSecurityAdvice(req, res) {
     const timeout = setTimeout(() => controller.abort(), 12_000);
 
     try {
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-            {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-goog-api-key': apiKey,
+                    Authorization: `Bearer ${apiKey}`,
                 },
                 signal: controller.signal,
                 body: JSON.stringify({
-                    systemInstruction: {
-                        parts: [{
-                            text: 'You are Elinks AI, a concise network safety assistant. Give practical, non-alarmist guidance. Never claim to have inspected the user device, IP address, or network. Do not recommend paid products. Return only the requested JSON.',
-                        }],
-                    },
-                    contents: [{
-                        role: 'user',
-                        parts: [{
-                            text: `Provide four general online safety recommendations in ${LANGUAGE_NAMES[language]}. Focus on DNS/WebRTC privacy, browser updates, router security, and phishing awareness. Each title must be under 36 characters and each detail under 140 characters.`,
-                        }],
-                    }],
-                    generationConfig: {
-                        temperature: 0.35,
-                        maxOutputTokens: 700,
-                        responseMimeType: 'application/json',
-                        responseSchema: {
-                            type: 'OBJECT',
-                            properties: {
-                                suggestions: {
-                                    type: 'ARRAY',
-                                    minItems: 4,
-                                    maxItems: 4,
-                                    items: {
-                                        type: 'OBJECT',
-                                        properties: {
-                                            title: { type: 'STRING' },
-                                            detail: { type: 'STRING' },
-                                        },
-                                        required: ['title', 'detail'],
-                                    },
-                                },
-                            },
-                            required: ['suggestions'],
+                    model,
+                    temperature: 0.35,
+                    max_completion_tokens: 700,
+                    response_format: { type: 'json_object' },
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are Elinks AI, a concise network safety assistant. Give practical, non-alarmist guidance. Never claim to have inspected the user device. Do not recommend paid products. Return JSON only as {"suggestions":[{"title":"...","detail":"..."}]} with exactly four items.',
                         },
-                    },
+                        {
+                            role: 'user',
+                            content: `Provide four online safety recommendations in ${LANGUAGE_NAMES[language]}. Focus on DNS/WebRTC privacy, browser updates, router security, and phishing. Each title must be under 36 characters and detail under 140 characters.`,
+                        },
+                    ],
                 }),
-            },
-        );
+            });
 
         if (!response.ok) {
             return res.status(502).json({ error: 'Elinks AI provider is unavailable' });
         }
 
         const payload = await response.json();
-        const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const text = payload?.choices?.[0]?.message?.content;
         const parsed = JSON.parse(text || '{}');
         const suggestions = Array.isArray(parsed.suggestions)
             ? parsed.suggestions

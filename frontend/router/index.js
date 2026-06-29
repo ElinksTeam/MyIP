@@ -12,6 +12,8 @@ const InvisibilityTest = () => import('../components/advanced-tools/Invisibility
 const MacChecker = () => import('../components/advanced-tools/MacChecker.vue');
 const BrowserInfo = () => import('../components/advanced-tools/BrowserInfo.vue');
 const Checklist = () => import('../components/advanced-tools/SecurityChecklist.vue');
+const CliDocs = () => import('../components/advanced-tools/CliDocs.vue');
+const DockerDeploy = () => import('../components/advanced-tools/DockerDeploy.vue');
 const EmptyComponent = () => import('../components/advanced-tools/Empty.vue');
 
 const routes = [
@@ -26,6 +28,8 @@ const routes = [
   { path: '/browserinfo', component: BrowserInfo },
   { path: '/securitychecklist', component: Checklist },
   { path: '/invisibilitytest', component: InvisibilityTest },
+  { path: '/cli', component: CliDocs },
+  { path: '/docker', component: DockerDeploy },
 ];
 
 const router = createRouter({

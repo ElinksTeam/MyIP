@@ -1,6 +1,6 @@
 // Service Worker configuration
 
-import { CacheFirst, ExpirationPlugin, NetworkFirst, Serwist } from 'serwist';
+import { CacheFirst, ExpirationPlugin, NetworkFirst, NetworkOnly, Serwist, StaleWhileRevalidate } from 'serwist';
 
 const serwist = new Serwist({
     precacheEntries: self.__SW_MANIFEST,
@@ -11,10 +11,14 @@ const serwist = new Serwist({
     clientsClaim: true,
     runtimeCaching: [
         {
+            matcher: ({ url }) => url.pathname.startsWith('/api/'),
+            handler: new NetworkOnly(),
+        },
+        {
             matcher: ({ request, url }) => request.mode === 'navigate' || url.pathname.endsWith('.html'),
             handler: new NetworkFirst({
-                cacheName: 'html-cache',
-                networkTimeoutSeconds: 3,
+                cacheName: 'elinks-pages-v2',
+                networkTimeoutSeconds: 2,
                 plugins: [
                     new ExpirationPlugin({
                         maxEntries: 5,
@@ -24,27 +28,34 @@ const serwist = new Serwist({
             }),
         },
         {
-            matcher: /\/(sw\.js|manifest\.webmanifest)$/,
-            handler: new NetworkFirst({
-                cacheName: 'critical-assets',
+            matcher: ({ request }) => request.destination === 'script' || request.destination === 'style',
+            handler: new StaleWhileRevalidate({
+                cacheName: 'elinks-static-v2',
                 plugins: [
                     new ExpirationPlugin({
-                        maxEntries: 3,
-                        maxAgeSeconds: 4 * 60 * 60,
+                        maxEntries: 80,
+                        maxAgeSeconds: 14 * 24 * 60 * 60,
                     }),
                 ],
             }),
         },
         {
-            matcher: /\.(?:png|jpg|jpeg|svg|webp|woff|woff2)$/,
+            matcher: ({ request }) => request.destination === 'image',
             handler: new CacheFirst({
-                cacheName: 'images',
+                cacheName: 'elinks-images-v2',
                 plugins: [
                     new ExpirationPlugin({
-                        maxEntries: 60,
-                        maxAgeSeconds: 7 * 24 * 60 * 60,
+                        maxEntries: 80,
+                        maxAgeSeconds: 30 * 24 * 60 * 60,
                     }),
                 ],
+            }),
+        },
+        {
+            matcher: ({ request }) => request.destination === 'font',
+            handler: new CacheFirst({
+                cacheName: 'elinks-fonts-v2',
+                plugins: [new ExpirationPlugin({ maxEntries: 12, maxAgeSeconds: 365 * 24 * 60 * 60 })],
             }),
         },
     ],
