@@ -160,7 +160,7 @@ Download `GeoLite2-City.mmdb` and `GeoLite2-ASN.mmdb` from your MaxMind account 
 | `CLOUDFLARE_API` | Optional | `""` | API Key for Cloudflare |
 | `MAC_LOOKUP_API_KEY` | Optional | `""` | API Key for MAC Lookup |
 | `GROQ_API_KEY` | Optional | `""` | Server-side Groq key for Elinks AI safety advice |
-| `ELINKS_AI_MODEL` | Optional | `"llama-3.1-8b-instant"` | Groq model used by Elinks AI |
+| `ELINKS_AI_MODEL` | Optional | `"llama-3.3-70b-versatile"` | Groq model used by Elinks AI |
 ## Public CLI API
 
 The deployment exposes a same-origin, keyless CLI API. Requests are limited to
