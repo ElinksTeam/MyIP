@@ -70,6 +70,7 @@ const createDefaultCard = () => ({
   asnlink: "",
   mapUrl: '/res/defaultMap.webp',
   mapUrl_dark: '/res/defaultMap_dark.webp',
+  proxyRiskStatus: 'idle',
 });
 
 // IP data cards
@@ -126,6 +127,49 @@ const fetchStatus = reactive([]);
 // Middleware
 let pendingIPDetailsRequests = new Map();
 let ipDataCache = new Map();
+let pendingProxyRiskRequests = new Map();
+let proxyRiskCache = new Map();
+
+const applyProxyRisk = (ip, risk) => {
+  ipDataCards
+    .filter(card => card.ip === ip)
+    .forEach(card => Object.assign(card, {
+      isProxy: risk.isProxy
+        ? t('ipInfos.advancedData.proxyYes')
+        : t('ipInfos.advancedData.proxyNo'),
+      qualityScore: risk.qualityScore,
+      type: card.type || risk.type,
+      proxyOperator: risk.provider,
+      proxyRiskSource: risk.source,
+      proxyRiskStatus: 'ready',
+    }));
+};
+
+const fetchProxyRisk = async (ip) => {
+  if (proxyRiskCache.has(ip)) {
+    applyProxyRisk(ip, proxyRiskCache.get(ip));
+    return;
+  }
+  if (pendingProxyRiskRequests.has(ip)) {
+    await pendingProxyRiskRequests.get(ip);
+    return;
+  }
+  ipDataCards.filter(card => card.ip === ip).forEach(card => { card.proxyRiskStatus = 'loading'; });
+  const request = authenticatedFetch(`/api/proxy-risk?ip=${encodeURIComponent(ip)}`)
+    .then((risk) => {
+      proxyRiskCache.set(ip, risk);
+      applyProxyRisk(ip, risk);
+    })
+    .catch((error) => {
+      console.error('Proxy risk lookup failed:', error);
+      ipDataCards
+        .filter(card => card.ip === ip)
+        .forEach(card => { card.proxyRiskStatus = 'error'; });
+    })
+    .finally(() => pendingProxyRiskRequests.delete(ip));
+  pendingProxyRiskRequests.set(ip, request);
+  await request;
+};
 
 // Shared method to get IP address
 const fetchIP = async (cardID, getFromSource) => {
@@ -211,6 +255,7 @@ const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
   if (ipDataCache.has(ip)) {
     const cachedData = ipDataCache.get(ip);
     Object.assign(card, cachedData);
+    void fetchProxyRisk(ip);
     return;
   }
 
@@ -220,6 +265,7 @@ const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
     const cachedData = ipDataCache.get(ip);
     if (cachedData) {
       Object.assign(card, cachedData);
+      void fetchProxyRisk(ip);
     }
     return;
   }
@@ -247,6 +293,7 @@ const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
           store.updatePreference('ipGeoSource', source.id);
           Object.assign(card, cardData);
           ipDataCache.set(ip, cardData);
+          void fetchProxyRisk(ip);
           return;
         }
       } catch (error) {

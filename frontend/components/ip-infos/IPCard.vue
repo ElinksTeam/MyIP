@@ -124,10 +124,14 @@ const isErrorState = computed(() =>
     props.card.ip === t('ipInfos.IPv4Error') || props.card.ip === t('ipInfos.IPv6Error')
 );
 const proxyValue = computed(() => {
+    if (props.card.proxyRiskStatus === 'loading') return productCopy.value.proxy.loading;
+    if (props.card.proxyRiskStatus === 'error') return productCopy.value.proxy.unavailable;
     const value = props.card.isProxy;
     return value && value !== 'sign_in_required' ? value : productCopy.value.proxy.unknown;
 });
 const qualityValue = computed(() => {
+    if (props.card.proxyRiskStatus === 'loading') return productCopy.value.proxy.loading;
+    if (props.card.proxyRiskStatus === 'error') return productCopy.value.proxy.unavailable;
     const value = props.card.qualityScore;
     return value !== undefined && value !== 'unknown' && value !== 'sign_in_required'
         ? `${value}/100`

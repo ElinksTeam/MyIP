@@ -24,6 +24,7 @@ import elinksNetIpHandler from '../server/handlers/elinksnet-ip.js';
 import aiSecurityAdviceHandler from '../server/handlers/ai-security-advice.js';
 import ipWhoIsHandler, { normalizeIpWhoIs } from '../server/handlers/ipwho-is.js';
 import { cliGeoHandler, cliIpHandler, getRequestIp } from '../server/handlers/cli-api.js';
+import proxyRiskHandler from '../server/handlers/proxy-risk.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -56,7 +57,7 @@ const ENV_KEYS = [
     'MAC_LOOKUP_API_KEY', 'IPAPIIS_API_KEY',
     'IPINFO_API_TOKEN', 'IP2LOCATION_API_KEY',
     'CLOUDFLARE_API',
-    'GROQ_API_KEY', 'ELINKS_AI_MODEL',
+    'GROQ_API_KEY', 'ELINKS_AI_MODEL', 'PROXYCHECK_API_KEY',
 ];
 let envBackup = {};
 
@@ -162,6 +163,24 @@ describe('public CLI API handlers', () => {
             headers: {},
             query: { ip: 'not-an-ip' },
         }, res);
+        assert.equal(res.statusCode, 400);
+        assert.deepEqual(res.body, { error: 'Invalid IP address' });
+    });
+});
+
+describe('proxy risk handler', () => {
+    it('rejects non-GET requests', async () => {
+        const res = createResponse();
+        await proxyRiskHandler(createRequest({ method: 'POST' }), res);
+        assert.equal(res.statusCode, 405);
+    });
+
+    it('rejects invalid IPs before contacting the provider', async () => {
+        const res = createResponse();
+        await proxyRiskHandler(createRequest({
+            method: 'GET',
+            query: { ip: 'not-an-ip' },
+        }), res);
         assert.equal(res.statusCode, 400);
         assert.deepEqual(res.body, { error: 'Invalid IP address' });
     });
