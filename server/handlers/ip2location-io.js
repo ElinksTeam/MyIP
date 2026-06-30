@@ -4,7 +4,11 @@ export default async (req, res) => {
     // IP presence + validity guaranteed by requireValidIP middleware.
     const ipAddress = req.query.ip;
 
-    const keys = (process.env.IP2LOCATION_API_KEY).split(',');
+    if (!process.env.IP2LOCATION_API_KEY) {
+        return res.status(503).json({ error: 'IP2Location.io is not configured' });
+    }
+
+    const keys = process.env.IP2LOCATION_API_KEY.split(',').map(key => key.trim()).filter(Boolean);
     const key = keys[Math.floor(Math.random() * keys.length)];
     const url = `https://api.ip2location.io/?ip=${ipAddress}&key=${key}`;
 
@@ -18,8 +22,11 @@ export default async (req, res) => {
 };
 
 function modifyJsonForIPAPI(json) {
-    let asn = json.asn || {};
+    const asn = json.asn;
     const { ip, country_code, country_name, region_name, city_name, latitude, longitude, as } = json;
+    const normalizedAsn = asn === undefined || asn === null
+        ? 'N/A'
+        : String(asn).toUpperCase().startsWith('AS') ? String(asn) : `AS${asn}`;
 
     return {
         ip: ip,
@@ -28,9 +35,9 @@ function modifyJsonForIPAPI(json) {
         country: country_code || 'N/A',
         country_name: country_name || 'N/A',
         country_code: country_code || 'N/A',
-        latitude: latitude || 'N/A',
-        longitude: longitude || 'N/A',
-        asn: asn === undefined || asn === null ? 'N/A' : 'AS' + asn,
+        latitude: latitude ?? 'N/A',
+        longitude: longitude ?? 'N/A',
+        asn: normalizedAsn,
         org: as || 'N/A',
     };
 }

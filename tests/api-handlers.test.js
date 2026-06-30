@@ -27,6 +27,7 @@ import { cliGeoHandler, cliIpHandler, getRequestIp } from '../server/handlers/cl
 import proxyRiskHandler from '../server/handlers/proxy-risk.js';
 import ipapiisHandler from '../server/handlers/ipapi-is.js';
 import ipinfoHandler from '../server/handlers/ipinfo-io.js';
+import ip2locationHandler from '../server/handlers/ip2location-io.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -209,6 +210,18 @@ describe('IPinfo.io handler', () => {
         }), res);
         assert.equal(res.statusCode, 503);
         assert.deepEqual(res.body, { error: 'IPinfo.io is not configured' });
+    });
+});
+
+describe('IP2Location.io handler', () => {
+    it('reports missing API configuration without contacting the provider', async () => {
+        delete process.env.IP2LOCATION_API_KEY;
+        const res = createResponse();
+        await ip2locationHandler(createRequest({
+            query: { ip: '2001:4860:4860::8888' },
+        }), res);
+        assert.equal(res.statusCode, 503);
+        assert.deepEqual(res.body, { error: 'IP2Location.io is not configured' });
     });
 });
 
