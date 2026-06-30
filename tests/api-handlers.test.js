@@ -25,6 +25,7 @@ import aiSecurityAdviceHandler from '../server/handlers/ai-security-advice.js';
 import ipWhoIsHandler, { normalizeIpWhoIs } from '../server/handlers/ipwho-is.js';
 import { cliGeoHandler, cliIpHandler, getRequestIp } from '../server/handlers/cli-api.js';
 import proxyRiskHandler from '../server/handlers/proxy-risk.js';
+import ipapiisHandler from '../server/handlers/ipapi-is.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -183,6 +184,18 @@ describe('proxy risk handler', () => {
         }), res);
         assert.equal(res.statusCode, 400);
         assert.deepEqual(res.body, { error: 'Invalid IP address' });
+    });
+});
+
+describe('IPAPI.is handler', () => {
+    it('reports missing API configuration without contacting the provider', async () => {
+        delete process.env.IPAPIIS_API_KEY;
+        const res = createResponse();
+        await ipapiisHandler(createRequest({
+            query: { ip: '1.1.1.1' },
+        }), res);
+        assert.equal(res.statusCode, 503);
+        assert.deepEqual(res.body, { error: 'IPAPI.is is not configured' });
     });
 });
 

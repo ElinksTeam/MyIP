@@ -4,7 +4,11 @@ export default async (req, res) => {
     // IP presence + validity guaranteed by requireValidIP middleware.
     const ipAddress = req.query.ip;
 
-    const keys = (process.env.IPAPIIS_API_KEY).split(',');
+    if (!process.env.IPAPIIS_API_KEY) {
+        return res.status(503).json({ error: 'IPAPI.is is not configured' });
+    }
+
+    const keys = process.env.IPAPIIS_API_KEY.split(',').map(key => key.trim()).filter(Boolean);
     const key = keys[Math.floor(Math.random() * keys.length)];
     const url = `https://api.ipapi.is?q=${ipAddress}&key=${key}`;
 
