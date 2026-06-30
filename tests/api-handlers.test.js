@@ -26,6 +26,7 @@ import ipWhoIsHandler, { normalizeIpWhoIs } from '../server/handlers/ipwho-is.js
 import { cliGeoHandler, cliIpHandler, getRequestIp } from '../server/handlers/cli-api.js';
 import proxyRiskHandler from '../server/handlers/proxy-risk.js';
 import ipapiisHandler from '../server/handlers/ipapi-is.js';
+import ipinfoHandler from '../server/handlers/ipinfo-io.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -196,6 +197,18 @@ describe('IPAPI.is handler', () => {
         }), res);
         assert.equal(res.statusCode, 503);
         assert.deepEqual(res.body, { error: 'IPAPI.is is not configured' });
+    });
+});
+
+describe('IPinfo.io handler', () => {
+    it('reports missing API configuration without contacting the provider', async () => {
+        delete process.env.IPINFO_API_TOKEN;
+        const res = createResponse();
+        await ipinfoHandler(createRequest({
+            query: { ip: '8.8.8.8' },
+        }), res);
+        assert.equal(res.statusCode, 503);
+        assert.deepEqual(res.body, { error: 'IPinfo.io is not configured' });
     });
 });
 
