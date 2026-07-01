@@ -166,7 +166,7 @@
       "popupConnectivityNotifications": "Alertes de Connectivité Pop-up",
       "popupConnectivityNotificationsTips": "Activé, les résultats de la première vérification sont affichés sous forme d'alerte pop-up.",
       "ipDB": "Base de données de géolocalisation IP",
-      "ipDBTips": "Vous pouvez sélectionner la source de données de géolocalisation IP par défaut. Si la source sélectionnée n'est pas disponible, le système utilisera les sources suivantes.",
+      "ipDBTips": "Le système interroge automatiquement en parallèle toutes les sources IP activées et disponibles, puis fusionne leurs données complémentaires.",
       "language": "Paramètres de langue",
       "languageTips": "Rafraîchissement du navigateur pour prendre effet."
     }
@@ -467,7 +467,7 @@
     "id": "ipinfos",
     "database": "Données",
     "Title": "Infos IP",
-    "Notes": "Le programme vérifie d'abord votre adresse IP à partir des sources différentes (y compris IPv4 et IPv6), puis interroge les données géographiques correspondantes à partir de la source d'informations de localisation IP que vous avez sélectionnée. Si vous n'avez qu'une seule pile IP active, les sources de données non disponibles seront affichées comme vides.",
+    "Notes": "Le système détecte IPv4 et IPv6, interroge en parallèle toutes les sources disponibles et fusionne la localisation, le réseau, l’ASN, l’état du proxy et la qualité de l’IP. Une source indisponible n’affecte pas les autres.",
     "Simple": "Simple",
     "Map": "Carte",
     "MapUnavailable": "Carte non disponible",

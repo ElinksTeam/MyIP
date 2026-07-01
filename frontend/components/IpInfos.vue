@@ -17,7 +17,7 @@
       <div v-for="(card, index) in ipDataCards.slice(0, ipCardsToShow)" :key="card.id" :ref="card.id" class="flex"
         :class="{ 'opacity-60': !card.ip || card.ip === t('ipInfos.IPv4Error') || card.ip === t('ipInfos.IPv6Error') }">
         <IPCard class="w-full" :card="card" :index="index" :isDarkMode="isDarkMode" :isMobile="isMobile"
-          :ipGeoSource="ipGeoSource" :isCardsCollapsed="isCardsCollapsed" :copiedStatus="copiedStatus"
+          :isCardsCollapsed="isCardsCollapsed" :copiedStatus="copiedStatus"
           :configs="configs" :asnInfos="asnInfos" @refresh-card="refreshCard" />
       </div>
     </div>
@@ -31,7 +31,7 @@ import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
 import { isValidIP } from '@/utils/valid-ip.js';
-import { transformDataFromIPapi } from '@/utils/transform-ip-data.js';
+import { fetchMergedIpDetails } from '@/utils/merge-ip-sources.js';
 import {
   getIPFromElinksNetV4,
   getIPFromElinksNetV6,
@@ -95,8 +95,6 @@ const asnInfos = ref({
 const ipCardsToShow = ref(2);
 const copiedStatus = ref({});
 const IPArray = ref([]);
-const ipGeoSource = ref(userPreferences.value.ipGeoSource);
-const usingSource = ref(userPreferences.value.ipGeoSource);
 const fetchStatus = reactive([]);
 
 // Middleware
@@ -213,15 +211,9 @@ const checkAllIPs = async () => {
 };
 
 // Get IP details from IP address
-const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
-  sourceID = sourceID ?? ipGeoSource.value;
+const fetchIPDetails = async (cardIndex, ip) => {
   const card = ipDataCards[cardIndex];
   card.ip = ip;
-  let setLang = lang.value;
-  if (setLang === 'zh') {
-    setLang = 'zh-CN';
-  }
-
   // Check if the IP data is already in the cache
   if (ipDataCache.has(ip)) {
     const cachedData = ipDataCache.get(ip);
@@ -241,42 +233,12 @@ const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
     return;
   }
 
-  const fetchPromise = (async () => {
-    const sources = store.ipDBs.filter(source => source.enabled);
-    if (sources.length === 0) {
-      throw new Error('No IP data sources are currently available');
-    }
-
-    let currentSourceIndex = sourceID !== null ? sources.findIndex(source => source.id === sourceID) : 0;
-    if (currentSourceIndex < 0) currentSourceIndex = 0;
-    let attempts = 0;
-
-    while (attempts < sources.length) {
-      const source = sources[currentSourceIndex];
-      try {
-        const url = store.getDbUrl(source.id, ip, setLang);
-        const response = await authenticatedFetch(url);
-        const cardData = transformDataFromIPapi(response, source.id, t, lang.value);
-
-        if (cardData) {
-          ipGeoSource.value = source.id;
-          usingSource.value = source.id;
-          store.updatePreference('ipGeoSource', source.id);
-          Object.assign(card, cardData);
-          ipDataCache.set(ip, cardData);
-          void fetchProxyRisk(ip);
-          return;
-        }
-      } catch (error) {
-        console.error("Error fetching IP details from source " + source.id + ":", error);
-        store.updateIPDBs({ id: source.id, enabled: false });
-        currentSourceIndex = (currentSourceIndex + 1) % sources.length;
-        attempts++;
-      }
-    }
-
-    throw new Error("All sources failed to fetch IP details for IP: " + ip);
-  })();
+  const fetchPromise = fetchMergedIpDetails({ store, ip, language: lang.value, t })
+    .then(cardData => {
+      Object.assign(card, cardData);
+      ipDataCache.set(ip, cardData);
+      void fetchProxyRisk(ip);
+    });
 
   // Store this Promise in pendingIPDetailsRequests to avoid duplicate queries
   pendingIPDetailsRequests.set(ip, fetchPromise);
@@ -290,34 +252,6 @@ const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
     // After completion, remove from pendingIPDetailsRequests
     pendingIPDetailsRequests.delete(ip);
   }
-};
-
-// When the IP database source is reselected, update the IP geographic data
-const selectIPGeoSource = () => {
-  // Clear partial data
-  ipDataCards.forEach((card) => {
-    const { ip, mapUrl, mapUrl_dark } = card;
-    Object.assign(card, createDefaultCard(), { ip, mapUrl, mapUrl_dark });
-  });
-
-  ipDataCache.clear();
-
-  // Try to update once, then get other IP data
-  let runningSource = fetchIPDetails(0, ipDataCards[0].ip, ipGeoSource.value);
-
-  // Re-fetch IP data
-  let index = 1;
-  const interval = setInterval(() => {
-    if (index < ipDataCards.length) {
-      const card = ipDataCards[index];
-      if (isValidIP(card.ip)) {
-        fetchIPDetails(index, card.ip, parseInt(runningSource));
-      }
-      index++;
-    } else {
-      clearInterval(interval);
-    }
-  }, 500);
 };
 
 // Refresh a card
@@ -340,14 +274,6 @@ const refreshCard = (card, index) => {
 const clearCardData = (card) => {
   Object.assign(card, createDefaultCard());
 };
-
-watch(() => userPreferences.value.ipGeoSource, (newVal, oldVal) => {
-  ipGeoSource.value = newVal;
-  if (newVal !== usingSource.value) {
-    selectIPGeoSource();
-  }
-});
-
 
 watch(IPArray, () => {
   store.updateAllIPs(IPArray.value);

@@ -166,7 +166,7 @@
       "popupConnectivityNotifications": "Pop-up Connectivity Alerts",
       "popupConnectivityNotificationsTips": "When enabled, the initial check's results are shown as a pop-up alert.",
       "ipDB": "IP Geolocation Database",
-      "ipDBTips": "You can select the default IP geolocation source to use. If the selected source is unavailable, the system will use the subsequent sources in order.",
+      "ipDBTips": "The system automatically queries every enabled and available IP source in parallel and merges complementary data.",
       "language": "Language Setting",
       "languageTips": "Refreshing the browser will take effect."
     }
@@ -467,7 +467,7 @@
     "id": "ipinfos",
     "database": "Database",
     "Title": "IP Infos",
-    "Notes": "The program will first check your IP address from different sources (including IPv4 and IPv6), and then query the corresponding geographical data from the IP geolocation source you selected. If there is only 1 IP stack, the source without data will be displayed as empty.",
+    "Notes": "The system detects IPv4 and IPv6, queries every available data source in parallel, and merges location, network, ASN, proxy status, and IP quality. One unavailable source will not affect the others.",
     "Simple": "Simple",
     "Map": "Map",
     "MapUnavailable": "Map Unavailable",

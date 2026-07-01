@@ -15,7 +15,11 @@ function transformDataFromIPapi(data, ipGeoSource, t, mapLanguage) {
         asn: data.asn || "",
         asnlink: data.asn ? data.asn.startsWith('AS') ? `https://bgp.tools/as/${data.asn}` : false : false,
         mapUrl: "",
-        mapUrl_dark: ""
+        mapUrl_dark: "",
+        isProxy: data.isProxy === true
+            ? t('ipInfos.advancedData.proxyYes')
+            : data.isProxy === false ? t('ipInfos.advancedData.proxyNo') : "",
+        type: data.isHosting ? t('ipInfos.advancedData.type.Hosting') : ""
     };
 
     if (ipGeoSource === 0) {
@@ -36,7 +40,9 @@ function extractAdvancedData(advancedData = {}, t) {
     const qualityScore = advancedData.score === 'sign_in_required' ? 'sign_in_required' : advancedData.score;
     const proxyProtocol = determineProtocol(advancedData, t);
     const proxyOperator = advancedData.proxyProvider || "";
-    const isNativeIP = advancedData.tags === 'sign_in_required' ? 'sign_in_required' : advancedData.tags.isNative;
+    const isNativeIP = advancedData.tags === 'sign_in_required'
+        ? 'sign_in_required'
+        : advancedData.tags?.isNative;
 
     return { isProxy, type, qualityScore, proxyProtocol, proxyOperator, isNativeIP };
 }
@@ -46,11 +52,11 @@ function determineIsProxy(advancedData, t) {
 
     if (advancedData.tags === 'sign_in_required') {
         return 'sign_in_required';
-    } else if (advancedData.tags.isProxyOrVPN && advancedData.proxyProtocol !== 'unknown') {
+    } else if (advancedData.tags?.isProxyOrVPN && advancedData.proxyProtocol !== 'unknown') {
         return t('ipInfos.advancedData.proxyYes');
-    } else if (advancedData.tags.isProxyOrVPN) {
+    } else if (advancedData.tags?.isProxyOrVPN) {
         return t('ipInfos.advancedData.proxyMaybe');
-    } else if (!advancedData.tags.isProxyOrVPN) {
+    } else if (advancedData.tags && !advancedData.tags.isProxyOrVPN) {
         return t('ipInfos.advancedData.proxyNo');
     } else {
         return t('ipInfos.advancedData.proxyUnknown');

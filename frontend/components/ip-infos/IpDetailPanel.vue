@@ -222,7 +222,6 @@ const { t } = useI18n();
 
 const props = defineProps({
     data: { type: Object, required: true },
-    ipGeoSource: { type: Number, required: true },
     asnInfos: { type: Object, required: true },
     configs: { type: Object, required: true },
     isDarkMode: { type: Boolean, required: true },
@@ -238,8 +237,13 @@ const props = defineProps({
 const isAsnOpen = ref(false);
 const isMapDialogOpen = ref(false);
 
-// Advanced block only surfaces for the ElinksNet source (ipGeoSource === 0).
-const showAdvancedBlock = computed(() => props.ipGeoSource === 0 && Boolean(props.data));
+// Show every advanced field that any fused source or the proxy-risk lookup supplied.
+const showAdvancedBlock = computed(() => Boolean(
+    props.data && (
+        props.data.type || props.data.isProxy || props.data.isNativeIP !== undefined
+        || props.data.qualityScore !== undefined || props.data.proxyProtocol
+    )
+));
 
 // OpenStreetMap requires no deployment API key.
 const canShowMap = computed(() =>

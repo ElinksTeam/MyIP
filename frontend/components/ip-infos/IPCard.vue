@@ -9,10 +9,13 @@
                     class="inline-flex items-center justify-center size-5 rounded-full bg-foreground text-background text-xs font-semibold shrink-0">
                     {{ index + 1 }}
                 </span>
-                <span class="text-sm font-medium truncate">
-                    <span class="text-muted-foreground">{{ t('ipInfos.Source') }}:</span>
-                    {{ card.source }}
-                </span>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-medium">{{ card.source }}</p>
+                    <p v-if="card.sourceCount" class="truncate text-[11px] text-muted-foreground"
+                        :title="card.dataSources?.join(' · ')">
+                        {{ sourceSummary }}
+                    </p>
+                </div>
             </div>
             <JnTooltip :text="t('Tooltips.RefreshIPCard')" side="left">
                 <Button size="icon" variant="outline" class="size-8 shrink-0 cursor-pointer"
@@ -56,7 +59,7 @@
                     </div>
                 </div>
 
-                <IpDetailPanel :data="card" :index="index" :ip-geo-source="ipGeoSource" :asn-infos="asnInfos"
+                <IpDetailPanel :data="card" :index="index" :asn-infos="asnInfos"
                     :configs="configs" :is-dark-mode="isDarkMode" :collapsed="isMobile && isCardsCollapsed"
                     :enable-map="true" />
             </template>
@@ -97,7 +100,7 @@ import {
     ShieldCheck,
 } from 'lucide-vue-next';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const productCopy = useProductCopy();
 
 const placeholderSizes = [12, 8, 6, 8, 4];
@@ -107,7 +110,6 @@ const props = defineProps({
     index: { type: Number, required: true },
     isDarkMode: { type: Boolean, required: true },
     isMobile: { type: Boolean, required: true },
-    ipGeoSource: { type: Number, required: true },
     isCardsCollapsed: { type: Boolean, required: true },
     copiedStatus: { type: Object, required: true },
     configs: { type: Object, required: true },
@@ -143,6 +145,15 @@ const qualityClass = computed(() => {
     if (score >= 80) return 'bg-success';
     if (score >= 50) return 'bg-warning';
     return 'bg-destructive';
+});
+const sourceSummary = computed(() => {
+    const labels = {
+        zh: `多源融合 · ${props.card.sourceCount} 个来源`,
+        en: `Fused intelligence · ${props.card.sourceCount} sources`,
+        fr: `Données fusionnées · ${props.card.sourceCount} sources`,
+        tr: `Birleşik veri · ${props.card.sourceCount} kaynak`,
+    };
+    return labels[locale.value?.split('-')[0]] || labels.en;
 });
 
 const copyToClipboard = (ip, id) => {

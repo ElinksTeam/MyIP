@@ -61,23 +61,6 @@
                     </ToggleGroup>
                 </section>
 
-                <!-- IP Geo DB -->
-                <section id="Pref_ipGeoSource">
-                    <SectionTitle :icon="Database">{{ t('nav.preferences.ipDB') }}</SectionTitle>
-                    <Select :model-value="String(userPreferences.ipGeoSource)"
-                        @update:model-value="(v) => v != null && prefipGeoSource(Number(v))">
-                        <SelectTrigger class="w-full shadow-none">
-                            <SelectValue>{{ currentIpDB?.text || '—' }}</SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="ipdb in availableIpDBs" :key="ipdb.id" :value="String(ipdb.id)">
-                                {{ ipdb.text }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <SectionTip>{{ t('nav.preferences.ipDBTips') }}</SectionTip>
-                </section>
-
                 <!-- App Settings -->
                 <section id="Pref_appSettings">
                     <SectionTitle :icon="AppWindow">{{ t('nav.preferences.appSettings') }}</SectionTitle>
@@ -120,7 +103,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Icon } from '@iconify/vue';
 import {
     AppWindow,
-    Database,
     Globe,
     Languages,
     LaptopMinimal,
@@ -136,8 +118,6 @@ const store = useMainStore();
 const isDarkMode = computed(() => store.isDarkMode);
 const isMobile = computed(() => store.isMobile);
 const userPreferences = computed(() => store.userPreferences);
-const ipDBs = computed(() => store.ipDBs);
-const availableIpDBs = computed(() => store.ipDBs.filter(db => db.enabled));
 const isSignedIn = computed(() => store.isSignedIn);
 
 const isOpen = computed(() => store.openSheet === 'preferences');
@@ -163,11 +143,6 @@ const themeOptions = [
     { value: 'dark', label: t('nav.preferences.colorDark'), icon: Moon },
     { value: 'auto', label: t('nav.preferences.systemAuto'), icon: LaptopMinimal },
 ];
-
-// Current selected IP DB (for SelectValue display)
-const currentIpDB = computed(() =>
-    ipDBs.value.find(db => db.id === userPreferences.value.ipGeoSource)
-);
 
 // Theme coordination — applies the user's preference ("light" / "dark" / "auto")
 // to the store, <html> `.dark` class, body class, and PWA meta colors.
@@ -244,12 +219,6 @@ const prefAutoStart = (value) => {
 const prefconnectivityShowNoti = (value) => {
     store.updatePreference('popupConnectivityNotifications', value);
     trackEvent('Nav', 'PrefereceClick', 'ConnectivityNotifications');
-};
-
-const prefipGeoSource = (value) => {
-    store.updatePreference('ipGeoSource', value);
-    trackEvent('Nav', 'PrefereceClick', 'ipGeoSource');
-    trackEvent('IPCheck', 'SelectSource', ipDBs.value.find(x => x.id === value).text);
 };
 
 onMounted(() => {

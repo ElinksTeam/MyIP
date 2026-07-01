@@ -166,7 +166,7 @@
       "popupConnectivityNotifications": "Açılır Bağlantı Uyarıları",
       "popupConnectivityNotificationsTips": "Etkinleştirildiğinde, ilk kontrolün sonuçları açılır bir uyarı olarak gösterilir.",
       "ipDB": "IP Coğrafi Konum Veritabanı",
-      "ipDBTips": "Kullanılacak varsayılan IP coğrafi konum kaynağını seçebilirsiniz. Seçilen kaynak kullanılamıyorsa, sistem sırayla sonraki kaynakları kullanacaktır.",
+      "ipDBTips": "Sistem etkin ve kullanılabilir tüm IP kaynaklarını otomatik olarak paralel sorgular ve tamamlayıcı verileri birleştirir.",
       "language": "Dil Ayarı",
       "languageTips": "Tarayıcıyı yenilemek etkili olacaktır."
     }
@@ -466,7 +466,7 @@
     "id": "ipinfos",
     "database": "Veritabanı",
     "Title": "IP Bilgileri",
-    "Notes": "Program önce IP adresinizi farklı kaynaklardan (IPv4 ve IPv6 dahil) kontrol edecek ve ardından seçtiğiniz IP coğrafi konum kaynağından ilgili coğrafi verileri sorgulayacaktır. Yalnızca 1 IP yığını varsa, verisi olmayan kaynak boş olarak görüntülenecektir.",
+    "Notes": "Sistem IPv4 ve IPv6'yı algılar, kullanılabilir tüm kaynakları paralel sorgular ve konum, ağ, ASN, proxy durumu ile IP kalitesi verilerini birleştirir. Bir kaynağın kullanılamaması diğerlerini etkilemez.",
     "Simple": "Basit",
     "Map": "Harita",
     "MapUnavailable": "Harita Kullanılamıyor",
