@@ -139,7 +139,7 @@ Téléchargez `GeoLite2-City.mmdb` et `GeoLite2-ASN.mmdb` depuis votre compte Ma
 | `SECURITY_DELAY_AFTER` | Optionnel | `"0"` | Contrôle le délai après des requêtes répétées depuis la même IP |
 | `SECURITY_BLACKLIST_LOG_FILE_PATH` | Optionnel | `"logs/blacklist-ip.log"` | Enregistre les IP ayant déclenché les limites |
 | `ALLOWED_DOMAINS` | Optionnel | `""` | Domaines autorisés, séparés par des virgules, pour éviter les abus de l'API backend |
-| `GOOGLE_MAP_API_KEY` | Optionnel | `""` | Clé API Google Maps pour afficher l'emplacement de l'IP |
+Les cartes utilisent OpenStreetMap et ne nécessitent aucune clé API.
 | `ELINKSNET_API_ENDPOINT` | Optionnel | `""` | Endpoint privé de l'API ElinksNet |
 | `ELINKSNET_API_KEY` | Optionnel | `""` | Clé privée de l'API ElinksNet |
 | `IPINFO_API_TOKEN` | Optionnel | `""` | Jeton API IPInfo.io |

@@ -175,8 +175,14 @@
                     </span>
                 </template>
             </DialogHeader>
-            <img :src="isDarkMode ? data.mapUrl_dark : data.mapUrl"
-                class="w-full rounded-md border bg-muted aspect-2/1 object-cover" alt="Map">
+            <iframe :src="osmEmbedUrl"
+                class="w-full rounded-md border bg-muted aspect-2/1"
+                loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                title="OpenStreetMap location"></iframe>
+            <a :href="osmViewUrl" target="_blank" rel="noopener noreferrer"
+                class="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+                OpenStreetMap
+            </a>
         </DialogContent>
     </Dialog>
 </template>
@@ -235,10 +241,20 @@ const isMapDialogOpen = ref(false);
 // Advanced block only surfaces for the ElinksNet source (ipGeoSource === 0).
 const showAdvancedBlock = computed(() => props.ipGeoSource === 0 && Boolean(props.data));
 
-// Map button is gated on the deployment having a Google Maps key (configs.map) + location data.
-// enableMap is the consumer-level opt-in.
+// OpenStreetMap requires no deployment API key.
 const canShowMap = computed(() =>
-    props.enableMap && Boolean(props.configs.map) && Boolean(props.data.country_name)
+    props.enableMap && Number.isFinite(Number(props.data.latitude))
+    && Number.isFinite(Number(props.data.longitude))
+);
+const osmEmbedUrl = computed(() => {
+    const lat = Number(props.data.latitude);
+    const lon = Number(props.data.longitude);
+    const delta = 0.08;
+    const bbox = [lon - delta, lat - delta, lon + delta, lat + delta].join(',');
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&marker=${encodeURIComponent(`${lat},${lon}`)}&layer=mapnik`;
+});
+const osmViewUrl = computed(() =>
+    `https://www.openstreetmap.org/?mlat=${encodeURIComponent(props.data.latitude)}&mlon=${encodeURIComponent(props.data.longitude)}#map=11/${encodeURIComponent(props.data.latitude)}/${encodeURIComponent(props.data.longitude)}`
 );
 
 // If every advanced field is masked behind login → show the single CTA + preview grid instead

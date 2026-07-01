@@ -139,7 +139,7 @@ ElinksNet 依赖 MaxMind 提供的免费 **GeoLite2** 数据库（City + ASN）�
 | `SECURITY_DELAY_AFTER` | 可选 | `"0"` | 控制同一 IP 重复请求后的延迟行为 |
 | `SECURITY_BLACKLIST_LOG_FILE_PATH` | 可选 | `"logs/blacklist-ip.log"` | 记录触发速率限制的 IP |
 | `ALLOWED_DOMAINS` | 可选 | `""` | 允许访问的域名，用逗号分隔，用于防止后端 API 被滥用 |
-| `GOOGLE_MAP_API_KEY` | 可选 | `""` | Google 地图 API Key，用于展示 IP 所在地地图 |
+地图使用 OpenStreetMap，无需 API Key。
 | `ELINKSNET_API_ENDPOINT` | 可选 | `""` | ElinksNet 私有 API 端点 |
 | `ELINKSNET_API_KEY` | 可选 | `""` | ElinksNet 私有 API 密钥 |
 | `IPINFO_API_TOKEN` | 可选 | `""` | IPInfo.io API Token |

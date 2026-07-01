@@ -9,7 +9,6 @@ import { requireReferer, requireValidIP } from './common/guards.js';
 
 // Backend API handlers live outside /api so Vercel bundles this Express app
 // as one function instead of counting every handler as a separate function.
-import mapHandler from './server/handlers/google-map.js';
 // IP Info
 import ipinfoHandler from './server/handlers/ipinfo-io.js';
 import ipapicomHandler from './server/handlers/ipapi-com.js';
@@ -173,7 +172,6 @@ app.use('/api', requireReferer);
 
 // APIs. Routes that validate an `?ip=` param attach requireValidIP() so the
 // handler body no longer repeats the check.
-app.get('/api/map', mapHandler);
 app.get('/api/ipinfo', requireValidIP(), ipinfoHandler);
 app.get('/api/ipapicom', requireValidIP(), ipapicomHandler);
 app.get('/api/elinksnet', requireValidIP(), elinksNetIpHandler);

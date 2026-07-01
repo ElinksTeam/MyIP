@@ -151,7 +151,7 @@ Download `GeoLite2-City.mmdb` and `GeoLite2-ASN.mmdb` from your MaxMind account 
 | `SECURITY_DELAY_AFTER` | Optional | `"0"` | Controls request delay behavior after repeated requests from the same IP |
 | `SECURITY_BLACKLIST_LOG_FILE_PATH` | Optional | `"logs/blacklist-ip.log"` | Records IPs that triggered rate limits |
 | `ALLOWED_DOMAINS` | Optional | `""` | Allowed domains for access, separated by commas, used to prevent misuse of the backend API |
-| `GOOGLE_MAP_API_KEY` | Optional | `""` | API Key for Google Maps, used to display the location of the IP on a map |
+Maps use OpenStreetMap and do not require an API key.
 | `ELINKSNET_API_ENDPOINT` | Optional | `""` | Private ElinksNet API endpoint |
 | `ELINKSNET_API_KEY` | Optional | `""` | Private ElinksNet API key |
 | `IPINFO_API_TOKEN` | Optional | `""` | API Token for IPInfo.io |

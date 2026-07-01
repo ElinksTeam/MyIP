@@ -12,7 +12,6 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 
 import configsHandler from '../server/handlers/configs.js';
-import googleMapHandler from '../server/handlers/google-map.js';
 import dnsResolverHandler from '../server/handlers/dns-resolver.js';
 import getUserInfoHandler from '../server/handlers/get-user-info.js';
 import getWhoisHandler from '../server/handlers/get-whois.js';
@@ -252,18 +251,16 @@ describe('Elinks AI security advice handler', () => {
         assert.equal(res.statusCode, 503);
         assert.deepEqual(res.body, { error: 'Elinks AI is not configured' });
     });
-});
 
-// -- google-map handler ---------------------------------------------------
-
-describe('google-map handler', () => {
-    it('rejects invalid map parameters without calling the external API', () => {
+    it('requires a question before contacting Groq', async () => {
+        process.env.GROQ_API_KEY = 'test-only';
         const res = createResponse();
-        googleMapHandler(createRequest({
-            query: { latitude: 'not-a-number', longitude: '0', language: 'en' },
+        await aiSecurityAdviceHandler(createRequest({
+            method: 'POST',
+            body: { language: 'zh', diagnostics: { cards: [] } },
         }), res);
         assert.equal(res.statusCode, 400);
-        assert.deepEqual(res.body, { error: 'Invalid request' });
+        assert.deepEqual(res.body, { error: 'Question is required' });
     });
 });
 

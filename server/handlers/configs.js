@@ -18,7 +18,7 @@ export default (req, res) => {
 
     const { key: elinksNetApiKey } = getElinksNetApiConfig();
     const envConfigs = {
-        map: process.env.GOOGLE_MAP_API_KEY,
+        map: true,
         ipInfo: process.env.IPINFO_API_TOKEN,
         elinksNet: elinksNetApiKey,
         ip2location: process.env.IP2LOCATION_API_KEY,

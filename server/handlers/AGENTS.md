@@ -18,7 +18,6 @@ lives under `common/` and is also consumed by the frontend where it makes sense
 ```
 server/handlers/
 ├── configs.js                   ← /api/configs — reports which env-gated features are on
-├── google-map.js                ← /api/map — Google Static Maps image proxy (binary stream)
 ├── ipinfo-io.js, ipapi-com.js, ipapi-is.js, ip2location-io.js, ip-sb.js,
 │   elinksnet-ip.js, maxmind.js  ← IP geolocation source handlers (route per source)
 ├── invisibility-test.js         ← /api/invisibility — proxy to private ElinksNet endpoint
