@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NetworkDiagnostics } from "@/components/network-diagnostics";
 
 type IpData = {
   ip: string; city: string | null; region: string | null; district: string | null; country: string | null;
@@ -118,6 +119,7 @@ export function IpDashboard() {
           </Card>
         </div>
       </div>
+      <NetworkDiagnostics report={result} />
 
       <Button className="fixed bottom-6 right-6 z-30 shadow-xl" variant="primary" onPress={() => setAiOpen(true)}><Sparkles className="size-4" /> Elinks AI</Button>
       {aiOpen && <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/45 p-3 backdrop-blur-sm sm:p-6" onClick={() => setAiOpen(false)}>

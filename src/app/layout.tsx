@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="zh-CN" className={`dark ${geist.variable} ${mono.variable}`} data-theme="dark">
       <body className="font-sans antialiased">
         {children}
+        <PwaRegister />
       </body>
     </html>
   );
