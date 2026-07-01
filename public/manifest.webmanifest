@@ -1,7 +1,7 @@
 {
   "name": "ElinksNet",
   "short_name": "ElinksNet",
-  "description": "Open source IP and network toolbox",
+  "description": "ElinksNet 跨境网络情报、安全诊断与连接质量平台",
   "id": "com.elinksteam.elinksnet",
   "start_url": "/",
   "scope": "/",
