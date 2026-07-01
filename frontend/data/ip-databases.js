@@ -1,10 +1,10 @@
 // IP database definitions
 //
 // Each item: { id, text, url, enabled }
-// - id    numeric identifier, referenced elsewhere in the app (e.g. userPreferences.ipGeoSource)
+// - id    stable numeric provider identifier used by normalization logic
 // - text  UI display name, also lookup key (e.g. `WebRtcTest.vue` looks for "MaxMind")
 // - url   template string, {{ip}} and {{lang}} will be replaced by buildDbUrl()
-// - enabled initial enabled state (user can toggle in Preferences, store will write back this field)
+// - enabled initial availability; configured providers are enabled by /api/configs
 
 export const IP_DATABASES = [
   // Keyless sources are ordered first so a fresh deployment works immediately.

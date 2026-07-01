@@ -203,19 +203,11 @@ const checkAllIPs = async () => {
     () => fetchIP(0, getIPFromElinksNetV4),
     () => fetchIP(1, getIPFromElinksNetV6),
   ];
-
-  // Limit the number of functions to execute to the length of ipCardsToShow
-  const maxIndex = ipCardsToShow.value;
-
-  let index = 0;
-  const interval = setInterval(() => {
-    if (index < maxIndex && index < ipFunctions.length) {
-      ipFunctions[index].call(this);
-      index++;
-    } else {
-      clearInterval(interval);
-    }
-  }, 500);
+  const tasks = ipFunctions.slice(0, ipCardsToShow.value);
+  for (const [index, task] of tasks.entries()) {
+    if (index > 0) await new Promise(resolve => setTimeout(resolve, 350));
+    await task();
+  }
 };
 
 // Get IP details from IP address

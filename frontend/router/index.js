@@ -18,22 +18,31 @@ const DockerDeploy = () => import('../components/advanced-tools/DockerDeploy.vue
 const ServiceStatus = () => import('../components/advanced-tools/ServiceStatus.vue');
 const EmptyComponent = () => import('../components/advanced-tools/Empty.vue');
 
+const toolRoutes = [
+  ['/pingtest', 'ping-test', PingTest],
+  ['/mtrtest', 'mtr-test', MTRTest],
+  ['/ruletest', 'rule-test', RuleTest],
+  ['/dnsresolver', 'dns-resolver', DNSResolver],
+  ['/censorshipcheck', 'censorship-check', CensorshipCheck],
+  ['/whois', 'whois', Whois],
+  ['/rdap', 'rdap', RdapLookup],
+  ['/macchecker', 'mac-checker', MacChecker],
+  ['/browserinfo', 'browser-info', BrowserInfo],
+  ['/securitychecklist', 'security-checklist', Checklist],
+  ['/invisibilitytest', 'invisibility-test', InvisibilityTest],
+  ['/cli', 'cli-docs', CliDocs],
+  ['/docker', 'docker-deploy', DockerDeploy],
+  ['/status', 'service-status', ServiceStatus],
+].map(([path, name, component], toolIndex) => ({
+  path,
+  name,
+  component,
+  meta: { toolIndex },
+}));
+
 const routes = [
-  { path: '/', component: EmptyComponent },
-  { path: '/pingtest', component: PingTest },
-  { path: '/mtrtest', component: MTRTest },
-  { path: '/ruletest', component: RuleTest },
-  { path: '/dnsresolver', component: DNSResolver },
-  { path: '/censorshipcheck', component: CensorshipCheck },
-  { path: '/whois', component: Whois },
-  { path: '/rdap', component: RdapLookup },
-  { path: '/macchecker', component: MacChecker },
-  { path: '/browserinfo', component: BrowserInfo },
-  { path: '/securitychecklist', component: Checklist },
-  { path: '/invisibilitytest', component: InvisibilityTest },
-  { path: '/cli', component: CliDocs },
-  { path: '/docker', component: DockerDeploy },
-  { path: '/status', component: ServiceStatus },
+  { path: '/', name: 'dashboard', component: EmptyComponent },
+  ...toolRoutes,
 ];
 
 const router = createRouter({
@@ -41,26 +50,16 @@ const router = createRouter({
   routes,
 });
 
-const setOpenedCard = (currentPath) => {
-  for (let i = 0; i < routes.length; i++) {
-    if (currentPath === routes[i].path) {
-      return i - 1;
-    }
-  }
-};
-
 router.afterEach((to) => {
   const store = useMainStore();
-
-
-  if (!routes.find(route => route.path === to.path)) {
+  if (!to.matched.length) {
     if (store.openSheet === 'tools') {
       store.setOpenSheet(null);
     }
     return;
   }
 
-  store.setCurrentPath(to.path, setOpenedCard(to.path));
+  store.setCurrentPath(to.path, to.meta.toolIndex);
 
   if (to.path !== '/') {
     store.setOpenSheet('tools');

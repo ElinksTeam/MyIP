@@ -223,23 +223,14 @@ describe('store — preferences', () => {
     globalThis.localStorage.setItem('userPreferences', '{not-json');
     const s = useMainStore();
     s.loadPreferences();
-    assert.equal(s.userPreferences.ipGeoSource, 7);
+    assert.equal('ipGeoSource' in s.userPreferences, false);
   });
 
-  it('migrates an unavailable saved IP source to keyless IPWho.is', () => {
+  it('enables configured providers without creating a selected source', () => {
     const s = useMainStore();
-    s.setPreferences({ ipGeoSource: 0 });
-    s.applyIpSourceAvailability({});
-    assert.equal(s.userPreferences.ipGeoSource, 7);
-    assert.equal(s.ipDBs.find(db => db.id === 0).enabled, false);
-    assert.equal(s.ipDBs.find(db => db.id === 7).enabled, true);
-  });
-
-  it('keeps a configured source selected when the deployment enables it', () => {
-    const s = useMainStore();
-    s.setPreferences({ ipGeoSource: 0 });
+    s.setPreferences({});
     s.applyIpSourceAvailability({ elinksNet: true });
-    assert.equal(s.userPreferences.ipGeoSource, 0);
+    assert.equal('ipGeoSource' in s.userPreferences, false);
     assert.equal(s.ipDBs.find(db => db.id === 0).enabled, true);
   });
 });

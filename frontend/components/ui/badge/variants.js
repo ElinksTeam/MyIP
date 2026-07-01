@@ -10,9 +10,9 @@ export const badgeVariants = cva(
       variant: {
         default: 'border-transparent bg-primary text-primary-foreground shadow',
         secondary: 'border-transparent bg-secondary text-secondary-foreground',
-        destructive: 'border-transparent bg-destructive text-destructive-foreground shadow',
+        destructive: 'border-destructive/20 bg-destructive/10 text-destructive shadow-none',
         outline: 'text-foreground',
-        success: 'border-transparent bg-success text-success-foreground shadow',
+        success: 'border-success/20 bg-success/10 text-success shadow-none',
       },
     },
     defaultVariants: { variant: 'default' },

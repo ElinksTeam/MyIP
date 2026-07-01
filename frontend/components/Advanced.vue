@@ -1,6 +1,6 @@
 <template>
   <section class="advanced-tools-section mb-10">
-    <div class="mb-5 overflow-hidden rounded-xl border bg-card shadow-sm">
+    <div class="mb-5 overflow-hidden rounded-2xl bg-card shadow-[0_1px_2px_rgb(15_23_42_/_0.04),0_14px_40px_rgb(15_23_42_/_0.06)] ring-1 ring-border/50">
       <div class="relative p-5 sm:p-6">
         <div class="advanced-grid-pattern absolute inset-y-0 right-0 hidden w-2/5 opacity-50 lg:block" />
         <div class="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -16,7 +16,7 @@
           </div>
           <div class="grid grid-cols-3 gap-2 sm:min-w-[360px]">
             <div v-for="metric in workspaceMetrics" :key="metric.label"
-              class="rounded-lg border bg-background/70 px-3 py-2.5">
+              class="rounded-xl bg-muted/45 px-3 py-2.5 ring-1 ring-border/40">
               <p class="font-mono text-lg font-semibold">{{ metric.value }}</p>
               <p class="text-[11px] text-muted-foreground">{{ metric.label }}</p>
             </div>

@@ -37,6 +37,7 @@
 
 <script setup>
 import { computed, ref } from 'vue';
+import { api } from '@/services/api-client.js';
 import { useMainStore } from '@/store';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -75,10 +76,7 @@ async function lookup() {
   error.value = '';
   result.value = null;
   try {
-    const response = await fetch(`/api/rdap?query=${encodeURIComponent(query.value.trim())}`);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || copy.value.search);
-    result.value = data;
+    result.value = await api.rdap(query.value.trim());
   } catch (err) {
     error.value = err.message;
   } finally {

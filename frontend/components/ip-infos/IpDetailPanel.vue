@@ -231,6 +231,7 @@ import {
     SignalHigh,
     Waypoints,
 } from 'lucide-vue-next';
+import { api } from '@/services/api-client.js';
 
 const { t, locale } = useI18n();
 
@@ -379,8 +380,7 @@ const getASNInfo = async (asn) => {
     try {
         if (props.asnInfos[asn]) return;
         asn = asn.replace('AS', '');
-        const response = await fetch(`/api/cfradar?asn=${asn}`);
-        const data = await response.json();
+        const data = await api.asn(asn);
         props.asnInfos['AS' + asn] = data;
     } catch (error) {
         console.error('Error fetching ASN info:', error);

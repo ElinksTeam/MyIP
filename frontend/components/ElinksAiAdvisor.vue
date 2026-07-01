@@ -80,6 +80,7 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Bot, LoaderCircle, LockKeyhole, ScanSearch, Send, Sparkles, X } from 'lucide-vue-next';
+import { api } from '@/services/api-client.js';
 
 const props = defineProps({
   getDiagnostics: { type: Function, required: true },
@@ -158,18 +159,12 @@ async function send() {
   await scrollToBottom();
 
   try {
-    const response = await fetch('/api/ai/security-advice', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        language: store.lang,
-        question: content,
-        diagnostics: props.getDiagnostics(),
-        history: messages.value.slice(-7, -1),
-      }),
+    const data = await api.aiAdvice({
+      language: store.lang,
+      question: content,
+      diagnostics: props.getDiagnostics(),
+      history: messages.value.slice(-7, -1),
     });
-    if (!response.ok) throw new Error('AI unavailable');
-    const data = await response.json();
     messages.value.push({ role: 'assistant', content: data.answer });
   } catch {
     messages.value.push({ role: 'assistant', content: copy.error });

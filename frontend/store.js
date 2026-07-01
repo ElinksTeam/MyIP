@@ -6,6 +6,7 @@ import { createInitialAchievementsState } from './data/achievements.js';
 import { createInitialIpDBs, buildDbUrl } from './data/ip-databases.js';
 import { createDefaultPreferences } from './data/default-preferences.js';
 import { createMountingStatus, createLoadingStatus, DEFAULT_SECTION } from './data/sections.js';
+import { api } from './services/api-client.js';
 const { t } = i18n.global;
 
 export const useMainStore = defineStore('main', {
@@ -126,7 +127,8 @@ export const useMainStore = defineStore('main', {
       if (storedPreferences) {
         try {
           const currentPreferences = JSON.parse(storedPreferences);
-          preferencesToStore = { ...defaultPreferences, ...currentPreferences, ipCardsToShow: 2 };
+          const { ipGeoSource: _obsoleteSource, ...supportedPreferences } = currentPreferences;
+          preferencesToStore = { ...defaultPreferences, ...supportedPreferences, ipCardsToShow: 2 };
         } catch {
           preferencesToStore = defaultPreferences;
         }
@@ -150,19 +152,11 @@ export const useMainStore = defineStore('main', {
         this.updateIPDBs({ id: Number(id), enabled });
       }
 
-      const selectedSource = this.ipDBs.find(db => db.id === this.userPreferences.ipGeoSource);
-      if (!selectedSource?.enabled) {
-        this.updatePreference('ipGeoSource', 7);
-      }
     },
     // fetch configs from server
     async fetchConfigs() {
       try {
-        const response = await fetch('/api/configs', { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        this.configs = await response.json();
+        this.configs = await api.configs();
         this.applyIpSourceAvailability(this.configs);
         return this.configs;
       } catch (error) {

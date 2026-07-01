@@ -25,7 +25,12 @@
           <p class="mt-1 text-xs text-muted-foreground">{{ service.note }}</p>
         </div>
         <div class="text-right">
-          <Badge :variant="service.status === 'online' ? 'secondary' : 'outline'">
+          <Badge variant="outline"
+            :class="service.status === 'online'
+              ? 'border-success/20 bg-success/10 text-success'
+              : service.status === 'offline'
+                ? 'border-destructive/20 bg-destructive/10 text-destructive'
+                : 'border-muted bg-muted/60 text-muted-foreground'">
             {{ label(service.status) }}
           </Badge>
           <p v-if="service.latency !== null" class="mt-1 font-mono text-[11px] text-muted-foreground">
@@ -44,6 +49,7 @@ import { useMainStore } from '@/store';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-vue-next';
+import { api } from '@/services/api-client.js';
 
 const store = useMainStore();
 const loading = ref(false);
@@ -83,9 +89,9 @@ async function runChecks() {
     }
     const started = performance.now();
     try {
-      const response = await fetch(service.url, { cache: 'no-store' });
+      await api.get(service.url, { cache: 'no-store' });
       service.latency = Math.round(performance.now() - started);
-      service.status = response.ok ? 'online' : 'offline';
+      service.status = 'online';
     } catch {
       service.status = 'offline';
     }

@@ -58,6 +58,7 @@ import { useMainStore } from '@/store';
 import { isValidIP } from '@/utils/valid-ip.js';
 import { heroIpSizeClass } from '@/utils/hero-ip-size.js';
 import { fetchMergedIpDetails } from '@/utils/merge-ip-sources.js';
+import { api } from '@/services/api-client.js';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
@@ -116,7 +117,7 @@ const fetchIPForModal = async (ip) => {
     try {
         const [details, risk] = await Promise.all([
             fetchMergedIpDetails({ store, ip, language: lang.value, t }),
-            fetch(`/api/proxy-risk?ip=${encodeURIComponent(ip)}`).then(response => response.ok ? response.json() : null),
+            api.proxyRisk(ip).catch(() => null),
         ]);
         if (risk) {
             Object.assign(details, {

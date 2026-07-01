@@ -20,7 +20,6 @@ describe('DEFAULT_PREFERENCES', () => {
       hideUnavailableIPStack: false,
       popupConnectivityNotifications: true,
       ipCardsToShow: 2,
-      ipGeoSource: 7,
       lang: 'auto',
     });
   });
