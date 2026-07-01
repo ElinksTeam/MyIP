@@ -111,8 +111,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ too
         ipapiis: Boolean(process.env.IPAPIIS_API_KEY),
         ipinfo: Boolean(process.env.IPINFO_API_TOKEN),
         ip2location: Boolean(process.env.IP2LOCATION_API_KEY),
-        mac: Boolean(process.env.MAC_LOOKUP_API_KEY),
-        invisibility: Boolean((process.env.ELINKSNET_API_ENDPOINT || process.env.IPCHECKING_API_ENDPOINT) && (process.env.ELINKSNET_API_KEY || process.env.IPCHECKING_API_KEY)),
+        mac: true,
+        invisibility: true,
       } });
     }
     return NextResponse.json({ error: "未知工具" }, { status: 404 });

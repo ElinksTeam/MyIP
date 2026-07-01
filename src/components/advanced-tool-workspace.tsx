@@ -7,6 +7,7 @@ import {
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useLocale } from "@/components/locale-provider";
 
 type Json = Record<string, unknown>;
 const LOCATIONS = ["HK", "TW", "CN", "JP", "SG", "IN", "RU", "US", "CA", "AU", "GB", "DE", "BR", "ZA", "KR", "FR"].map((country) => ({ country }));
@@ -28,15 +29,17 @@ export function AdvancedToolWorkspace({ slug, name }: { slug: string; name: stri
   if (slug === "rules") return <RuleTool />;
   if (slug === "security") return <SecurityTool />;
   if (slug === "invisibility") return <InvisibilityTool />;
+  if (slug === "passport") return <PassportTool />;
   return <Card><CardContent><p>{name} 已接入。</p></CardContent></Card>;
 }
 
 function ToolForm({ value, onChange, onRun, loading, placeholder, action = "开始检测", children }: {
   value: string; onChange: (value: string) => void; onRun: () => void; loading: boolean; placeholder: string; action?: string; children?: React.ReactNode;
 }) {
+  const { t } = useLocale();
   return <Card className="mb-6"><CardContent className="space-y-4">
     {children}
-    <div className="flex flex-col gap-3 sm:flex-row"><Input value={value} onChange={(event) => onChange(event.target.value)} onKeyDown={(event) => event.key === "Enter" && onRun()} placeholder={placeholder} className="font-mono" /><Button variant="primary" onPress={onRun} isDisabled={loading || !value.trim()}>{loading ? <LoaderCircle className="size-4 animate-spin" /> : <Play className="size-4" />}{loading ? "检测中…" : action}</Button></div>
+    <div className="flex flex-col gap-3 sm:flex-row"><Input value={value} onChange={(event) => onChange(event.target.value)} onKeyDown={(event) => event.key === "Enter" && onRun()} placeholder={placeholder} className="font-mono" /><Button variant="primary" onPress={onRun} isDisabled={loading || !value.trim()}>{loading ? <LoaderCircle className="size-4 animate-spin" /> : <Play className="size-4" />}{loading ? t("common.running") : action === "开始检测" ? t("common.run") : action}</Button></div>
   </CardContent></Card>;
 }
 
@@ -155,17 +158,85 @@ function SecurityTool() {
 }
 
 function InvisibilityTool() {
-  const [id, setId] = useState(""); const [data, setData] = useState<Json | null>(null); const [loading, setLoading] = useState(false); const [error, setError] = useState("");
-  const run = async () => { setLoading(true); setError(""); try { setData(await api(`/api/tools/invisibility?id=${encodeURIComponent(id)}`)); } catch (cause) { setError(cause instanceof Error ? cause.message : "隐身检测失败"); } finally { setLoading(false); } };
-  return <><ToolForm value={id} onChange={setId} onRun={run} loading={loading} placeholder="输入 28 位 Elinks 用户 ID" action="获取隐身检测报告" /><Message error={error} />{data && <Card><CardHeader><CardTitle>隐身检测结果</CardTitle></CardHeader><CardContent><pre className="max-h-[600px] overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-4 font-mono text-xs">{JSON.stringify(data, null, 2)}</pre></CardContent></Card>}</>;
+  const [data, setData] = useState<Array<{ label: string; value: string; level: "low" | "medium" | "high" }> | null>(null);
+  const run = () => {
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const signals = [
+      { label: "User-Agent", value: nav.userAgent, level: "high" as const },
+      { label: "屏幕与像素比", value: `${screen.width}×${screen.height} @ ${devicePixelRatio}x`, level: "high" as const },
+      { label: "设备性能", value: `${nav.hardwareConcurrency || "?"} CPU · ${nav.deviceMemory || "?"} GB`, level: "medium" as const },
+      { label: "语言组合", value: nav.languages.join(", "), level: nav.languages.length > 2 ? "high" as const : "medium" as const },
+      { label: "时区", value: Intl.DateTimeFormat().resolvedOptions().timeZone, level: "medium" as const },
+      { label: "Cookie", value: nav.cookieEnabled ? "启用" : "禁用", level: nav.cookieEnabled ? "medium" as const : "low" as const },
+      { label: "Do Not Track", value: nav.doNotTrack || "未设置", level: nav.doNotTrack === "1" ? "low" as const : "medium" as const },
+      { label: "触控点", value: String(nav.maxTouchPoints), level: "low" as const },
+    ];
+    setData(signals);
+  };
+  const high = data?.filter((item) => item.level === "high").length || 0;
+  return <><Card className="mb-6"><CardHeader><CardTitle>本地隐私暴露审计</CardTitle><CardDescription>无需账号或私有 API，在浏览器内检查可用于设备识别的信号。</CardDescription></CardHeader><CardContent className="flex items-center justify-between gap-4"><p className="text-sm text-muted-foreground">不会生成永久指纹，也不会上传设备数据。</p><Button variant="primary" onPress={run}>开始本地审计</Button></CardContent></Card>{data && <div className="grid gap-6 lg:grid-cols-[1fr_280px]"><div className="grid gap-4 sm:grid-cols-2">{data.map((item) => <Card key={item.label}><CardContent><div className="flex items-center justify-between"><p className="text-xs uppercase tracking-wider text-muted-foreground">{item.label}</p><Chip size="sm" variant="soft" color={item.level === "high" ? "danger" : item.level === "medium" ? "warning" : "success"}>{item.level}</Chip></div><p className="mt-3 break-words font-mono text-sm">{item.value}</p></CardContent></Card>)}</div><Card><CardHeader><CardTitle>暴露摘要</CardTitle></CardHeader><CardContent><p className="font-mono text-4xl font-semibold">{high}</p><p className="mt-2 text-sm text-muted-foreground">项高辨识度信号</p><p className="mt-4 text-xs leading-5 text-muted-foreground">建议使用浏览器严格隐私模式、减少扩展，并统一代理出口与设备时区。</p></CardContent></Card></div>}</>;
+}
+
+type PassportResult = { score: number; ip: Json; timezone: string; language: string; dns: Json; webrtc: string[]; findings: Array<{ level: "ok" | "warn" | "risk"; text: string }> };
+
+async function collectWebRtcCandidates() {
+  return new Promise<string[]>((resolve) => {
+    const found = new Set<string>();
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }] });
+    const finish = () => { pc.close(); resolve([...found]); };
+    pc.createDataChannel("passport");
+    pc.onicecandidate = (event) => {
+      if (!event.candidate) return finish();
+      const matches = event.candidate.candidate.match(/(?:\d{1,3}\.){3}\d{1,3}|(?:[a-f0-9]{1,4}:){2,7}[a-f0-9]{1,4}/gi) || [];
+      matches.forEach((value) => found.add(value));
+    };
+    pc.createOffer().then((offer) => pc.setLocalDescription(offer)).catch(finish);
+    window.setTimeout(finish, 5_000);
+  });
+}
+
+function PassportTool() {
+  const { t } = useLocale();
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<PassportResult | null>(null);
+  const [error, setError] = useState("");
+  const run = async () => {
+    setLoading(true); setError("");
+    try {
+      const [ip, candidates, dns] = await Promise.all([
+        api<Json>("/api/lookup"),
+        collectWebRtcCandidates(),
+        fetch(`https://${crypto.randomUUID().replace(/-/g, "")}.edns.ip-api.com/json`, { signal: AbortSignal.timeout(8_000) }).then((response) => response.json()).catch(() => ({})),
+      ]);
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const language = navigator.language;
+      const findings: PassportResult["findings"] = [];
+      let score = 100;
+      if (ip.proxy || ip.vpn || ip.tor) { score -= 25; findings.push({ level: "risk", text: t("passport.proxyRisk") }); }
+      else findings.push({ level: "ok", text: t("passport.noProxy") });
+      if (ip.hosting) { score -= 15; findings.push({ level: "warn", text: t("passport.hostingRisk") }); }
+      const ipTimezone = String(ip.timezone || "");
+      if (ipTimezone && timezone !== ipTimezone) { score -= 20; findings.push({ level: "warn", text: t("passport.timezoneMismatch", { device: timezone, exit: ipTimezone }) }); }
+      else findings.push({ level: "ok", text: t("passport.timezoneOk") });
+      const publicCandidates = candidates.filter((value) => !/^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(value));
+      if (publicCandidates.some((value) => value !== ip.ip)) { score -= 25; findings.push({ level: "risk", text: t("passport.webrtcRisk") }); }
+      else findings.push({ level: "ok", text: t("passport.webrtcOk") });
+      if (!dns?.dns?.ip) { score -= 5; findings.push({ level: "warn", text: t("passport.dnsUnknown") }); }
+      else findings.push({ level: "ok", text: t("passport.dnsFound", { ip: dns.dns.ip, geo: dns.dns.geo || "—" }) });
+      setResult({ score: Math.max(0, score), ip, timezone, language, dns, webrtc: candidates, findings });
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "网络护照生成失败"); }
+    finally { setLoading(false); }
+  };
+  return <><Card className="mb-6"><CardHeader><CardTitle>{t("passport.title")}</CardTitle><CardDescription>{t("passport.desc")}</CardDescription></CardHeader><CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-muted-foreground">{t("passport.localOnly")}</p><Button variant="primary" onPress={run} isDisabled={loading}>{loading ? <LoaderCircle className="size-4 animate-spin" /> : <Play className="size-4" />}{t("passport.run")}</Button></CardContent></Card><Message error={error} />{result && <div className="grid gap-6 lg:grid-cols-[300px_1fr]"><Card><CardHeader><CardTitle>{t("passport.score")}</CardTitle></CardHeader><CardContent><div className="flex size-36 items-center justify-center rounded-full bg-primary/10 font-mono text-5xl font-semibold text-primary ring-8 ring-primary/5">{result.score}</div><p className="mt-5 text-sm font-medium">{result.score >= 80 ? t("passport.good") : t("passport.warn")}</p><div className="mt-5 space-y-2 text-xs text-muted-foreground"><p>IP: {String(result.ip.ip)}</p><p>{result.timezone} · {result.language}</p><p>WebRTC: {result.webrtc.length || 0} candidates</p></div></CardContent></Card><Card><CardHeader><CardTitle>{t("passport.evidence")}</CardTitle><CardDescription>{t("passport.disclaimer")}</CardDescription></CardHeader><CardContent className="space-y-3">{result.findings.map((finding, index) => <div key={index} className="flex gap-3 rounded-xl bg-muted/35 p-4"><span className={`mt-1 size-2 shrink-0 rounded-full ${finding.level === "ok" ? "bg-emerald-400" : finding.level === "warn" ? "bg-amber-400" : "bg-red-400"}`} /><p className="text-sm leading-6">{finding.text}</p></div>)}</CardContent></Card></div>}</>;
 }
 
 export function ServiceStatusPanel() {
+  const { t } = useLocale();
   const [status, setStatus] = useState<Json | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   useEffect(() => { const started = performance.now(); api<Json>("/api/tools/status").then((data) => { setLatency(Math.round(performance.now() - started)); setStatus(data); }).catch(() => setStatus({ core: false })); }, []);
   const labels: Record<string, string> = { core: "Elinks Core API", ai: "Groq AI", ipapiis: "IPAPI.is", ipinfo: "IPinfo", ip2location: "IP2Location", mac: "MAC Lookup", invisibility: "隐身检测" };
-  return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Object.entries(labels).map(([key, label]) => <Card key={key}><CardContent className="flex items-center justify-between"><div><p className="text-sm font-medium">{label}</p><p className="mt-1 text-xs text-muted-foreground">{key === "core" && latency !== null ? `${latency} ms` : "服务配置状态"}</p></div>{status ? <Chip size="sm" variant="soft" color={status[key] ? "success" : "warning"}>{status[key] ? "在线" : "未配置"}</Chip> : <LoaderCircle className="size-4 animate-spin text-muted-foreground" />}</CardContent></Card>)}</div>;
+  return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Object.entries(labels).map(([key, label]) => <Card key={key}><CardContent className="flex items-center justify-between"><div><p className="text-sm font-medium">{label}</p><p className="mt-1 text-xs text-muted-foreground">{key === "core" && latency !== null ? `${latency} ms` : "API"}</p></div>{status ? <Chip size="sm" variant="soft" color={status[key] ? "success" : "warning"}>{status[key] ? t("common.online") : t("common.notConfigured")}</Chip> : <LoaderCircle className="size-4 animate-spin text-muted-foreground" />}</CardContent></Card>)}</div>;
 }
 
 function Info({ label, value }: { label: string; value: unknown }) {

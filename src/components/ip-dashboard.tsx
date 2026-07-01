@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NetworkDiagnostics } from "@/components/network-diagnostics";
+import { useLocale } from "@/components/locale-provider";
 
 type IpData = {
   ip: string; city: string | null; region: string | null; district: string | null; country: string | null;
@@ -17,6 +18,7 @@ type IpData = {
 type Lookup = { data: IpData; sources: Array<Record<string, unknown>>; meta: { providers: number } };
 
 export function IpDashboard() {
+  const { locale, t } = useLocale();
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Lookup | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +53,7 @@ export function IpDashboard() {
     if (!result) return;
     setAiLoading(true); setAnswer("");
     try {
-      const response = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, diagnostics: result }) });
+      const response = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, diagnostics: result, language: locale }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error);
       setAnswer(payload.answer);
@@ -61,24 +63,24 @@ export function IpDashboard() {
 
   const data = result?.data;
   const fields = data ? [
-    ["国家 / 地区", [data.country, data.countryCode].filter(Boolean).join(" · ")],
-    ["城市", [data.region, data.city, data.district].filter(Boolean).join(" · ")],
-    ["邮政编码", data.postalCode], ["时区", data.timezone],
-    ["网络组织", data.organization || data.isp], ["ASN", data.asn],
-    ["经纬度", data.latitude !== null ? `${data.latitude}, ${data.longitude}` : null],
+    [t("dashboard.country"), [data.country, data.countryCode].filter(Boolean).join(" · ")],
+    [t("dashboard.city"), [data.region, data.city, data.district].filter(Boolean).join(" · ")],
+    [t("dashboard.postal"), data.postalCode], [t("dashboard.timezone"), data.timezone],
+    [t("dashboard.org"), data.organization || data.isp], ["ASN", data.asn],
+    [t("dashboard.coordinates"), data.latitude !== null ? `${data.latitude}, ${data.longitude}` : null],
   ] : [];
 
   return (
     <>
       <section className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div><p className="mb-2 font-mono text-xs uppercase tracking-[.2em] text-primary">Unified IP intelligence</p><h1 className="text-3xl font-semibold tracking-[-.035em] sm:text-4xl">网络情报工作台</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">融合多个实时数据源，统一展示地址、网络归属和代理风险。</p></div>
-        <Chip color="success" variant="soft"><span className="flex items-center gap-1.5"><CheckCircle2 className="size-3.5" /> 服务在线</span></Chip>
+        <div><p className="mb-2 font-mono text-xs uppercase tracking-[.2em] text-primary">{t("dashboard.eyebrow")}</p><h1 className="text-3xl font-semibold tracking-[-.035em] sm:text-4xl">{t("dashboard.title")}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{t("dashboard.description")}</p></div>
+        <Chip color="success" variant="soft"><span className="flex items-center gap-1.5"><CheckCircle2 className="size-3.5" /> {t("dashboard.serviceOnline")}</span></Chip>
       </section>
 
       <Card className="mb-6">
         <CardContent className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1"><Search className="absolute left-3.5 top-3.5 size-4 text-muted-foreground" /><Input className="pl-10 font-mono" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && void lookup(query)} placeholder="输入 IPv4 或 IPv6 地址" /></div>
-          <Button variant="primary" onPress={() => void lookup(query)} isDisabled={loading}><RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />检测 IP</Button>
+          <div className="relative flex-1"><Search className="absolute left-3.5 top-3.5 size-4 text-muted-foreground" /><Input className="pl-10 font-mono" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && void lookup(query)} placeholder={t("dashboard.placeholder")} /></div>
+          <Button variant="primary" onPress={() => void lookup(query)} isDisabled={loading}><RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />{t("dashboard.detect")}</Button>
         </CardContent>
       </Card>
 
@@ -87,15 +89,15 @@ export function IpDashboard() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)]">
         <Card>
           <CardHeader className="flex-row items-start justify-between">
-            <div><CardTitle>融合 IP 情报</CardTitle><CardDescription>{loading ? "正在连接全球数据源" : `${result?.meta.providers || 0} 个来源已完成交叉验证`}</CardDescription></div>
-            {data && <Chip variant="soft" color={data.proxy || data.vpn || data.tor ? "danger" : "success"}>{data.proxy || data.vpn || data.tor ? "检测到代理" : "未发现代理"}</Chip>}
+            <div><CardTitle>{t("dashboard.fused")}</CardTitle><CardDescription>{loading ? t("dashboard.loading") : t("dashboard.sources", { count: result?.meta.providers || 0 })}</CardDescription></div>
+            {data && <Chip variant="soft" color={data.proxy || data.vpn || data.tor ? "danger" : "success"}>{data.proxy || data.vpn || data.tor ? t("dashboard.proxy") : t("dashboard.noProxy")}</Chip>}
           </CardHeader>
           <CardContent>
             {loading ? <LoadingState /> : data && (
               <>
                 <div className="mb-7 flex items-start justify-between gap-4">
-                  <div><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> 当前检测地址</div><p className="break-all font-mono text-2xl font-semibold sm:text-3xl">{data.ip}</p></div>
-                  <button aria-label="复制 IP" className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => navigator.clipboard.writeText(data.ip)}><Copy className="size-4" /></button>
+                  <div><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div><p className="break-all font-mono text-2xl font-semibold sm:text-3xl">{data.ip}</p></div>
+                  <button aria-label={`${t("common.copy")} IP`} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => navigator.clipboard.writeText(data.ip)}><Copy className="size-4" /></button>
                 </div>
                 <div className="grid gap-x-8 sm:grid-cols-2">
                   {fields.map(([label, value]) => <div key={label} className="flex min-h-16 items-center justify-between gap-4 border-t border-white/[.06] py-3"><span className="text-xs text-muted-foreground">{label}</span><span className="text-right text-sm font-medium">{value || "—"}</span></div>)}
@@ -106,26 +108,26 @@ export function IpDashboard() {
         </Card>
         <div className="grid content-start gap-6">
           <Card>
-            <CardHeader><CardTitle>风险概览</CardTitle><CardDescription>基于全部可用来源综合判断</CardDescription></CardHeader>
+            <CardHeader><CardTitle>{t("dashboard.risk")}</CardTitle><CardDescription>{t("dashboard.riskDesc")}</CardDescription></CardHeader>
             <CardContent className="space-y-4">
-              <RiskRow label="代理 / VPN" active={Boolean(data?.proxy || data?.vpn)} />
-              <RiskRow label="Tor 出口" active={Boolean(data?.tor)} />
-              <RiskRow label="数据中心" active={Boolean(data?.hosting)} />
-              <div className="pt-2"><div className="mb-2 flex justify-between text-xs"><span className="text-muted-foreground">数据置信度</span><span>{data?.confidence || 0}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${data?.confidence || 0}%` }} /></div></div>
+              <RiskRow label={t("dashboard.proxyVpn")} active={Boolean(data?.proxy || data?.vpn)} activeText={t("dashboard.attention")} safeText={t("dashboard.notFound")} />
+              <RiskRow label={t("dashboard.tor")} active={Boolean(data?.tor)} activeText={t("dashboard.attention")} safeText={t("dashboard.notFound")} />
+              <RiskRow label={t("dashboard.hosting")} active={Boolean(data?.hosting)} activeText={t("dashboard.attention")} safeText={t("dashboard.notFound")} />
+              <div className="pt-2"><div className="mb-2 flex justify-between text-xs"><span className="text-muted-foreground">{t("dashboard.confidence")}</span><span>{data?.confidence || 0}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${data?.confidence || 0}%` }} /></div></div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-start gap-4"><div className="rounded-xl bg-primary/12 p-3 text-primary"><LocateFixed className="size-5" /></div><div><p className="text-sm font-medium">数据最小化</p><p className="mt-1 text-xs leading-5 text-muted-foreground">检测结果只用于当前分析，不在浏览器中长期保存。</p></div></CardContent>
+            <CardContent className="flex items-start gap-4"><div className="rounded-xl bg-primary/12 p-3 text-primary"><LocateFixed className="size-5" /></div><div><p className="text-sm font-medium">{t("dashboard.privacy")}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{t("dashboard.privacyDesc")}</p></div></CardContent>
           </Card>
         </div>
       </div>
       <NetworkDiagnostics report={result} />
 
-      <Button className="fixed bottom-6 right-6 z-30 shadow-xl" variant="primary" onPress={() => setAiOpen(true)}><Sparkles className="size-4" /> Elinks AI</Button>
+      <Button className="fixed bottom-6 right-6 z-30 shadow-xl" variant="primary" onPress={() => setAiOpen(true)}><Sparkles className="size-4" /> {t("dashboard.ai")}</Button>
       {aiOpen && <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/45 p-3 backdrop-blur-sm sm:p-6" onClick={() => setAiOpen(false)}>
         <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-          <CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Bot className="size-5 text-primary" />Elinks AI 分析</CardTitle><CardDescription>检测数据会随问题发送给 Groq 模型进行分析</CardDescription></div><button aria-label="关闭" onClick={() => setAiOpen(false)}><X className="size-5" /></button></CardHeader>
-          <CardContent className="space-y-4"><textarea className="min-h-24 w-full resize-none rounded-xl bg-muted/60 p-3 text-sm outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-primary/60" value={question} onChange={(e) => setQuestion(e.target.value)} />{answer && <div className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-xl bg-muted/50 p-4 text-sm leading-6">{answer}</div>}<Button className="w-full" variant="primary" onPress={() => void askAi()} isDisabled={aiLoading || !result}>{aiLoading ? "正在分析…" : "发送检测数据并分析"}</Button></CardContent>
+          <CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Bot className="size-5 text-primary" />{t("dashboard.aiTitle")}</CardTitle><CardDescription>{t("dashboard.aiDesc")}</CardDescription></div><button aria-label="Close" onClick={() => setAiOpen(false)}><X className="size-5" /></button></CardHeader>
+          <CardContent className="space-y-4"><textarea className="min-h-24 w-full resize-none rounded-xl bg-muted/60 p-3 text-sm outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-primary/60" value={question} onChange={(e) => setQuestion(e.target.value)} />{answer && <div className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-xl bg-muted/50 p-4 text-sm leading-6">{answer}</div>}<Button className="w-full" variant="primary" onPress={() => void askAi()} isDisabled={aiLoading || !result}>{aiLoading ? t("dashboard.aiRunning") : t("dashboard.aiAction")}</Button></CardContent>
         </Card>
       </div>}
     </>
@@ -135,6 +137,6 @@ export function IpDashboard() {
 function LoadingState() {
   return <div className="space-y-5"><Skeleton className="h-9 w-2/3" /><div className="grid gap-4 sm:grid-cols-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div></div>;
 }
-function RiskRow({ label, active }: { label: string; active: boolean }) {
-  return <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{label}</span><span className={`flex items-center gap-1.5 text-xs ${active ? "text-amber-400" : "text-emerald-400"}`}>{active ? <ShieldAlert className="size-4" /> : <ShieldCheck className="size-4" />}{active ? "需要注意" : "未发现"}</span></div>;
+function RiskRow({ label, active, activeText, safeText }: { label: string; active: boolean; activeText: string; safeText: string }) {
+  return <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{label}</span><span className={`flex items-center gap-1.5 text-xs ${active ? "text-amber-400" : "text-emerald-400"}`}>{active ? <ShieldAlert className="size-4" /> : <ShieldCheck className="size-4" />}{active ? activeText : safeText}</span></div>;
 }

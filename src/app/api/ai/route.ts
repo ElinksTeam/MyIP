@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Elinks AI 尚未配置 GROQ_API_KEY" }, { status: 503 });
   }
 
-  const body = (await request.json()) as { question?: string; diagnostics?: unknown };
+  const body = (await request.json()) as { question?: string; diagnostics?: unknown; language?: string };
+  const language = ({ zh: "简体中文", en: "English", ja: "日本語", th: "ภาษาไทย" } as Record<string, string>)[body.language || "zh"] || "简体中文";
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" },
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
       temperature: 0.25,
       max_completion_tokens: 900,
       messages: [
-        { role: "system", content: "你是 ElinksNet 网络安全分析助手。根据检测数据给出简洁、可执行的中文建议。不要声称绝对安全；不要输出用户密钥。" },
+        { role: "system", content: `你是 ElinksNet 网络安全分析助手。根据检测数据给出简洁、可执行的建议，必须使用 ${language} 回复。不要声称绝对安全；不要输出用户密钥。` },
         { role: "user", content: `问题：${body.question || "分析当前网络安全与代理风险"}\n检测数据：${JSON.stringify(body.diagnostics || {})}` },
       ],
     }),

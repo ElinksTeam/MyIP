@@ -8,9 +8,12 @@ import { Github, LayoutDashboard, Menu, Moon, Sun, X } from "lucide-react";
 import { useState } from "react";
 import { tools } from "@/lib/tools";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/components/locale-provider";
+import { type Locale, localeNames } from "@/i18n/messages";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { locale, setLocale, t } = useLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dark, setDark] = useState(true);
   const toggleTheme = () => {
@@ -23,12 +26,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const nav = (
     <>
       <Link href="/" className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition", pathname === "/" ? "bg-primary/12 text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
-        <LayoutDashboard className="size-4" /> 总览
+        <LayoutDashboard className="size-4" /> {t("nav.overview")}
       </Link>
-      <div className="mb-2 mt-6 px-3 text-[11px] font-medium uppercase tracking-[.18em] text-muted-foreground">Network tools</div>
+      <div className="mb-2 mt-6 px-3 text-[11px] font-medium uppercase tracking-[.18em] text-muted-foreground">{t("nav.tools")}</div>
       {tools.map((tool) => (
         <Link key={tool.slug} href={`/tools/${tool.slug}`} onClick={() => setMobileOpen(false)} className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition", pathname === `/tools/${tool.slug}` ? "bg-primary/12 text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
-          <tool.icon className="size-4" /> {tool.name}
+          <tool.icon className="size-4" /> {tool.names?.[locale] || tool.name}
         </Link>
       ))}
     </>
@@ -52,10 +55,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-20 flex h-16 items-center border-b border-white/[.06] bg-background/75 px-4 backdrop-blur-xl sm:px-6">
           <button className="mr-3 rounded-lg p-2 hover:bg-muted lg:hidden" aria-label="打开菜单" onClick={() => setMobileOpen(true)}><Menu className="size-5" /></button>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">Elinks Network Intelligence</p>
-            <p className="text-xs text-muted-foreground">Global edge · Operational</p>
+            <p className="truncate text-sm font-medium">{t("header.title")}</p>
+            <p className="text-xs text-muted-foreground">{t("header.status")}</p>
           </div>
           <div className="flex items-center gap-2">
+            <label className="relative block">
+              <span className="sr-only">{t("nav.language")}</span>
+              <select
+                aria-label={t("nav.language")}
+                value={locale}
+                onChange={(event) => setLocale(event.target.value as Locale)}
+                className="h-9 max-w-24 cursor-pointer appearance-none rounded-xl bg-muted/60 px-2 pe-6 text-xs outline-none ring-1 ring-white/10 sm:max-w-none sm:px-3 sm:pe-8"
+              >
+                {(Object.entries(localeNames) as Array<[Locale, string]>).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+              </select>
+              <span className="pointer-events-none absolute end-2.5 top-2 text-xs text-muted-foreground">⌄</span>
+            </label>
             <Button isIconOnly variant="tertiary" aria-label="切换主题" onPress={toggleTheme}>
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>

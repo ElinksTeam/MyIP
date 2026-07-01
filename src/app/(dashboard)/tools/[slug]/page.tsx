@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Copy } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2, Copy } from "lucide-react";
 import { AdvancedToolWorkspace, ServiceStatusPanel } from "@/components/advanced-tool-workspace";
+import { ToolHeader } from "@/components/tool-header";
+import { LocalizedBackLink } from "@/components/localized-back-link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { tools } from "@/lib/tools";
 
@@ -19,15 +20,10 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const tool = tools.find((item) => item.slug === slug);
   if (!tool) notFound();
-  const Icon = tool.icon;
-
   return (
     <div>
-      <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"><ArrowLeft className="size-4" />返回总览</Link>
-      <header className="mb-8 flex items-start gap-4">
-        <div className="rounded-2xl bg-primary/12 p-3 text-primary"><Icon className="size-6" /></div>
-        <div><p className="font-mono text-xs uppercase tracking-[.18em] text-primary">Elinks network tool</p><h1 className="mt-1 text-3xl font-semibold tracking-tight">{tool.name}</h1><p className="mt-2 text-sm text-muted-foreground">{tool.description}</p></div>
-      </header>
+      <LocalizedBackLink />
+      <ToolHeader slug={slug} />
       {slug === "cli" ? <CliDocs /> : slug === "status" ? <ServiceStatusPanel /> : slug === "docker" ? <DockerDocs /> : <AdvancedToolWorkspace slug={slug} name={tool.name} />}
     </div>
   );
