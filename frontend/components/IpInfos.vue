@@ -33,10 +33,6 @@ import { trackEvent } from '@/utils/use-analytics';
 import { isValidIP } from '@/utils/valid-ip.js';
 import { transformDataFromIPapi } from '@/utils/transform-ip-data.js';
 import {
-  getIPFromIPIP,
-  getIPFromCloudflare_V4,
-  getIPFromCloudflare_V6,
-  getIPFromElinksNetDualStack,
   getIPFromElinksNetV4,
   getIPFromElinksNetV6,
 } from '@/utils/getips';
@@ -74,8 +70,7 @@ const createDefaultCard = () => ({
 });
 
 // IP data cards
-// Order: v4, v6, CF-v4, CF-v6, CN, v64
-// First 2 / 4 / 6 slice is meaningful at every count the user can pick.
+// Keep one canonical IPv4 card and one canonical IPv6 card.
 const ipDataCards = reactive([
   {
     ...createDefaultCard(),
@@ -87,26 +82,6 @@ const ipDataCards = reactive([
     id: "elinksnet_v6",
     source: "ElinksNet IPv6",
   },
-  {
-    ...createDefaultCard(),
-    id: "cloudflare_v4",
-    source: "Cloudflare IPv4",
-  },
-  {
-    ...createDefaultCard(),
-    id: "cloudflare_v6",
-    source: "Cloudflare IPv6",
-  },
-  {
-    ...createDefaultCard(),
-    id: "cnsource",
-    source: "CN Source",
-  },
-  {
-    ...createDefaultCard(),
-    id: "elinksnet_dual_stack",
-    source: "ElinksNet IPv6/4",
-  },
 ]);
 
 // Default ASN information
@@ -117,7 +92,7 @@ const asnInfos = ref({
 });
 
 // Other data
-const ipCardsToShow = ref(userPreferences.value.ipCardsToShow);
+const ipCardsToShow = ref(2);
 const copiedStatus = ref({});
 const IPArray = ref([]);
 const ipGeoSource = ref(userPreferences.value.ipGeoSource);
@@ -221,10 +196,6 @@ const checkAllIPs = async () => {
   const ipFunctions = [
     () => fetchIP(0, getIPFromElinksNetV4),
     () => fetchIP(1, getIPFromElinksNetV6),
-    () => fetchIP(2, getIPFromCloudflare_V4),
-    () => fetchIP(3, getIPFromCloudflare_V6),
-    () => fetchIP(4, getIPFromIPIP),
-    () => fetchIP(5, getIPFromElinksNetDualStack),
   ];
 
   // Limit the number of functions to execute to the length of ipCardsToShow
@@ -358,18 +329,6 @@ const refreshCard = (card, index) => {
       break;
     case 1:
       fetchIP(1, getIPFromElinksNetV6);
-      break;
-    case 2:
-      fetchIP(2, getIPFromCloudflare_V4);
-      break;
-    case 3:
-      fetchIP(3, getIPFromCloudflare_V6);
-      break;
-    case 4:
-      fetchIP(4, getIPFromIPIP);
-      break;
-    case 5:
-      fetchIP(5, getIPFromElinksNetDualStack);
       break;
     default:
       console.error("Undefind Source:");

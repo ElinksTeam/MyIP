@@ -12,13 +12,23 @@
 
         <main id="mainpart" class="w-full px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
           <div class="mx-auto w-full max-w-[1440px]">
-            <Card class="mb-4 border-border/70 shadow-xs">
-              <CardContent class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <Card class="mb-5 overflow-hidden border-slate-800 bg-slate-950 text-slate-50 shadow-lg shadow-slate-950/10">
+              <CardContent class="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div class="pointer-events-none absolute inset-0 opacity-25 dashboard-grid-pattern" />
                 <div>
-                  <p class="text-xs font-medium uppercase tracking-[0.18em] text-primary">ElinksNet</p>
-                  <h1 class="mt-1 text-xl font-semibold tracking-tight">{{ t('page.title') }}</h1>
+                  <div class="relative flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-400">
+                    <span class="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.8)]" />
+                    Elinks Network Operations
+                  </div>
+                  <h1 class="relative mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{{ t('page.title') }}</h1>
+                  <div class="relative mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-slate-400">
+                    <span>EDGE / GLOBAL</span>
+                    <span>IP INTELLIGENCE</span>
+                    <a href="#/status" class="text-emerald-400 hover:text-emerald-300">SYSTEM OPERATIONAL ↗</a>
+                  </div>
                 </div>
-                <DashboardActions :get-cards="getReportCards" />
+                <DashboardActions class="relative [&_button]:border-slate-700 [&_button]:bg-slate-900 [&_button]:text-slate-200 [&_button:hover]:bg-slate-800"
+                  :get-cards="getReportCards" />
               </CardContent>
             </Card>
 

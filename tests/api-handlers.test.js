@@ -27,6 +27,7 @@ import proxyRiskHandler from '../server/handlers/proxy-risk.js';
 import ipapiisHandler from '../server/handlers/ipapi-is.js';
 import ipinfoHandler from '../server/handlers/ipinfo-io.js';
 import ip2locationHandler from '../server/handlers/ip2location-io.js';
+import rdapHandler, { classifyQuery } from '../server/handlers/rdap.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -221,6 +222,20 @@ describe('IP2Location.io handler', () => {
         }), res);
         assert.equal(res.statusCode, 503);
         assert.deepEqual(res.body, { error: 'IP2Location.io is not configured' });
+    });
+});
+
+describe('RDAP handler', () => {
+    it('classifies domain, IP, and ASN queries', () => {
+        assert.deepEqual(classifyQuery('example.com'), { type: 'domain', value: 'example.com' });
+        assert.deepEqual(classifyQuery('2001:4860:4860::8888'), { type: 'ip', value: '2001:4860:4860::8888' });
+        assert.deepEqual(classifyQuery('AS13335'), { type: 'autnum', value: '13335' });
+    });
+
+    it('rejects malformed queries before contacting RDAP', async () => {
+        const res = createResponse();
+        await rdapHandler(createRequest({ query: { query: 'not a resource' } }), res);
+        assert.equal(res.statusCode, 400);
     });
 });
 

@@ -26,6 +26,7 @@ import invisibilitytestHandler from './server/handlers/invisibility-test.js';
 import macChecker from './server/handlers/mac-checker.js';
 import aiSecurityAdvice from './server/handlers/ai-security-advice.js';
 import proxyRiskHandler from './server/handlers/proxy-risk.js';
+import rdapHandler from './server/handlers/rdap.js';
 import { cliGeoHandler, cliIpHandler } from './server/handlers/cli-api.js';
 // User
 import validateConfigs from './server/handlers/configs.js';
@@ -188,6 +189,7 @@ app.get('/api/invisibility', invisibilitytestHandler);
 app.get('/api/macchecker', macChecker);
 app.get('/api/maxmind', requireValidIP(), maxmindHandler);
 app.get('/api/proxy-risk', proxyRiskHandler);
+app.get('/api/rdap', rdapHandler);
 app.get('/api/getuserinfo', getUserinfo);
 app.put('/api/updateuserachievement', updateUserAchievement);
 app.post('/api/ai/security-advice', aiSecurityAdvice);

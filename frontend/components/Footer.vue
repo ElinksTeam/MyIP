@@ -15,6 +15,10 @@
 
     <!-- Sponsor / About entry -->
     <div class="flex items-center justify-center gap-2 mb-3">
+      <Button variant="ghost" size="default" @click="openStatus" class="cursor-pointer gap-1.5">
+        <span class="size-2 rounded-full bg-success" />
+        {{ statusLabel }}
+      </Button>
       <Button variant="link" size="default" as-child class="text-[#d63384] hover:text-[#d63384]">
         <a href="https://github.com/ElinksTeam" target="_blank" rel="noopener">
           {{ t('about.Sponsor') }} 💖
@@ -141,6 +145,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 import changelogData from '@/data/changelog.json';
@@ -156,8 +161,11 @@ import { ArrowLeftCircle, Compass, ExternalLink, Github, Smile, SquareArrowOutUp
 const { t, locale } = useI18n();
 
 const store = useMainStore();
+const router = useRouter();
 const isMobile = computed(() => store.isMobile);
 const configs = computed(() => store.configs);
+const statusLabel = computed(() => ({ zh: '服务在线状态', en: 'Service status', fr: 'État des services', tr: 'Servis durumu' }[store.lang] || 'Service status'));
+const openStatus = () => router.push('/status');
 
 const tabs = ['about', 'changelog', 'specialthanks'];
 const content = ref('about');

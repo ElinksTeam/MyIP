@@ -38,13 +38,13 @@
       <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         <ToolCard v-for="(card, index) in group.cards" :key="card.path" :data-adv-path="card.path"
           :icon="card.icon" :code="`LAB-${String(index + 1).padStart(2, '0')}`"
-          :title="t(card.titleKey)" :note="t(card.noteKey)"
+          :title="cardTitle(card)" :note="cardNote(card)"
           @open="navigateAndToggleOffcanvas(card.path)" />
       </div>
     </div>
 
     <Drawer :open="isOpen" @update:open="onOpenChange" :dismissible="true">
-      <DrawerContent :title="activeCard ? t(activeCard.titleKey) : t('advancedtools.Title')"
+      <DrawerContent :title="activeCard ? cardTitle(activeCard) : t('advancedtools.Title')"
         :class="['jn-tools-drawer overflow-hidden', (isMobile || isFullScreen) ? 'h-full rounded-none' : 'h-[88vh]']">
         <div class="flex items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur shrink-0">
           <span v-if="activeCard" class="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-muted/60">
@@ -52,10 +52,10 @@
           </span>
           <div v-if="activeCard" class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <span class="truncate text-sm font-semibold md:text-base">{{ t(activeCard.titleKey) }}</span>
+              <span class="truncate text-sm font-semibold md:text-base">{{ cardTitle(activeCard) }}</span>
               <Badge variant="outline" class="hidden text-[10px] sm:inline-flex">{{ workspaceCopy.live }}</Badge>
             </div>
-            <p class="truncate text-[11px] text-muted-foreground">{{ t(activeCard.noteKey) }}</p>
+            <p class="truncate text-[11px] text-muted-foreground">{{ cardNote(activeCard) }}</p>
           </div>
           <span v-else class="flex-1" />
           <button v-if="!isMobile" type="button"
@@ -74,7 +74,7 @@
             :class="card.path === router.currentRoute.value.path ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
             @click="navigateAndToggleOffcanvas(card.path)">
             <component :is="card.icon" class="size-3.5" />
-            {{ t(card.titleKey) }}
+            {{ cardTitle(card) }}
           </button>
         </div>
 
@@ -99,7 +99,7 @@ import ToolCard from './advanced-tools/ToolCard.vue';
 import { useProductCopy } from '@/composables/use-product-copy.js';
 import { Badge } from '@/components/ui/badge';
 import {
-  BookOpen, Cable, CircleGauge, Container, FileSearch, Fingerprint,
+  Activity, BookOpen, Cable, CircleGauge, Container, DatabaseZap, FileSearch, Fingerprint,
   ListChecks, Maximize, Minimize, MonitorCog, Network, Radar, Route, ServerCog,
   ShieldCheck, TerminalSquare, Waypoints,
 } from 'lucide-vue-next';
@@ -118,12 +118,14 @@ const cards = reactive([
   { path: '/dnsresolver', icon: ServerCog, group: 'diagnostics', titleKey: 'dnsresolver.Title', noteKey: 'advancedtools.DNSResolverNote', enabled: true },
   { path: '/censorshipcheck', icon: Radar, group: 'intelligence', titleKey: 'censorshipcheck.Title', noteKey: 'advancedtools.CensorshipCheck', enabled: true },
   { path: '/whois', icon: FileSearch, group: 'intelligence', titleKey: 'whois.Title', noteKey: 'advancedtools.Whois', enabled: true },
+  { path: '/rdap', icon: DatabaseZap, group: 'intelligence', title: { zh: 'RDAP 注册查询', en: 'RDAP Registry', fr: 'Registre RDAP', tr: 'RDAP Kaydı' }, note: { zh: '查询域名、IP 与 ASN 的结构化注册数据', en: 'Structured registration data for domains, IPs, and ASNs', fr: 'Données structurées pour domaines, IP et ASN', tr: 'Alan adı, IP ve ASN kayıt verileri' }, enabled: true },
   { path: '/macchecker', icon: Cable, group: 'intelligence', titleKey: 'macchecker.Title', noteKey: 'advancedtools.MacChecker', enabled: true },
   { path: '/browserinfo', icon: MonitorCog, group: 'intelligence', titleKey: 'browserinfo.Title', noteKey: 'advancedtools.BrowserInfo', enabled: true },
   { path: '/securitychecklist', icon: ListChecks, group: 'intelligence', titleKey: 'securitychecklist.Title', noteKey: 'advancedtools.SecurityChecklist', enabled: true },
   { path: '/invisibilitytest', icon: Fingerprint, group: 'intelligence', titleKey: 'invisibilitytest.Title', noteKey: 'advancedtools.InvisibilityTest', enabled: false },
   { path: '/cli', icon: BookOpen, group: 'platform', titleKey: 'curl.Title', noteKey: 'additional.CurlNote', enabled: true },
   { path: '/docker', icon: Container, group: 'platform', titleKey: 'additional.Docker', noteKey: 'additional.DockerNote', enabled: true },
+  { path: '/status', icon: Activity, group: 'platform', title: { zh: '服务状态', en: 'Service Status', fr: 'État des services', tr: 'Servis Durumu' }, note: { zh: '查看核心 API 与上游数据源在线状态', en: 'Monitor core APIs and upstream providers', fr: 'Surveillez les API et fournisseurs', tr: 'API ve sağlayıcı durumlarını izleyin' }, enabled: true },
 ]);
 
 const enabledCards = computed(() => cards.filter(card => card.enabled));
@@ -138,6 +140,8 @@ const COPY = {
 };
 const productCopy = useProductCopy();
 const workspaceCopy = computed(() => productCopy.value.workspace);
+const cardTitle = card => card?.title?.[store.lang] || card?.title?.en || t(card?.titleKey);
+const cardNote = card => card?.note?.[store.lang] || card?.note?.en || t(card?.noteKey);
 const toolGroups = computed(() => [
   { id: 'diagnostics', icon: Network, title: workspaceCopy.value.diagnostics, note: workspaceCopy.value.diagnosticsNote, cards: enabledCards.value.filter(card => card.group === 'diagnostics') },
   { id: 'intelligence', icon: ShieldCheck, title: workspaceCopy.value.intelligence, note: workspaceCopy.value.intelligenceNote, cards: enabledCards.value.filter(card => card.group === 'intelligence') },

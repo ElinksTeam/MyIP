@@ -61,18 +61,6 @@
                     </ToggleGroup>
                 </section>
 
-                <!-- IP Sources Count -->
-                <section id="Pref_ipCards">
-                    <SectionTitle :icon="LayoutGrid">{{ t('nav.preferences.ipSourcesToCheck') }}</SectionTitle>
-                    <ToggleGroup :model-value="String(userPreferences.ipCardsToShow)" type="single" class="w-full"
-                        @update:model-value="(v) => v && prefipCards(Number(v))">
-                        <ToggleGroupItem v-for="num in [2, 4, 6]" :key="num" :value="String(num)" class="flex-1">
-                            {{ num }}
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                    <SectionTip>{{ t('nav.preferences.ipSourcesToCheckTips') }}</SectionTip>
-                </section>
-
                 <!-- IP Geo DB -->
                 <section id="Pref_ipGeoSource">
                     <SectionTitle :icon="Database">{{ t('nav.preferences.ipDB') }}</SectionTitle>
@@ -136,7 +124,6 @@ import {
     Globe,
     Languages,
     LaptopMinimal,
-    LayoutGrid,
     Moon,
     Palette,
     SlidersHorizontal,
@@ -257,11 +244,6 @@ const prefAutoStart = (value) => {
 const prefconnectivityShowNoti = (value) => {
     store.updatePreference('popupConnectivityNotifications', value);
     trackEvent('Nav', 'PrefereceClick', 'ConnectivityNotifications');
-};
-
-const prefipCards = (value) => {
-    store.updatePreference('ipCardsToShow', value);
-    trackEvent('Nav', 'PrefereceClick', 'ipCards');
 };
 
 const prefipGeoSource = (value) => {

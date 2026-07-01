@@ -126,7 +126,7 @@ export const useMainStore = defineStore('main', {
       if (storedPreferences) {
         try {
           const currentPreferences = JSON.parse(storedPreferences);
-          preferencesToStore = { ...defaultPreferences, ...currentPreferences };
+          preferencesToStore = { ...defaultPreferences, ...currentPreferences, ipCardsToShow: 2 };
         } catch {
           preferencesToStore = defaultPreferences;
         }
