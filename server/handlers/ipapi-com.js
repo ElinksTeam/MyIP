@@ -18,7 +18,7 @@ export default async (req, res) => {
 };
 
 function modifyJsonForIPAPI(json) {
-    const { query, country, countryCode, regionName, city, lat, lon, isp, as } = json;
+    const { query, country, countryCode, regionName, city, district, zip, timezone, lat, lon, isp, org, as } = json;
     const asn = as ? as.split(" ")[0] : '';
 
     return {
@@ -30,7 +30,11 @@ function modifyJsonForIPAPI(json) {
         country_code: countryCode,
         latitude: lat,
         longitude: lon,
+        district: district || '',
+        postalCode: zip || '',
+        timezone: timezone || '',
         asn,
-        org: isp
+        org: isp,
+        networkOrganization: org || isp || ''
     };
 }

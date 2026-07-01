@@ -41,7 +41,11 @@ export function normalizeIpWhoIs(json) {
         country_code: json.country_code || '',
         latitude: json.latitude ?? '',
         longitude: json.longitude ?? '',
+        postalCode: json.postal || '',
+        timezone: json.timezone?.id || '',
+        continent: json.continent || '',
         asn: asn ? `AS${asn}` : '',
         org: connection.org || connection.isp || '',
+        networkOrganization: connection.isp || connection.org || '',
     };
 }

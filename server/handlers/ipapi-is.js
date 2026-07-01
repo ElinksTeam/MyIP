@@ -34,8 +34,12 @@ function modifyJsonForIPAPI(json) {
         country_code: location.country_code || 'N/A',
         latitude: location.latitude || 'N/A',
         longitude: location.longitude || 'N/A',
+        postalCode: location.zip || location.postal_code || 'N/A',
+        timezone: location.timezone || 'N/A',
+        continent: location.continent || 'N/A',
         asn: asn.asn === undefined ? 'N/A' : 'AS' + asn.asn,
         org: asn.org || 'N/A',
+        networkOrganization: asn.org || 'N/A',
         isHosting: is_datacenter || false,
         isProxy: is_proxy || is_vpn || is_tor || false
     };

@@ -27,8 +27,6 @@
                     <a href="#/status" class="text-emerald-400 hover:text-emerald-300">SYSTEM OPERATIONAL ↗</a>
                   </div>
                 </div>
-                <DashboardActions class="relative [&_button]:border-slate-700 [&_button]:bg-slate-900 [&_button]:text-slate-200 [&_button:hover]:bg-slate-800"
-                  :get-cards="getReportCards" />
               </CardContent>
             </Card>
 
@@ -64,7 +62,6 @@
 // Components
 import NavBar from './components/Nav.vue';
 import DashboardSidebar from './components/DashboardSidebar.vue';
-import DashboardActions from './components/DashboardActions.vue';
 import IPCheck from './components/IpInfos.vue';
 import Connectivity from './components/ConnectivityTest.vue';
 import WebRTC from './components/WebRtcTest.vue';
@@ -133,7 +130,13 @@ const getAiDiagnostics = () => ({
             country: card.country_name || '',
             region: card.region || '',
             city: card.city || '',
+            district: card.district || '',
+            postalCode: card.postalCode || '',
+            timezone: card.timezone || '',
+            latitude: card.latitude || '',
+            longitude: card.longitude || '',
             isp: card.isp || '',
+            networkOrganization: card.networkOrganization || '',
             asn: card.asn || '',
             proxy: card.isProxy || 'unknown',
             qualityScore: card.qualityScore ?? 'unknown',

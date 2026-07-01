@@ -42,7 +42,10 @@ function modifyJson(json) {
         country_code: countryCode || 'N/A',
         latitude,
         longitude,
+        postalCode: json.postal || 'N/A',
+        timezone: json.timezone || 'N/A',
         asn: json.asn || legacyAsn || 'N/A',
         org: json.as_name || legacyOrg.join(' ') || 'N/A',
+        networkOrganization: json.as_domain || json.as_name || legacyOrg.join(' ') || 'N/A',
     };
 }

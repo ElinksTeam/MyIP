@@ -37,7 +37,12 @@ function modifyJsonForIPAPI(json) {
         country_code: country_code || 'N/A',
         latitude: latitude ?? 'N/A',
         longitude: longitude ?? 'N/A',
+        district: json.district || 'N/A',
+        postalCode: json.zip_code || 'N/A',
+        timezone: json.time_zone || 'N/A',
+        networkClass: json.net_speed || 'N/A',
         asn: normalizedAsn,
         org: as || 'N/A',
+        networkOrganization: json.isp || as || 'N/A',
     };
 }

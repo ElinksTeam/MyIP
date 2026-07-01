@@ -2,8 +2,9 @@ import { transformDataFromIPapi } from './transform-ip-data.js';
 
 const SOURCE_PRIORITY = new Map([4, 3, 7, 1, 5, 2, 6, 0].map((id, index) => [id, index]));
 const MERGE_FIELDS = [
-  'country_name', 'country_code', 'region', 'city', 'latitude', 'longitude',
-  'isp', 'asn', 'asnlink', 'type', 'isProxy', 'isNativeIP', 'qualityScore',
+  'country_name', 'country_code', 'region', 'city', 'district', 'postalCode',
+  'timezone', 'continent', 'latitude', 'longitude', 'isp', 'networkOrganization',
+  'networkClass', 'asn', 'asnlink', 'type', 'isProxy', 'isNativeIP', 'qualityScore',
   'proxyProtocol', 'proxyOperator',
 ];
 

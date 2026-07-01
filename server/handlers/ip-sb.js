@@ -25,7 +25,11 @@ function modifyJsonForIPSB(json) {
         country_code: json.country_code,
         latitude: json.latitude,
         longitude: json.longitude,
+        postalCode: json.postal_code || '',
+        timezone: json.timezone || '',
+        continent: json.continent_code || '',
         asn: "AS" + json.asn,
-        org: json.isp
+        org: json.isp,
+        networkOrganization: json.organization || json.isp || ''
     };
 }

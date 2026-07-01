@@ -1,5 +1,6 @@
 <template>
-  <Card class="mb-6 overflow-hidden border-sky-500/20 shadow-xs">
+  <Card v-if="isOpen"
+    class="fixed bottom-20 right-3 z-[1100] w-[calc(100vw-1.5rem)] max-w-md overflow-hidden border-sky-500/25 bg-background shadow-2xl sm:right-20">
     <CardContent class="p-0">
       <header class="flex flex-col gap-3 border-b bg-sky-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-3">
@@ -14,13 +15,19 @@
             <p class="text-xs text-muted-foreground">{{ copy.subtitle }}</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" class="gap-2" :disabled="loading" @click="analyzeNow">
-          <ScanSearch class="size-4" />
-          {{ copy.analyze }}
-        </Button>
+        <div class="flex items-center gap-2">
+          <Button variant="outline" size="sm" class="gap-2" :disabled="loading" @click="analyzeNow">
+            <ScanSearch class="size-4" />
+            {{ copy.analyze }}
+          </Button>
+          <Button variant="ghost" size="icon" class="size-8" @click="isOpen = false">
+            <X class="size-4" />
+            <span class="sr-only">Close Elinks AI</span>
+          </Button>
+        </div>
       </header>
 
-      <div ref="messageList" class="max-h-[420px] min-h-48 space-y-4 overflow-y-auto p-4 sm:p-5">
+      <div ref="messageList" class="max-h-[45vh] min-h-48 space-y-4 overflow-y-auto p-4">
         <div v-for="(message, index) in messages" :key="index"
           class="flex gap-2.5" :class="message.role === 'user' ? 'justify-end' : 'justify-start'">
           <span v-if="message.role === 'assistant'"
@@ -58,6 +65,11 @@
       </form>
     </CardContent>
   </Card>
+  <Button size="icon" class="fixed bottom-5 right-20 z-[1100] size-12 rounded-full border border-sky-300/30 bg-slate-950 text-sky-300 shadow-xl shadow-sky-950/30 hover:bg-slate-900"
+    @click="isOpen = !isOpen" :aria-expanded="isOpen" aria-label="Elinks AI">
+    <X v-if="isOpen" class="size-5" />
+    <Sparkles v-else class="size-6" />
+  </Button>
 </template>
 
 <script setup>
@@ -67,7 +79,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Textarea } from './ui/textarea';
-import { Bot, LoaderCircle, LockKeyhole, ScanSearch, Send, Sparkles } from 'lucide-vue-next';
+import { Bot, LoaderCircle, LockKeyhole, ScanSearch, Send, Sparkles, X } from 'lucide-vue-next';
 
 const props = defineProps({
   getDiagnostics: { type: Function, required: true },
@@ -75,6 +87,7 @@ const props = defineProps({
 
 const store = useMainStore();
 const loading = ref(false);
+const isOpen = ref(false);
 const question = ref('');
 const messageList = ref(null);
 

@@ -54,6 +54,15 @@
                 </dt>
                 <dd class="font-normal wrap-break-word">{{ data.isp || '—' }}</dd>
             </div>
+            <div v-for="field in intelligenceFields" :key="field.key">
+                <dt class="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <component :is="field.icon" class="size-3.5" />
+                    <span>{{ field.label }}</span>
+                </dt>
+                <dd class="font-normal wrap-break-word" :class="{ 'text-muted-foreground': field.muted }">
+                    {{ field.value }}
+                </dd>
+            </div>
         </template>
     </dl>
 
@@ -203,6 +212,7 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Icon } from '@iconify/vue';
 import {
     Building2,
+    Clock3,
     ChevronDown,
     ChevronUp,
     CircleCheck,
@@ -210,15 +220,19 @@ import {
     CornerUpRight,
     EthernetPort,
     Gauge,
+    Globe2,
     House,
     Lock,
     Map,
     MapPin,
+    Navigation,
+    Route,
     ShieldCheck,
     SignalHigh,
+    Waypoints,
 } from 'lucide-vue-next';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
     data: { type: Object, required: true },
@@ -236,6 +250,52 @@ const props = defineProps({
 
 const isAsnOpen = ref(false);
 const isMapDialogOpen = ref(false);
+const labels = computed(() => {
+    const language = locale.value?.split('-')[0];
+    const translations = {
+        zh: {
+            district: '区县', street: '街道', streetUnavailable: 'IP 数据源不提供可靠的街道级定位',
+            postal: '邮政编码', timezone: '时区', continent: '洲', coordinates: '坐标',
+            organization: '网络组织', networkClass: '网络等级',
+        },
+        en: {
+            district: 'District', street: 'Street', streetUnavailable: 'Reliable street-level location is not available from IP data',
+            postal: 'Postal code', timezone: 'Time zone', continent: 'Continent', coordinates: 'Coordinates',
+            organization: 'Network organization', networkClass: 'Network class',
+        },
+        fr: {
+            district: 'District', street: 'Rue', streetUnavailable: 'La géolocalisation IP fiable au niveau de la rue est indisponible',
+            postal: 'Code postal', timezone: 'Fuseau horaire', continent: 'Continent', coordinates: 'Coordonnées',
+            organization: 'Organisation réseau', networkClass: 'Classe réseau',
+        },
+        tr: {
+            district: 'İlçe', street: 'Sokak', streetUnavailable: 'IP verilerinden güvenilir sokak düzeyi konum sağlanamaz',
+            postal: 'Posta kodu', timezone: 'Saat dilimi', continent: 'Kıta', coordinates: 'Koordinatlar',
+            organization: 'Ağ kuruluşu', networkClass: 'Ağ sınıfı',
+        },
+    };
+    return translations[language] || translations.en;
+});
+const hasCoordinates = computed(() =>
+    Number.isFinite(Number(props.data.latitude)) && Number.isFinite(Number(props.data.longitude))
+);
+const intelligenceFields = computed(() => [
+    props.data.district && { key: 'district', label: labels.value.district, value: props.data.district, icon: Route },
+    { key: 'street', label: labels.value.street, value: labels.value.streetUnavailable, icon: Navigation, muted: true },
+    props.data.postalCode && { key: 'postal', label: labels.value.postal, value: props.data.postalCode, icon: MapPin },
+    props.data.timezone && { key: 'timezone', label: labels.value.timezone, value: props.data.timezone, icon: Clock3 },
+    props.data.continent && { key: 'continent', label: labels.value.continent, value: props.data.continent, icon: Globe2 },
+    hasCoordinates.value && {
+        key: 'coordinates', label: labels.value.coordinates,
+        value: `${Number(props.data.latitude).toFixed(4)}, ${Number(props.data.longitude).toFixed(4)}`, icon: Waypoints,
+    },
+    props.data.networkOrganization && props.data.networkOrganization !== props.data.isp && {
+        key: 'organization', label: labels.value.organization, value: props.data.networkOrganization, icon: Building2,
+    },
+    props.data.networkClass && {
+        key: 'networkClass', label: labels.value.networkClass, value: props.data.networkClass, icon: SignalHigh,
+    },
+].filter(Boolean));
 
 // Show every advanced field that any fused source or the proxy-risk lookup supplied.
 const showAdvancedBlock = computed(() => Boolean(

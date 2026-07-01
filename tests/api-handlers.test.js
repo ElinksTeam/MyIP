@@ -127,8 +127,12 @@ describe('IPWho.is handler', () => {
             country_code: 'AU',
             latitude: -33.86,
             longitude: 151.2,
+            postalCode: '',
+            timezone: '',
+            continent: '',
             asn: 'AS13335',
             org: 'Cloudflare, Inc.',
+            networkOrganization: 'Cloudflare, Inc.',
         });
     });
 });

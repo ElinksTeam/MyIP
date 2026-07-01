@@ -1,14 +1,15 @@
 <template>
   <!-- IP Infos -->
   <section class="ip-data-section mb-10 mt-2">
-    <header class="mb-2 flex flex-col items-start justify-between gap-4">
-      <h2 id="IPInfo"
-        class="m-0 flex min-w-0 flex-1 items-center gap-2 text-xl md:text-3xl font-semibold tracking-tight leading-tight">
-        🔎 {{ t('ipInfos.Title') }}
-      </h2>
-      <div class="text-base text-muted-foreground">
-        <p>{{ t('ipInfos.Notes') }}</p>
+    <header class="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
+      <div>
+        <h2 id="IPInfo"
+          class="m-0 flex min-w-0 flex-1 items-center gap-2 text-xl md:text-3xl font-semibold tracking-tight leading-tight">
+          🔎 {{ t('ipInfos.Title') }}
+        </h2>
+        <p class="mt-2 max-w-4xl text-sm text-muted-foreground">{{ t('ipInfos.Notes') }}</p>
       </div>
+      <DashboardActions class="shrink-0" :get-cards="() => ipDataCards" />
     </header>
 
     <!-- Card grid: 1 col on mobile, always 2 cols on PC (md+). Card counts
@@ -38,6 +39,7 @@ import {
 } from '@/utils/getips';
 import { authenticatedFetch } from '@/utils/authenticated-fetch';
 import IPCard from './ip-infos/IPCard.vue';
+import DashboardActions from './DashboardActions.vue';
 
 
 const { t } = useI18n();
@@ -59,9 +61,15 @@ const createDefaultCard = () => ({
   country_name: "",
   region: "",
   city: "",
+  district: "",
+  postalCode: "",
+  timezone: "",
+  continent: "",
   latitude: "",
   longitude: "",
   isp: "",
+  networkOrganization: "",
+  networkClass: "",
   asn: "",
   asnlink: "",
   mapUrl: '/res/defaultMap.webp',
