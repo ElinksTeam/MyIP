@@ -4,7 +4,7 @@
         <p class="text-sm text-muted-foreground">{{ t('dnsresolver.Note') }}</p>
 
         <!-- Input area -->
-        <div class="space-y-3">
+        <div class="max-w-3xl space-y-4">
             <label for="queryURL" class="text-sm font-medium block">{{ t('dnsresolver.Note2') }}</label>
 
             <!-- Record type selector: 6 options → ToggleGroup horizontally -->
@@ -57,7 +57,8 @@
                             <tr v-for="(result, index) in combinedResults" :key="index"
                                 class="hover:bg-muted/50 transition-colors">
                                 <td class="px-4 py-2.5 whitespace-nowrap font-medium">{{ result.provider }}</td>
-                                <td class="px-4 py-2.5 font-mono wrap-break-word"
+                                <td class="max-w-[520px] truncate px-4 py-2.5 font-mono"
+                                    :title="result.address"
                                     :class="result.address === 'N/A' ? 'text-muted-foreground/60' : ''">
                                     {{ result.address }}
                                 </td>
@@ -80,6 +81,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Spinner } from '@/components/ui/spinner';
 import { Play } from 'lucide-vue-next';
+import { api } from '@/services/api-client.js';
 
 const { t } = useI18n();
 
@@ -118,9 +120,7 @@ const getDNSResults = async (hostname, type) => {
     combinedResults.value = [];
     dnsCheckStatus.value = 'running';
     try {
-        const response = await fetch(`/api/dnsresolver?hostname=${hostname}&type=${type}`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
+        const data = await api.dns(hostname, type);
         processResults(data);
         dnsCheckStatus.value = 'idle';
         errorMsg.value = '';

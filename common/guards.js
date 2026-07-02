@@ -1,4 +1,4 @@
-// Express middleware that factors out the boilerplate every api/ handler
+// Express middleware that factors out boilerplate shared by API handlers.
 // used to repeat at the top of its function body: referer check, IP presence
 // check, IP validity check. Mount once in backend-server.js; handlers stop
 // carrying the defensive checks and can't accidentally forget them.

@@ -61,36 +61,6 @@
                     </ToggleGroup>
                 </section>
 
-                <!-- IP Sources Count -->
-                <section id="Pref_ipCards">
-                    <SectionTitle :icon="LayoutGrid">{{ t('nav.preferences.ipSourcesToCheck') }}</SectionTitle>
-                    <ToggleGroup :model-value="String(userPreferences.ipCardsToShow)" type="single" class="w-full"
-                        @update:model-value="(v) => v && prefipCards(Number(v))">
-                        <ToggleGroupItem v-for="num in [2, 4, 6]" :key="num" :value="String(num)" class="flex-1">
-                            {{ num }}
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                    <SectionTip>{{ t('nav.preferences.ipSourcesToCheckTips') }}</SectionTip>
-                </section>
-
-                <!-- IP Geo DB -->
-                <section id="Pref_ipGeoSource">
-                    <SectionTitle :icon="Database">{{ t('nav.preferences.ipDB') }}</SectionTitle>
-                    <Select :model-value="String(userPreferences.ipGeoSource)"
-                        @update:model-value="(v) => v != null && prefipGeoSource(Number(v))">
-                        <SelectTrigger class="w-full shadow-none">
-                            <SelectValue>{{ currentIpDB?.text || '—' }}</SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="ipdb in ipDBs" :key="ipdb.id" :value="String(ipdb.id)"
-                                :disabled="!ipdb.enabled" :class="{ 'line-through cursor-not-allowed': !ipdb.enabled }">
-                                {{ ipdb.text }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <SectionTip>{{ t('nav.preferences.ipDBTips') }}</SectionTip>
-                </section>
-
                 <!-- App Settings -->
                 <section id="Pref_appSettings">
                     <SectionTitle :icon="AppWindow">{{ t('nav.preferences.appSettings') }}</SectionTitle>
@@ -133,11 +103,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Icon } from '@iconify/vue';
 import {
     AppWindow,
-    Database,
     Globe,
     Languages,
     LaptopMinimal,
-    LayoutGrid,
     Moon,
     Palette,
     SlidersHorizontal,
@@ -149,9 +117,7 @@ const { t } = useI18n();
 const store = useMainStore();
 const isDarkMode = computed(() => store.isDarkMode);
 const isMobile = computed(() => store.isMobile);
-const configs = computed(() => store.configs);
 const userPreferences = computed(() => store.userPreferences);
-const ipDBs = computed(() => store.ipDBs);
 const isSignedIn = computed(() => store.isSignedIn);
 
 const isOpen = computed(() => store.openSheet === 'preferences');
@@ -177,11 +143,6 @@ const themeOptions = [
     { value: 'dark', label: t('nav.preferences.colorDark'), icon: Moon },
     { value: 'auto', label: t('nav.preferences.systemAuto'), icon: LaptopMinimal },
 ];
-
-// Current selected IP DB (for SelectValue display)
-const currentIpDB = computed(() =>
-    ipDBs.value.find(db => db.id === userPreferences.value.ipGeoSource)
-);
 
 // Theme coordination — applies the user's preference ("light" / "dark" / "auto")
 // to the store, <html> `.dark` class, body class, and PWA meta colors.
@@ -222,15 +183,6 @@ const PWAColor = () => {
     backgroundColor.setAttribute('content', bgColor);
 };
 
-const updateIPDBs = () => {
-    if (configs.value && Object.keys(configs.value).length > 0) {
-        store.updateIPDBs({ id: 0, enabled: configs.value.ipChecking });
-        store.updateIPDBs({ id: 1, enabled: configs.value.ipInfo });
-        store.updateIPDBs({ id: 3, enabled: configs.value.ipapiis });
-        store.updateIPDBs({ id: 4, enabled: configs.value.ip2location });
-    }
-};
-
 const prefTheme = (value) => {
     // Persist first so applyTheme() reads the new value, then apply.
     store.updatePreference('theme', value);
@@ -269,21 +221,9 @@ const prefconnectivityShowNoti = (value) => {
     trackEvent('Nav', 'PrefereceClick', 'ConnectivityNotifications');
 };
 
-const prefipCards = (value) => {
-    store.updatePreference('ipCardsToShow', value);
-    trackEvent('Nav', 'PrefereceClick', 'ipCards');
-};
-
-const prefipGeoSource = (value) => {
-    store.updatePreference('ipGeoSource', value);
-    trackEvent('Nav', 'PrefereceClick', 'ipGeoSource');
-    trackEvent('IPCheck', 'SelectSource', ipDBs.value.find(x => x.id === value).text);
-};
-
 onMounted(() => {
     mediaQueryList.addEventListener('change', handleMediaChange);
     applyTheme();
-    setTimeout(updateIPDBs, 4000);
 });
 
 // Clean up the OS listener if this component is ever torn down (it normally

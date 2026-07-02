@@ -27,9 +27,9 @@
     "Benefits": {
       "Title": "Kullanıcı Avantajları",
       "Benefit": "Avantaj",
-      "Note1": "Açık kaynaklı bir ürün olarak, IPCheck.ing'i kullanımınız ücretsizdir.",
+      "Note1": "Açık kaynaklı bir ürün olarak, ElinksNet'i kullanımınız ücretsizdir.",
       "Note2": "Ancak, kötüye kullanımı önlemek için bazı özellikleri sınırlıyoruz. Giriş yaparak aşağıdaki avantajları elde edeceksiniz:",
-      "Benefit1": "IPCheck.ing'i IP veri kaynağı olarak kullandığınızda, tüm alanlar tam olarak görüntülenir.",
+      "Benefit1": "ElinksNet'i IP veri kaynağı olarak kullandığınızda, tüm alanlar tam olarak görüntülenir.",
       "Benefit2": "Görünmezlik testini kullanabilirsiniz.",
       "Benefit3": "Kendi başarı rozetlerinizi görüntüleyebilirsiniz",
       "Benefit4": "Bazı özelliklerdeki erişim kısıtlamalarını azaltır.",
@@ -37,7 +37,7 @@
     },
     "Achievements": {
       "Title": "Başarılar",
-      "Note": "IPCheck.ing'i kullanırken bazı başarıları tetikleyebilirsiniz. Burada tüm başarılarınızı görebilirsiniz.",
+      "Note": "ElinksNet'i kullanırken bazı başarıları tetikleyebilirsiniz. Burada tüm başarılarınızı görebilirsiniz.",
       "Get": "Kazanılan",
       "GetCount": "Kazanılan Başarılar",
       "NotGet": "Henüz Değil",
@@ -49,7 +49,7 @@
       "Type": {
         "IAmHuman": {
           "Title": "Ben İnsanım",
-          "Meet": "IPCheck.ing'i giriş yaptıktan sonra kullanın"
+          "Meet": "ElinksNet'i giriş yaptıktan sonra kullanın"
         },
         "BarelyEnough": {
           "Title": "Kıt Kanaat",
@@ -117,7 +117,7 @@
         },
         "GenerousDonor": {
           "Title": "Cömert Bağışçı",
-          "Meet": "IPCheck.ing projesine bağış yaptı"
+          "Meet": "ElinksNet projesine bağış yaptı"
         },
         "ItIsOpen": {
           "Title": "İşte Açık",
@@ -125,7 +125,7 @@
         },
         "CuriousCat": {
           "Title": "Meraklı Kedi",
-          "Meet": "Whois Araması'nda IPCheck.ing bilgilerini sorgulayın"
+          "Meet": "Whois Araması'nda ElinksNet bilgilerini sorgulayın"
         },
         "CrossingTheWall": {
           "Title": "Duvarı Aşmak",
@@ -136,7 +136,7 @@
   },
   "nav": {
     "id": "nav",
-    "Title": "IPCheck.ing",
+    "Title": "ElinksNet",
     "Navigation": "Navigasyon",
     "IPInfo": "IP Bilgileri",
     "Connectivity": "Bağlantı",
@@ -166,7 +166,7 @@
       "popupConnectivityNotifications": "Açılır Bağlantı Uyarıları",
       "popupConnectivityNotificationsTips": "Etkinleştirildiğinde, ilk kontrolün sonuçları açılır bir uyarı olarak gösterilir.",
       "ipDB": "IP Coğrafi Konum Veritabanı",
-      "ipDBTips": "Kullanılacak varsayılan IP coğrafi konum kaynağını seçebilirsiniz. Seçilen kaynak kullanılamıyorsa, sistem sırayla sonraki kaynakları kullanacaktır.",
+      "ipDBTips": "Sistem etkin ve kullanılabilir tüm IP kaynaklarını otomatik olarak paralel sorgular ve tamamlayıcı verileri birleştirir.",
       "language": "Dil Ayarı",
       "languageTips": "Tarayıcıyı yenilemek etkili olacaktır."
     }
@@ -198,13 +198,21 @@
     "ShowChecked": "İşaretlileri Göster",
     "Loading": "Yükleniyor..."
   },
+  "additional": {
+    "OpenSource": "Açık Kaynak",
+    "OpenSourceNote": "Kodu GitHub'da görüntüleyin",
+    "Docker": "Docker Hazır",
+    "DockerNote": "ElinksNet'i hızla dağıtın",
+    "Curl": "Komut Satırı",
+    "CurlNote": "IP adresinizi curl ile sorgulayın"
+  },
   "curl": {
     "Title": "Komut Satırı API'si",
     "Note1": "Hey, görünüşe göre siz de terminal kullanmayı seviyorsunuz?",
     "Note2_1": "kullanabilirsiniz",
     "Note2_2": "komutuyla, makinenizin IP adresini terminalde alın",
     "Note3": "isteğe bağlı bir yoldur, eklenmesi IP'nin coğrafi bilgilerini alacaktır",
-    "Note4": "lütfen IPCheck.ing API anahtarınızı kullanın",
+    "Note4": "lütfen ElinksNet API anahtarınızı kullanın",
     "getIPv4": "Yerel makinenin IPv4 adresini alın",
     "getIPv6": "Yerel makinenin IPv6 adresini alın",
     "get6and4": "Yerel makinenin tercih edilen ağ çıkış IP adresini alın",
@@ -432,7 +440,7 @@
   "ruletest": {
     "Title": "Kural Testi",
     "Name": "Test",
-    "Note": "Kural testi, proxy yazılımının alan adı tabanlı kurallarının doğru ayarlanıp ayarlanmadığını belirlemek için kullanılır. Testi yapmadan önce, aşağıdaki karta başvurmanız ve proxy yazılımınızda IPCheck.ing'in 8 farklı URL'si için farklı alan adı tabanlı yönlendirme kuralları ayarlamanız gerekir. Genellikle, kuralları ayarlamak için DOMAIN, ptest-3.ipcheck.ing, POLICY gibi formatlar kullanılabilir. Bu formatlar, kullandığınız proxy yazılımına göre farklılık gösterebilir.",
+    "Note": "Kural testi, proxy yazılımının alan adı tabanlı kurallarının doğru ayarlanıp ayarlanmadığını belirlemek için kullanılır. Testi yapmadan önce, aşağıdaki karta başvurmanız ve proxy yazılımınızda ElinksNet'in 8 farklı URL'si için farklı alan adı tabanlı yönlendirme kuralları ayarlamanız gerekir. Genellikle, kuralları ayarlamak için DOMAIN, ptest-3.ipcheck.ing, POLICY gibi formatlar kullanılabilir. Bu formatlar, kullandığınız proxy yazılımına göre farklılık gösterebilir.",
     "StatusWait": "Test Bekleniyor veya Test Hatası",
     "StatusError": "Test Hatası",
     "Country": "Proxy bölgesi",
@@ -458,7 +466,7 @@
     "id": "ipinfos",
     "database": "Veritabanı",
     "Title": "IP Bilgileri",
-    "Notes": "Program önce IP adresinizi farklı kaynaklardan (IPv4 ve IPv6 dahil) kontrol edecek ve ardından seçtiğiniz IP coğrafi konum kaynağından ilgili coğrafi verileri sorgulayacaktır. Yalnızca 1 IP yığını varsa, verisi olmayan kaynak boş olarak görüntülenecektir.",
+    "Notes": "Sistem IPv4 ve IPv6'yı algılar, kullanılabilir tüm kaynakları paralel sorgular ve konum, ağ, ASN, proxy durumu ile IP kalitesi verilerini birleştirir. Bir kaynağın kullanılamaması diğerlerini etkilemez.",
     "Simple": "Basit",
     "Map": "Harita",
     "MapUnavailable": "Harita Kullanılamıyor",
@@ -577,7 +585,7 @@
     "id": "pingtest",
     "Title": "Global Gecikme Testi",
     "Note": "Ping testi, veri paketlerinin cihazınızdan belirli hedeflere (bu durumda, farklı kıtalarda ve bölgelerde bulunan sunucularımıza) gidiş-dönüş süresini ölçmek için kullanılan bir ağ aracıdır. Ağ performansını değerlendirmek için önemli bir metriktir.",
-    "Note2": "Bu süreçte, IPCheck.ing dünyanın dört bir yanındaki sunuculardan IP adresinize küçük veri paketleri gönderir ve bu paketlerin sunucudan cihazınıza gidip geri dönmesi için geçen süreyi ölçer. Farklı coğrafi konumlardan yapılan bu Ping testleri aracılığıyla, cihazınızın küresel ağa bağlantısının hızı ve kararlılığı hakkında kapsamlı bir görüş edinebilirsiniz.",
+    "Note2": "Bu süreçte, ElinksNet dünyanın dört bir yanındaki sunuculardan IP adresinize küçük veri paketleri gönderir ve bu paketlerin sunucudan cihazınıza gidip geri dönmesi için geçen süreyi ölçer. Farklı coğrafi konumlardan yapılan bu Ping testleri aracılığıyla, cihazınızın küresel ağa bağlantısının hızı ve kararlılığı hakkında kapsamlı bir görüş edinebilirsiniz.",
     "Note3": "Lütfen test için IP adresinizi seçin.",
     "SelectIP": "Bir IP Adresi Seçin",
     "Region": "Bölge",
@@ -658,30 +666,30 @@
     "SecurityChecklist": "Güvenlik Kontrol Listesi panelini aç"
   },
   "page": {
-    "title": "IPCheck.ing - IP Adresimi ve Coğrafi Konumumu Kontrol Et - WebRTC Bağlantı IP'sini Kontrol Et - DNS Sızıntı Testi - Hız Testi - Jason Ng Açık Kaynak",
+    "title": "ElinksNet - Elinks açık kaynak IP ve ağ araç kutusu",
     "description": "Daha iyi ve açık kaynaklı bir IP Araç Kutusu. IP'lerinizin ne olduğunu, IP bilgilerini, DNS sızıntılarını kontrol etmek, WebRTC bağlantılarını incelemek, web sitesi kullanılabilirliğini test etmek, DNS kaydını aramak, Whois'i aramak ve dünyanın dört bir yanından gecikmeyi test etmek kolaydır.",
     "keywords": "IPim, IP Aracı, IP Adresim, IP kontrol, IP arama, DNS sızıntı testi, WebRTC testi, Hız testi, DNS arama, Whois arama, Ping testi, gizlilik testi",
-    "footerLink": "https://github.com/jason5ng32/MyIP",
-    "copyRightName": "Orijinal Kaynak ",
-    "copyRightLink": "https://ipcheck.ing",
-    "copyRightLinkName": "IPCheck.ing"
+    "footerLink": "https://github.com/ElinksTeam/ElinksNet",
+    "copyRightName": "Telif hakkı © 2026 ",
+    "copyRightLink": "https://github.com/ElinksTeam",
+    "copyRightLinkName": "Elinks"
   },
   "helpModal": {
     "Title": "Klavye Kısayolları"
   },
   "about": {
     "Title": "Hakkında",
-    "product1": "IPCheck.ing, IP bilgilerinizi kontrol etmenize, web sitesi kullanılabilirliğini test etmenize, DNS çıkış bilgilerini incelemenize, hız testleri, global gecikme testleri, MTR testleri ve daha fazlasını yapmanıza yardımcı olan ücretsiz bir IP araç kutusudur.",
+    "product1": "ElinksNet, IP bilgilerinizi kontrol etmenize, web sitesi kullanılabilirliğini test etmenize, DNS çıkış bilgilerini incelemenize, hız testleri, global gecikme testleri, MTR testleri ve daha fazlasını yapmanıza yardımcı olan ücretsiz bir IP araç kutusudur.",
     "product2": "Bu açık kaynaklı bir projedir ve kaynak kodunu sayfanın altındaki GitHub simgesine tıklayarak görüntüleyebilirsiniz.",
     "product3": "Başlangıçta bu, Vue.js öğrenmem ve AI kullanarak nasıl kod yazacağımı öğrenmem için kişisel bir projeydi. Zamanla GitHub'da daha fazla yıldız kazandı, bu yüzden çok fazla yeniden düzenleme yaptım ve birçok faydalı özellik ekledim. Umarım beğenirsiniz.",
     "meTitle": "Hakkımda",
-    "me1": "Benim adım Jason Ng, internette Achán olarak da bilinirim. Profesyonel bir programcı değilim ama kodlamayı, açık kaynağı ve paylaşmayı seviyorum.",
-    "me2": "Çoğu zaman bir ürün yöneticisi, blog yazarı, motosiklet sürücüsü ve bir 'geek' olarak çalışıyorum.",
-    "me3": "Hakkımda daha detaylı bir tanıtımı aşağıdaki linkte bulabilirsiniz:",
+    "me1": "Elinks, ElinksNet'i açık kaynaklı bir IP ve ağ araç kutusu olarak sürdürür.",
+    "me2": "Pratik ağ tanılama, gizlilik kontrolleri ve kendi sunucunda barındırmaya odaklanıyoruz.",
+    "me3": "Kaynak koduna ve güncellemelere aşağıdaki bağlantılardan ulaşabilirsiniz:",
     "contactTitle": "Bana Ulaşın",
-    "contact": "Herhangi bir sorunuz veya öneriniz varsa, lütfen benimle e-posta yoluyla iletişime geçin: jason[AT]kenengba.com.",
-    "personal": "Kişisel Web Sitesi",
-    "blog": "Blogum",
+    "contact": "Sorularınız veya önerileriniz için ElinksTeam/ElinksNet deposunda bir issue açın.",
+    "personal": "ElinksTeam",
+    "blog": "Proje Deposu",
     "retiremoney": "Gelecek Planlayıcısı",
     "twitter": "Twitter",
     "Sponsor": "Sponsor"

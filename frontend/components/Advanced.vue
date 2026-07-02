@@ -1,67 +1,91 @@
 <template>
-    <!-- Advanced Tools -->
-    <section class="advanced-tools-section mb-10">
-        <!-- Header -->
-        <header class="mb-3">
-            <h2 id="AdvancedTools" class="m-0 flex min-w-0 flex-1 items-center gap-2 text-xl md:text-3xl font-semibold tracking-tight leading-tight">
-                🧰 {{ t('advancedtools.Title') }}
+  <section class="advanced-tools-section mb-10">
+    <div class="mb-5 overflow-hidden rounded-2xl bg-card shadow-[0_1px_2px_rgb(15_23_42_/_0.04),0_14px_40px_rgb(15_23_42_/_0.06)] ring-1 ring-border/50">
+      <div class="relative p-5 sm:p-6">
+        <div class="advanced-grid-pattern absolute inset-y-0 right-0 hidden w-2/5 opacity-50 lg:block" />
+        <div class="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-2xl">
+            <Badge variant="outline" class="mb-3 gap-1.5 bg-background/70">
+              <TerminalSquare class="size-3.5 text-primary" />
+              Elinks Network Lab
+            </Badge>
+            <h2 id="AdvancedTools" class="m-0 text-2xl font-semibold tracking-tight md:text-3xl">
+              {{ t('advancedtools.Title') }}
             </h2>
-            <p class="my-3 text-base text-muted-foreground">{{ t('advancedtools.Note') }}</p>
-        </header>
+            <p class="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{{ t('advancedtools.Note') }}</p>
+          </div>
+          <div class="grid grid-cols-3 gap-2 sm:min-w-[360px]">
+            <div v-for="metric in workspaceMetrics" :key="metric.label"
+              class="rounded-xl bg-muted/45 px-3 py-2.5 ring-1 ring-border/40">
+              <p class="font-mono text-lg font-semibold">{{ metric.value }}</p>
+              <p class="text-[11px] text-muted-foreground">{{ metric.label }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <!-- Card grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <Card v-for="(card, index) in enabledCards" :key="index"
-                :data-adv-path="card.path"
-                class="keyboard-shortcut-card jn-card jn-adv-card group relative cursor-pointer overflow-visible transition-transform duration-300 ease-out hover:-translate-y-1.5 data-[keyboard-hover=true]:ring-2 data-[keyboard-hover=true]:ring-green-500/50"
-                role="button" tabindex="0" @click.prevent="navigateAndToggleOffcanvas(card.path)"
-                @keydown.enter.prevent="navigateAndToggleOffcanvas(card.path)"
-                @keydown.space.prevent="navigateAndToggleOffcanvas(card.path)">
-                <CardContent class="p-4">
-                    <h3 class="text-xl md:text-2xl font-medium text-primary mb-2 pr-10">
-                        <PanelBottomOpen
-                            class="inline size-[1em] align-[-0.15em] mr-1.5 transition-colors duration-300" />
-                        {{ t(card.titleKey) }}
-                    </h3>
-                    <!-- Description -->
-                    <p class="text-base text-muted-foreground line-clamp-2 min-h-10">
-                        {{ t(card.noteKey) }}
-                    </p>
-                    <!-- Top right emoji -->
-                    <span class="jn-emoji" aria-hidden="true">{{ card.icon }}</span>
-                </CardContent>
-            </Card>
+    <div v-for="group in toolGroups" :key="group.id" class="mb-6">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <component :is="group.icon" class="size-4 text-muted-foreground" />
+          <h3 class="text-sm font-semibold">{{ group.title }}</h3>
+          <Badge variant="secondary" class="font-mono text-[10px]">{{ group.cards.length }}</Badge>
+        </div>
+        <span class="hidden text-xs text-muted-foreground sm:block">{{ group.note }}</span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ToolCard v-for="(card, index) in group.cards" :key="card.path" :data-adv-path="card.path"
+          :icon="card.icon" :code="`LAB-${String(index + 1).padStart(2, '0')}`"
+          :title="cardTitle(card)" :note="cardNote(card)"
+          @open="navigateAndToggleOffcanvas(card.path)" />
+      </div>
+    </div>
+
+    <Drawer :open="isOpen" @update:open="onOpenChange" :dismissible="true">
+      <DrawerContent :title="activeCard ? cardTitle(activeCard) : t('advancedtools.Title')"
+        :class="['jn-tools-drawer overflow-hidden', (isMobile || isFullScreen) ? 'h-full rounded-none' : 'h-[88vh]']">
+        <div class="flex items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur shrink-0">
+          <span v-if="activeCard" class="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-muted/60">
+            <component :is="activeCard.icon" class="size-4.5" />
+          </span>
+          <div v-if="activeCard" class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="truncate text-sm font-semibold md:text-base">{{ cardTitle(activeCard) }}</span>
+              <Badge variant="outline" class="hidden text-[10px] sm:inline-flex">{{ workspaceCopy.live }}</Badge>
+            </div>
+            <p class="truncate text-[11px] text-muted-foreground">{{ cardNote(activeCard) }}</p>
+          </div>
+          <span v-else class="flex-1" />
+          <button v-if="!isMobile" type="button"
+            class="rounded-md border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            @click="fullScreen" :aria-label="isFullScreen ? 'Exit full screen' : 'Full screen'">
+            <Maximize v-if="!isFullScreen" class="size-4" />
+            <Minimize v-else class="size-4" />
+          </button>
+          <DrawerClose @click="resetNavigatorURL()"
+            class="rounded-md border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" />
         </div>
 
-        <!-- Tool details Drawer -->
-        <Drawer :open="isOpen" @update:open="onOpenChange" :dismissible="true">
-            <DrawerContent :title="openedCard >= 0 ? t(cards[openedCard].titleKey) : t('advancedtools.Title')"
-                :class="['jn-tools-drawer overflow-hidden', (isMobile || isFullScreen) ? 'h-full rounded-none' : 'h-[85vh]']">
-                <!-- Drawer internal header -->
-                <div class="flex items-center gap-2 px-4 pt-1 pb-3 jn-drawer-header shrink-0">
-                    <button v-if="!isMobile" type="button"
-                        class="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                        @click="fullScreen" :aria-label="isFullScreen ? 'Exit full screen' : 'Full screen'">
-                        <Maximize v-if="!isFullScreen" class="size-4" />
-                        <Minimize v-else class="size-4" />
-                    </button>
-                    <span v-if="openedCard >= 0" class="flex-1 text-base md:text-lg font-medium truncate"
-                        :class="isMobile ? 'text-left' : 'text-center'">
-                        <span class="mr-1">{{ cards[openedCard].icon }}</span>{{ t(cards[openedCard].titleKey) }}
-                    </span>
-                    <span v-else class="flex-1" />
-                    <DrawerClose @click="resetNavigatorURL()"
-                        class="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" />
-                </div>
-                <!-- Content area (scrollable) -->
-                <div class="flex-1 overflow-y-auto px-1 md:px-2 pb-6" ref="scrollContainer">
-                    <div :class="isMobile ? 'w-full px-3' : 'jn-canvas-width px-6'">
-                        <router-view></router-view>
-                    </div>
-                </div>
-            </DrawerContent>
-        </Drawer>
-    </section>
+        <div class="tool-rail flex shrink-0 gap-1.5 overflow-x-auto border-b bg-muted/20 px-3 py-2">
+          <button v-for="card in enabledCards" :key="card.path" type="button"
+            class="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs transition-colors"
+            :class="card.path === router.currentRoute.value.path ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
+            @click="navigateAndToggleOffcanvas(card.path)">
+            <component :is="card.icon" class="size-3.5" />
+            {{ cardTitle(card) }}
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-1 pb-6" ref="scrollContainer">
+          <div :class="isMobile ? 'w-full px-3' : 'jn-canvas-width px-6'">
+            <router-view />
+          </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  </section>
 </template>
 
 <script setup>
@@ -71,125 +95,133 @@ import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Card, CardContent } from '@/components/ui/card';
-import { CircleArrowOutUpRight, Maximize, Minimize, PanelBottomOpen } from 'lucide-vue-next';
+import ToolCard from './advanced-tools/ToolCard.vue';
+import { useProductCopy } from '@/composables/use-product-copy.js';
+import { Badge } from '@/components/ui/badge';
+import {
+  Activity, BookOpen, Cable, CircleGauge, Container, DatabaseZap, FileSearch, Fingerprint,
+  ListChecks, Maximize, Minimize, MonitorCog, Network, Radar, Route, ServerCog,
+  ShieldCheck, TerminalSquare, Waypoints,
+} from 'lucide-vue-next';
 
 const { t } = useI18n();
-
 const store = useMainStore();
+const router = useRouter();
 const isMobile = computed(() => store.isMobile);
 const configs = computed(() => store.configs);
-
 const scrollContainer = ref(null);
-const router = useRouter();
 
 const cards = reactive([
-    { path: '/pingtest', icon: '⏱️', titleKey: 'pingtest.Title', noteKey: 'advancedtools.PingTestNote', enabled: true },
-    { path: '/mtrtest', icon: '📡', titleKey: 'mtrtest.Title', noteKey: 'advancedtools.MTRTestNote', enabled: true },
-    { path: '/ruletest', icon: '🚏', titleKey: 'ruletest.Title', noteKey: 'advancedtools.RuleTestNote', enabled: true },
-    { path: '/dnsresolver', icon: '🔦', titleKey: 'dnsresolver.Title', noteKey: 'advancedtools.DNSResolverNote', enabled: true },
-    { path: '/censorshipcheck', icon: '🚧', titleKey: 'censorshipcheck.Title', noteKey: 'advancedtools.CensorshipCheck', enabled: true },
-    { path: '/whois', icon: '📓', titleKey: 'whois.Title', noteKey: 'advancedtools.Whois', enabled: true },
-    { path: '/macchecker', icon: '🗄️', titleKey: 'macchecker.Title', noteKey: 'advancedtools.MacChecker', enabled: true },
-    { path: '/browserinfo', icon: '🖥️', titleKey: 'browserinfo.Title', noteKey: 'advancedtools.BrowserInfo', enabled: true },
-    { path: '/securitychecklist', icon: '📋', titleKey: 'securitychecklist.Title', noteKey: 'advancedtools.SecurityChecklist', enabled: true },
-    { path: '/invisibilitytest', icon: '🫣', titleKey: 'invisibilitytest.Title', noteKey: 'advancedtools.InvisibilityTest', enabled: false }
+  { path: '/pingtest', icon: CircleGauge, group: 'diagnostics', titleKey: 'pingtest.Title', noteKey: 'advancedtools.PingTestNote', enabled: true },
+  { path: '/mtrtest', icon: Route, group: 'diagnostics', titleKey: 'mtrtest.Title', noteKey: 'advancedtools.MTRTestNote', enabled: true },
+  { path: '/ruletest', icon: Waypoints, group: 'diagnostics', titleKey: 'ruletest.Title', noteKey: 'advancedtools.RuleTestNote', enabled: true },
+  { path: '/dnsresolver', icon: ServerCog, group: 'diagnostics', titleKey: 'dnsresolver.Title', noteKey: 'advancedtools.DNSResolverNote', enabled: true },
+  { path: '/censorshipcheck', icon: Radar, group: 'intelligence', titleKey: 'censorshipcheck.Title', noteKey: 'advancedtools.CensorshipCheck', enabled: true },
+  { path: '/whois', icon: FileSearch, group: 'intelligence', titleKey: 'whois.Title', noteKey: 'advancedtools.Whois', enabled: true },
+  { path: '/rdap', icon: DatabaseZap, group: 'intelligence', title: { zh: 'RDAP 注册查询', en: 'RDAP Registry', fr: 'Registre RDAP', tr: 'RDAP Kaydı' }, note: { zh: '查询域名、IP 与 ASN 的结构化注册数据', en: 'Structured registration data for domains, IPs, and ASNs', fr: 'Données structurées pour domaines, IP et ASN', tr: 'Alan adı, IP ve ASN kayıt verileri' }, enabled: true },
+  { path: '/macchecker', icon: Cable, group: 'intelligence', titleKey: 'macchecker.Title', noteKey: 'advancedtools.MacChecker', enabled: true },
+  { path: '/browserinfo', icon: MonitorCog, group: 'intelligence', titleKey: 'browserinfo.Title', noteKey: 'advancedtools.BrowserInfo', enabled: true },
+  { path: '/securitychecklist', icon: ListChecks, group: 'intelligence', titleKey: 'securitychecklist.Title', noteKey: 'advancedtools.SecurityChecklist', enabled: true },
+  { path: '/invisibilitytest', icon: Fingerprint, group: 'intelligence', titleKey: 'invisibilitytest.Title', noteKey: 'advancedtools.InvisibilityTest', enabled: false },
+  { path: '/cli', icon: BookOpen, group: 'platform', titleKey: 'curl.Title', noteKey: 'additional.CurlNote', enabled: true },
+  { path: '/docker', icon: Container, group: 'platform', titleKey: 'additional.Docker', noteKey: 'additional.DockerNote', enabled: true },
+  { path: '/status', icon: Activity, group: 'platform', title: { zh: '服务状态', en: 'Service Status', fr: 'État des services', tr: 'Servis Durumu' }, note: { zh: '查看核心 API 与上游数据源在线状态', en: 'Monitor core APIs and upstream providers', fr: 'Surveillez les API et fournisseurs', tr: 'API ve sağlayıcı durumlarını izleyin' }, enabled: true },
 ]);
 
-const enabledCards = computed(() => cards.filter(c => c.enabled));
+const enabledCards = computed(() => cards.filter(card => card.enabled));
+const openedCard = computed(() => store.currentPath.id);
+const activeCard = computed(() => openedCard.value >= 0 ? cards[openedCard.value] : null);
+
+const COPY = {
+  zh: { diagnostics: '网络诊断', diagnosticsNote: '链路、延迟、路由与解析', intelligence: '情报与安全', intelligenceNote: '归属、封锁、设备与隐私', tools: '工具', live: '实时工作区', ready: '全天候', local: '隐私优先' },
+  en: { diagnostics: 'Network diagnostics', diagnosticsNote: 'Routes, latency, policy and DNS', intelligence: 'Intelligence & security', intelligenceNote: 'Ownership, filtering, devices and privacy', tools: 'Tools', live: 'Live workspace', ready: 'Always on', local: 'Privacy-first' },
+  fr: { diagnostics: 'Diagnostic réseau', diagnosticsNote: 'Routes, latence, règles et DNS', intelligence: 'Renseignement et sécurité', intelligenceNote: 'Propriété, filtrage, appareils et vie privée', tools: 'Outils', live: 'Espace en direct', ready: 'Toujours prêt', local: 'Confidentiel' },
+  tr: { diagnostics: 'Ağ tanılama', diagnosticsNote: 'Rota, gecikme, kural ve DNS', intelligence: 'İstihbarat ve güvenlik', intelligenceNote: 'Sahiplik, filtreleme, cihazlar ve gizlilik', tools: 'Araç', live: 'Canlı çalışma alanı', ready: 'Her zaman açık', local: 'Gizlilik odaklı' },
+};
+const productCopy = useProductCopy();
+const workspaceCopy = computed(() => productCopy.value.workspace);
+const cardTitle = card => card?.title?.[store.lang] || card?.title?.en || t(card?.titleKey);
+const cardNote = card => card?.note?.[store.lang] || card?.note?.en || t(card?.noteKey);
+const toolGroups = computed(() => [
+  { id: 'diagnostics', icon: Network, title: workspaceCopy.value.diagnostics, note: workspaceCopy.value.diagnosticsNote, cards: enabledCards.value.filter(card => card.group === 'diagnostics') },
+  { id: 'intelligence', icon: ShieldCheck, title: workspaceCopy.value.intelligence, note: workspaceCopy.value.intelligenceNote, cards: enabledCards.value.filter(card => card.group === 'intelligence') },
+  { id: 'platform', icon: TerminalSquare, title: 'Platform', note: 'CLI · API · Docker', cards: enabledCards.value.filter(card => card.group === 'platform') },
+]);
+const workspaceMetrics = computed(() => [
+  { value: enabledCards.value.length, label: workspaceCopy.value.tools },
+  { value: '24/7', label: workspaceCopy.value.ready },
+  { value: 'LOCAL', label: workspaceCopy.value.local },
+]);
 
 const isFullScreen = ref(false);
-const openedCard = computed(() => store.currentPath.id);
-
-// Drawer toggle and store.openSheet bidirectional binding
 const isOpen = computed(() => store.openSheet === 'tools');
-const onOpenChange = (val) => {
-    // When closed, go back to '/'
-    if (!val) {
-        store.setOpenSheet(null);
-        if (router.currentRoute.value.path !== '/') {
-            router.push('/');
-        }
-        isFullScreen.value = false;
-    } else {
-        store.setOpenSheet('tools');
-    }
-};
 
-// Navigate to specified page
-// Toggle driven by router/index.js afterEach and store.setOpenSheet
-const navigateAndToggleOffcanvas = (routePath) => {
-    router.push(routePath);
-    let capitalizedRoutePath = routePath.replace('/', '');
-    capitalizedRoutePath = capitalizedRoutePath.charAt(0).toUpperCase() + capitalizedRoutePath.slice(1);
-    trackEvent('Nav', 'NavClick', capitalizedRoutePath);
-};
+function onOpenChange(value) {
+  if (!value) {
+    store.setOpenSheet(null);
+    if (router.currentRoute.value.path !== '/') router.push('/');
+    isFullScreen.value = false;
+  } else {
+    store.setOpenSheet('tools');
+  }
+}
 
-// Full screen toggle: height determined by DrawerContent's class
-const fullScreen = () => {
-    isFullScreen.value = !isFullScreen.value;
-};
+function navigateAndToggleOffcanvas(routePath) {
+  router.push(routePath);
+  const routeName = routePath.slice(1);
+  trackEvent('Nav', 'NavClick', routeName.charAt(0).toUpperCase() + routeName.slice(1));
+  scrollContainer.value?.scrollTo?.({ top: 0, behavior: 'smooth' });
+}
 
-const resetNavigatorURL = () => {
-    router.push('/');
-};
+function fullScreen() {
+  isFullScreen.value = !isFullScreen.value;
+}
+
+function resetNavigatorURL() {
+  router.push('/');
+}
 
 onMounted(() => {
-    store.setMountingStatus('advancedtools', true);
-    setTimeout(() => {
-        if (configs.value.originalSite) {
-            cards.find(x => x.path === '/invisibilitytest').enabled = true;
-        }
-    }, 1500);
+  store.setMountingStatus('advancedtools', true);
+  if (configs.value.originalSite) {
+    cards.find(card => card.path === '/invisibilitytest').enabled = true;
+  }
 });
 
-defineExpose({
-    navigateAndToggleOffcanvas, fullScreen
-});
-
+defineExpose({ navigateAndToggleOffcanvas, fullScreen });
 </script>
 
 <style scoped>
-.jn-emoji {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
-    font-size: 1.6rem;
-    line-height: 1;
-    transition: transform 0.4s ease, text-shadow 0.4s ease;
-    pointer-events: none;
+.advanced-grid-pattern {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to left, black, transparent);
 }
 
-.jn-adv-card:hover .jn-emoji {
-    transform: translateY(-10pt) scale(1.8);
-    text-shadow: 0 0 10pt rgb(0 0 0 / 0.38);
-}
-
-:global(.dark) .jn-adv-card:hover .jn-emoji {
-    text-shadow: 0 0 10pt rgb(255 255 255 / 0.15);
-}
-
-/* Drawer content area width (desktop) */
 .jn-canvas-width {
-    width: fit-content;
-    margin: auto;
-    max-width: 1400px;
+  width: 100%;
+  margin: auto;
+  max-width: 1400px;
 }
 
-.jn-drawer-header {
-    border-bottom: 1px solid var(--border);
-}
-
-/* Drawer root container needs flex-col, so that the header is fixed + content scrollable */
 .jn-tools-drawer {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Full screen toggle height transition */
 :global(.jn-tools-drawer) {
-    transition:
-        transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
-        height 0.3s cubic-bezier(0.32, 0.72, 0, 1) !important;
+  transition:
+    transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    height 0.3s cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+
+.tool-rail {
+  scrollbar-width: none;
+}
+
+.tool-rail::-webkit-scrollbar {
+  display: none;
 }
 </style>

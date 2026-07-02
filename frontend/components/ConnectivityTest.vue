@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive, watch } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, reactive, watch } from 'vue';
 import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
@@ -202,6 +202,10 @@ const updateConnectivityAlert = (type) => {
 
 // Main control
 const handelCheckStart = async (fromApp = false) => {
+  if (intervalId.value) {
+    clearInterval(intervalId.value);
+    intervalId.value = null;
+  }
   if (fromApp) await checkAllConnectivity(false, true, true);
   else await checkAllConnectivity(true, false, false);
   store.setLoadingStatus('connectivity', true);
@@ -219,6 +223,9 @@ const handelCheckStart = async (fromApp = false) => {
 
 onMounted(() => {
   store.setMountingStatus('connectivity', true);
+});
+onBeforeUnmount(() => {
+  if (intervalId.value) clearInterval(intervalId.value);
 });
 
 watch(() => store.allHasLoaded, (newValue) => {

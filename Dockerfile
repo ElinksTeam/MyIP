@@ -1,23 +1,33 @@
-# Build stage
-FROM node:24-alpine AS build-stage
+FROM node:24-alpine AS dependencies
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
+
+FROM node:24-alpine AS builder
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Production stage
-FROM node:24-alpine AS production-stage
+FROM node:24-alpine AS runner
 WORKDIR /app
-COPY --from=build-stage /app/node_modules ./node_modules
-COPY --from=build-stage /app/package.json ./
-COPY --from=build-stage /app/dist ./dist
-COPY --from=build-stage /app/backend-server.js ./
-COPY --from=build-stage /app/frontend-server.js ./
-COPY --from=build-stage /app/api ./api
-COPY --from=build-stage /app/common ./common
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    HOSTNAME=0.0.0.0 \
+    PORT=18966
+
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 EXPOSE 18966
+USER nextjs
 
-# Start application
-CMD ["npm", "start"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:18966/api/tools/status').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+
+CMD ["node", "server.js"]

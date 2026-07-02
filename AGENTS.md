@@ -1,15 +1,15 @@
 # AGENTS.md
 
-Single source of truth for anyone — human or AI — contributing to MyIP.
+Single source of truth for anyone — human or AI — contributing to ElinksNet.
 
 For area-specific details, see:
 
 - Frontend (Vue 3 SPA): @frontend/AGENTS.md
-- Backend API (Express): @api/AGENTS.md
+- Backend API (Express): @server/handlers/AGENTS.md
 
 ## Overview
 
-**MyIP** (IPCheck.ing) is an open-source IP toolbox: IP lookup, connectivity tests, WebRTC / DNS-leak detection, speed test, MTR, Whois, security checklist, browser fingerprint, anonymity checks, and more.
+**ElinksNet** is an open-source IP toolbox maintained by Elinks: IP lookup, connectivity tests, WebRTC / DNS-leak detection, speed test, MTR, Whois, security checklist, browser fingerprint, anonymity checks, and more.
 
 Single repo, two halves: a Vue 3 SPA front-end and an Express 5 back-end API, served side by side.
 
@@ -53,13 +53,14 @@ Single repo, two halves: a Vue 3 SPA front-end and an Express 5 back-end API, se
 ├── CLAUDE.md                    ← Claude-specific pointer to AGENTS.md
 │
 ├── frontend/                    ← Vue 3 SPA (see frontend/AGENTS.md)
-├── api/                         ← Express handlers (see api/AGENTS.md)
+├── server/handlers/             ← Express handlers (see server/handlers/AGENTS.md)
 ├── common/                      ← code shared between front- and back-end
 │                                  (valid-ip / fetch-with-timeout / guards /
 │                                   referer-check / maxmind-service / …)
 ├── tests/                       ← Node test runner specs
 │
-├── backend-server.js            ← Express app (default port 11966)
+├── server.js                    ← shared Express app and Vercel entrypoint
+├── backend-server.js            ← local Express listener (default port 11966)
 ├── frontend-server.js           ← static file server for `npm start`
 ├── index.html                   ← Vite entry; #app mounts vaul-drawer-wrapper
 ├── vite.config.js
@@ -94,11 +95,11 @@ Single repo, two halves: a Vue 3 SPA front-end and an Express 5 back-end API, se
 
 ## Security & Boundaries
 
-The backend enforces access control and timeouts through shared middleware rather than per-handler code. Full details live in @api/AGENTS.md; the rules that matter at the project level:
+The backend enforces access control and timeouts through shared middleware rather than per-handler code. Full details live in @server/handlers/AGENTS.md; the rules that matter at the project level:
 
 - `requireReferer` is mounted globally on `/api/*` — handlers must not repeat the referer check.
 - `requireValidIP()` is attached per-route where `?ip` is a required param — handlers must not repeat the IP check.
-- Every upstream HTTP call goes through `fetchUpstream` (`common/fetch-with-timeout.js`) with an 8s timeout. Never add a bare `fetch()` to an `api/` handler.
+- Every upstream HTTP call goes through `fetchUpstream` (`common/fetch-with-timeout.js`) with an 8s timeout. Never add a bare `fetch()` to a `server/handlers/` module.
 
 ## Workflow
 

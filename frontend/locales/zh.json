@@ -27,9 +27,9 @@
     "Benefits": {
       "Title": "用户权益",
       "Benefit": "权益",
-      "Note1": "作为一个开源产品，你使用 IPCheck.ing 的过程是免费的。",
+      "Note1": "作为一个开源产品，你使用 ElinksNet 的过程是免费的。",
       "Note2": "但是，为了避免滥用，我们会限制一些功能。当你登录后，你将得到以下权益：",
-      "Benefit1": "当你使用 IPCheck.ing 作为 IP 数据解析源时，完整显示所有字段",
+      "Benefit1": "当你使用 ElinksNet 作为 IP 数据解析源时，完整显示所有字段",
       "Benefit2": "可以使用隐身测试",
       "Benefit3": "可以看到自己获得的成就勋章",
       "Benefit4": "减少部分功能的访问限制",
@@ -37,7 +37,7 @@
     },
     "Achievements": {
       "Title": "成就",
-      "Note": "在使用 IPCheck.ing 的过程中，你可能会触发一些成就，在这里，你可以看到你所有的成就。",
+      "Note": "在使用 ElinksNet 的过程中，你可能会触发一些成就，在这里，你可以看到你所有的成就。",
       "Get": "已获得",
       "GetCount": "已获得的成就数量",
       "NotGet": "未获得",
@@ -49,7 +49,7 @@
       "Type": {
         "IAmHuman": {
           "Title": "有头有脸",
-          "Meet": "登录后使用 IPCheck.ing"
+          "Meet": "登录后使用 ElinksNet"
         },
         "BarelyEnough": {
           "Title": "凑凑合合",
@@ -117,7 +117,7 @@
         },
         "GenerousDonor": {
           "Title": "慷慨解囊",
-          "Meet": "给 IPCheck.ing 项目捐赠过"
+          "Meet": "给 ElinksNet 项目捐赠过"
         },
         "ItIsOpen": {
           "Title": "是开放的",
@@ -125,7 +125,7 @@
         },
         "CuriousCat": {
           "Title": "好奇的猫",
-          "Meet": "在 Whois 查询中，查询了 IPCheck.ing 的信息"
+          "Meet": "在 Whois 查询中，查询了 ElinksNet 的信息"
         },
         "CrossingTheWall": {
           "Title": "八仙过墙",
@@ -136,7 +136,7 @@
   },
   "nav": {
     "id": "nav",
-    "Title": "IPCheck.ing",
+    "Title": "ElinksNet",
     "Navigation": "导航",
     "IPInfo": "IP 信息",
     "Connectivity": "网络连通性",
@@ -166,7 +166,7 @@
       "popupConnectivityNotifications": "显示可用性检测气泡",
       "popupConnectivityNotificationsTips": "开启后，将会在首次检测时以气泡形式提示可用性结果。",
       "ipDB": "IP 解析数据源",
-      "ipDBTips": "你可以选择你默认使用的 IP 地理位置数据源，如果你选定的不可用，系统会依次使用后续的数据源。",
+      "ipDBTips": "系统会自动并行查询所有已启用且可用的 IP 数据源，并融合互补信息。",
       "language": "语言设置",
       "languageTips": "刷新浏览器后生效。"
     }
@@ -198,13 +198,21 @@
     "ShowChecked": "显示已检查",
     "Loading": "加载中..."
   },
+  "additional": {
+    "OpenSource": "开源代码",
+    "OpenSourceNote": "在 GitHub 查看源码",
+    "Docker": "Docker 部署",
+    "DockerNote": "快速部署 ElinksNet",
+    "Curl": "命令行查询",
+    "CurlNote": "使用 curl 查询 IP"
+  },
   "curl": {
     "Title": "命令行 API",
     "Note1": "哟，原来你也喜欢用终端？",
     "Note2_1": "你可以在终端里，通过",
     "Note2_2": "命令获取本机的 IP 地址",
     "Note3": "是可选路径，添加后可获取到 IP 的地理信息",
-    "Note4": "请使用你申请的 IPCheck.ing API 密钥",
+    "Note4": "请使用你申请的 ElinksNet API 密钥",
     "getIPv4": "获取本机 IPv4 地址",
     "getIPv6": "获取本机 IPv6 地址",
     "get6and4": "获取本机优先网络出口的 IP 地址",
@@ -435,7 +443,7 @@
   "ruletest": {
     "Title": "分流测试",
     "Name": "检测",
-    "Note": "分流测试用于判断代理软件基于域名的规则设置是否正确。在进行测试之前，你需要先参考下方的卡片，在你的代理软件里对 IPCheck.ing 的 8 个不同的 URL 设置不同的域名分流规则。通常，设置规则可能会使用类似于：DOMAIN, ptest-3.ipcheck.ing, POLICY 这样的写法，具体写法不同的代理软件可能会有所不同。",
+    "Note": "分流测试用于判断代理软件基于域名的规则设置是否正确。在进行测试之前，你需要先参考下方的卡片，在你的代理软件里对 ElinksNet 的 8 个不同的 URL 设置不同的域名分流规则。通常，设置规则可能会使用类似于：DOMAIN, ptest-3.ipcheck.ing, POLICY 这样的写法，具体写法不同的代理软件可能会有所不同。",
     "StatusWait": "待检测",
     "StatusError": "检测出错",
     "Country": "代理地区",
@@ -461,7 +469,7 @@
     "id": "ipinfos",
     "database": "数据源",
     "Title": "IP 信息",
-    "Notes": "程序会先从多个不同的来源（包含 IPv4 和 IPv6）检查你的 IP 地址，然后通过你选择的 IP 地理位置信息源查询对应的地理数据。如果当前 IP 栈只有 1 个，则没有数据的来源会显示为空。",
+    "Notes": "系统会检测 IPv4 和 IPv6，并自动并行查询所有可用的数据源，融合地区、网络、ASN、代理状态与 IP 质量等信息。单个来源不可用不会影响其他来源。",
     "Simple": "简约",
     "Map": "地图",
     "MapUnavailable": "地图不可用",
@@ -580,7 +588,7 @@
     "id": "pingtest",
     "Title": "全球延迟测试",
     "Note": "Ping 测试是一种网络工具，用于测量数据包从你的设备到特定目标（在这里是我们分布在全球各个大洲和地区的服务器）的往返时间。是评估网络性能的关键指标。",
-    "Note2": "在这个过程中，IPCheck.ing 会从世界各地的服务器发送小数据包到你的 IP 地址，然后测量这些数据包从服务器发送到你的设备，再返回服务器所需的时间。通过这些不同地理位置的 Ping 测试，你可以获得一个全面的视图，了解你的设备与全球网络连接的速度和稳定性。",
+    "Note2": "在这个过程中，ElinksNet 会从世界各地的服务器发送小数据包到你的 IP 地址，然后测量这些数据包从服务器发送到你的设备，再返回服务器所需的时间。通过这些不同地理位置的 Ping 测试，你可以获得一个全面的视图，了解你的设备与全球网络连接的速度和稳定性。",
     "Note3": "请选取你的 IP 地址进行测试：",
     "SelectIP": "选择一个 IP 地址",
     "Region": "地区",
@@ -661,30 +669,30 @@
     "SecurityChecklist": "打开安全检查清单"
   },
   "page": {
-    "title": "IPCheck.ing - 查看我的 IP 地址 - 查询本机 IP 地址及归属地 - 查看 WebRTC 连接 IP - DNS 泄露检测 - 网速测试 - Jason Ng 阿禅开源作品",
+    "title": "ElinksNet - Elinks 开源 IP 与网络工具箱",
     "description": "好用和开源的全能 IP 工具箱。轻松查看你的 IP 地址，IP 信息，检查 DNS 泄露，检查 WebRTC 连接，测试网站可用性，查找 DNS 记录，查找 Whois 信息，测试全球延迟测试等。",
     "keywords": "我的IP,IP工具,我的IP,IP查询,DNS泄漏测试,WebRTC测试,网速测试,DNS查询,Whois查询, Ping测试, 隐私测试",
-    "footerLink": "https://github.com/jason5ng32/MyIP",
-    "copyRightName": "Originally from ",
-    "copyRightLink": "https://ipcheck.ing",
-    "copyRightLinkName": "IPCheck.ing"
+    "footerLink": "https://github.com/ElinksTeam/ElinksNet",
+    "copyRightName": "版权所有 © 2026 ",
+    "copyRightLink": "https://github.com/ElinksTeam",
+    "copyRightLinkName": "Elinks"
   },
   "helpModal": {
     "Title": "快捷键"
   },
   "about": {
     "Title": "关于",
-    "product1": "IPCheck.ing 是一个免费的 IP 工具箱，可以帮助你查看自己的 IP 信息，检测网站的可用性，查看 DNS 出口信息，进行网速测试，全球延迟测试，MTR 测试等。",
+    "product1": "ElinksNet 是一个免费的 IP 工具箱，可以帮助你查看自己的 IP 信息，检测网站的可用性，查看 DNS 出口信息，进行网速测试，全球延迟测试，MTR 测试等。",
     "product2": "这是一个开源项目，你可以点击页面底部的 GitHub 图标查看源代码。",
     "product3": "最早的时候，这是我的一个用来学习 Vue.js 和学习如何使用 AI 写代码的练手项目，后来在 GitHub 上获得的星星数量越来越多，于是我进行了大量的重构和添加了许多非常有用的功能，希望你会喜欢。",
     "meTitle": "关于我",
-    "me1": "我的名字叫阿禅，通常在网上使用 Jason Ng 作为英文名，我并不是一个专业的程序员，但是我喜欢编程，我喜欢开源，我喜欢分享。",
-    "me2": "在大多数时候，我是一名产品经理、一名博客作者、一个摩托车骑士以及一名极客。",
-    "me3": "你可以在下面的链接里找到我更详细的介绍：",
+    "me1": "Elinks 负责维护 ElinksNet，一个开源的 IP 与网络工具箱。",
+    "me2": "我们专注于实用的网络诊断、隐私检测和自托管部署体验。",
+    "me3": "你可以通过下面的链接查看项目源码和最新动态：",
     "contactTitle": "联系我",
-    "contact": "如果你有任何问题或建议，请通过邮箱联系我： jason[AT]kenengba.com",
-    "personal": "个人网站",
-    "blog": "可能吧博客",
+    "contact": "如有问题或建议，请在 ElinksTeam/ElinksNet 仓库提交 Issue。",
+    "personal": "ElinksTeam",
+    "blog": "项目仓库",
     "retiremoney": "躺平计算器",
     "twitter": "Twitter",
     "Sponsor": "赞助"

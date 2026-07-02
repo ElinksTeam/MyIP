@@ -218,6 +218,21 @@ describe('store — preferences', () => {
     // A default key still present (autoStart exists in defaults)
     assert.ok('autoStart' in s.userPreferences, 'default keys fill in missing slots');
   });
+
+  it('loadPreferences recovers from malformed local storage', () => {
+    globalThis.localStorage.setItem('userPreferences', '{not-json');
+    const s = useMainStore();
+    s.loadPreferences();
+    assert.equal('ipGeoSource' in s.userPreferences, false);
+  });
+
+  it('enables configured providers without creating a selected source', () => {
+    const s = useMainStore();
+    s.setPreferences({});
+    s.applyIpSourceAvailability({ elinksNet: true });
+    assert.equal('ipGeoSource' in s.userPreferences, false);
+    assert.equal(s.ipDBs.find(db => db.id === 0).enabled, true);
+  });
 });
 
 describe('store — getters', () => {
@@ -241,11 +256,6 @@ describe('store — getters', () => {
     assert.ok(!active.find((db) => db.id === firstId));
   });
 
-  it('curlDomainsHadSet is false when env not set', () => {
-    const s = useMainStore();
-    // In Node tests we don't inject VITE_CURL_* → curl.* is undefined → getter is falsy
-    assert.equal(Boolean(s.curlDomainsHadSet), false);
-  });
 });
 
 describe('store — getDbUrl delegates to buildDbUrl', () => {
@@ -255,7 +265,7 @@ describe('store — getDbUrl delegates to buildDbUrl', () => {
     const url = s.getDbUrl(db.id, '1.1.1.1', 'en');
     // db.url is a template like /api/x?ip={{ip}}&lang={{lang}} — verify substitution
     assert.match(url, /1\.1\.1\.1/);
-    assert.match(url, /en/);
+    assert.equal(url, '/api/ipwhois?ip=1.1.1.1');
   });
 
   it('returns a falsy value when id is unknown', () => {

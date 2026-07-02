@@ -54,10 +54,19 @@
                 </dt>
                 <dd class="font-normal wrap-break-word">{{ data.isp || '—' }}</dd>
             </div>
+            <div v-for="field in intelligenceFields" :key="field.key">
+                <dt class="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                    <component :is="field.icon" class="size-3.5" />
+                    <span>{{ field.label }}</span>
+                </dt>
+                <dd class="font-normal wrap-break-word" :class="{ 'text-muted-foreground': field.muted }">
+                    {{ field.value }}
+                </dd>
+            </div>
         </template>
     </dl>
 
-    <!-- Advanced block (IPCheck.ing source only): locked CTA for signed-out, label-value grid for signed-in. -->
+    <!-- Advanced block (ElinksNet source only): locked CTA for signed-out, label-value grid for signed-in. -->
     <div v-if="!collapsed" v-show="showAdvancedBlock"
         class="px-4 pb-3 border-t pt-3 space-y-2.5">
 
@@ -175,8 +184,14 @@
                     </span>
                 </template>
             </DialogHeader>
-            <img :src="isDarkMode ? data.mapUrl_dark : data.mapUrl"
-                class="w-full rounded-md border bg-muted aspect-2/1 object-cover" alt="Map">
+            <iframe :src="osmEmbedUrl"
+                class="w-full rounded-md border bg-muted aspect-2/1"
+                loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                title="OpenStreetMap location"></iframe>
+            <a :href="osmViewUrl" target="_blank" rel="noopener noreferrer"
+                class="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+                OpenStreetMap
+            </a>
         </DialogContent>
     </Dialog>
 </template>
@@ -197,6 +212,7 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Icon } from '@iconify/vue';
 import {
     Building2,
+    Clock3,
     ChevronDown,
     ChevronUp,
     CircleCheck,
@@ -204,19 +220,23 @@ import {
     CornerUpRight,
     EthernetPort,
     Gauge,
+    Globe2,
     House,
     Lock,
     Map,
     MapPin,
+    Navigation,
+    Route,
     ShieldCheck,
     SignalHigh,
+    Waypoints,
 } from 'lucide-vue-next';
+import { api } from '@/services/api-client.js';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
     data: { type: Object, required: true },
-    ipGeoSource: { type: Number, required: true },
     asnInfos: { type: Object, required: true },
     configs: { type: Object, required: true },
     isDarkMode: { type: Boolean, required: true },
@@ -231,14 +251,75 @@ const props = defineProps({
 
 const isAsnOpen = ref(false);
 const isMapDialogOpen = ref(false);
+const labels = computed(() => {
+    const language = locale.value?.split('-')[0];
+    const translations = {
+        zh: {
+            district: '区县', street: '街道', streetUnavailable: 'IP 数据源不提供可靠的街道级定位',
+            postal: '邮政编码', timezone: '时区', continent: '洲', coordinates: '坐标',
+            organization: '网络组织', networkClass: '网络等级',
+        },
+        en: {
+            district: 'District', street: 'Street', streetUnavailable: 'Reliable street-level location is not available from IP data',
+            postal: 'Postal code', timezone: 'Time zone', continent: 'Continent', coordinates: 'Coordinates',
+            organization: 'Network organization', networkClass: 'Network class',
+        },
+        fr: {
+            district: 'District', street: 'Rue', streetUnavailable: 'La géolocalisation IP fiable au niveau de la rue est indisponible',
+            postal: 'Code postal', timezone: 'Fuseau horaire', continent: 'Continent', coordinates: 'Coordonnées',
+            organization: 'Organisation réseau', networkClass: 'Classe réseau',
+        },
+        tr: {
+            district: 'İlçe', street: 'Sokak', streetUnavailable: 'IP verilerinden güvenilir sokak düzeyi konum sağlanamaz',
+            postal: 'Posta kodu', timezone: 'Saat dilimi', continent: 'Kıta', coordinates: 'Koordinatlar',
+            organization: 'Ağ kuruluşu', networkClass: 'Ağ sınıfı',
+        },
+    };
+    return translations[language] || translations.en;
+});
+const hasCoordinates = computed(() =>
+    Number.isFinite(Number(props.data.latitude)) && Number.isFinite(Number(props.data.longitude))
+);
+const intelligenceFields = computed(() => [
+    props.data.district && { key: 'district', label: labels.value.district, value: props.data.district, icon: Route },
+    { key: 'street', label: labels.value.street, value: labels.value.streetUnavailable, icon: Navigation, muted: true },
+    props.data.postalCode && { key: 'postal', label: labels.value.postal, value: props.data.postalCode, icon: MapPin },
+    props.data.timezone && { key: 'timezone', label: labels.value.timezone, value: props.data.timezone, icon: Clock3 },
+    props.data.continent && { key: 'continent', label: labels.value.continent, value: props.data.continent, icon: Globe2 },
+    hasCoordinates.value && {
+        key: 'coordinates', label: labels.value.coordinates,
+        value: `${Number(props.data.latitude).toFixed(4)}, ${Number(props.data.longitude).toFixed(4)}`, icon: Waypoints,
+    },
+    props.data.networkOrganization && props.data.networkOrganization !== props.data.isp && {
+        key: 'organization', label: labels.value.organization, value: props.data.networkOrganization, icon: Building2,
+    },
+    props.data.networkClass && {
+        key: 'networkClass', label: labels.value.networkClass, value: props.data.networkClass, icon: SignalHigh,
+    },
+].filter(Boolean));
 
-// Advanced block only surfaces for the IPCheck.ing source (ipGeoSource === 0).
-const showAdvancedBlock = computed(() => props.ipGeoSource === 0 && Boolean(props.data));
+// Show every advanced field that any fused source or the proxy-risk lookup supplied.
+const showAdvancedBlock = computed(() => Boolean(
+    props.data && (
+        props.data.type || props.data.isProxy || props.data.isNativeIP !== undefined
+        || props.data.qualityScore !== undefined || props.data.proxyProtocol
+    )
+));
 
-// Map button is gated on the deployment having a Google Maps key (configs.map) + location data.
-// enableMap is the consumer-level opt-in.
+// OpenStreetMap requires no deployment API key.
 const canShowMap = computed(() =>
-    props.enableMap && Boolean(props.configs.map) && Boolean(props.data.country_name)
+    props.enableMap && Number.isFinite(Number(props.data.latitude))
+    && Number.isFinite(Number(props.data.longitude))
+);
+const osmEmbedUrl = computed(() => {
+    const lat = Number(props.data.latitude);
+    const lon = Number(props.data.longitude);
+    const delta = 0.08;
+    const bbox = [lon - delta, lat - delta, lon + delta, lat + delta].join(',');
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&marker=${encodeURIComponent(`${lat},${lon}`)}&layer=mapnik`;
+});
+const osmViewUrl = computed(() =>
+    `https://www.openstreetmap.org/?mlat=${encodeURIComponent(props.data.latitude)}&mlon=${encodeURIComponent(props.data.longitude)}#map=11/${encodeURIComponent(props.data.latitude)}/${encodeURIComponent(props.data.longitude)}`
 );
 
 // If every advanced field is masked behind login → show the single CTA + preview grid instead
@@ -299,8 +380,7 @@ const getASNInfo = async (asn) => {
     try {
         if (props.asnInfos[asn]) return;
         asn = asn.replace('AS', '');
-        const response = await fetch(`/api/cfradar?asn=${asn}`);
-        const data = await response.json();
+        const data = await api.asn(asn);
         props.asnInfos['AS' + asn] = data;
     } catch (error) {
         console.error('Error fetching ASN info:', error);

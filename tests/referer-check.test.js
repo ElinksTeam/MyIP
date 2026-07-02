@@ -23,11 +23,13 @@ describe('refererCheck — base cases', () => {
     assert.equal(refererCheck(''), false);
   });
 
-  it('always whitelists localhost regardless of ALLOWED_DOMAINS', () => {
+  it('always whitelists local development hosts regardless of ALLOWED_DOMAINS', () => {
     delete process.env.ALLOWED_DOMAINS;
     assert.equal(refererCheck('http://localhost/'), true);
     assert.equal(refererCheck('http://localhost:5173/tools'), true);
     assert.equal(refererCheck('https://localhost:443/'), true);
+    assert.equal(refererCheck('http://127.0.0.1:18966/'), true);
+    assert.equal(refererCheck('http://[::1]:18966/'), true);
   });
 });
 
@@ -39,7 +41,7 @@ describe('refererCheck — ALLOWED_DOMAINS parsing', () => {
   });
 
   it('accepts any of several comma-separated domains', () => {
-    process.env.ALLOWED_DOMAINS = 'a.com,b.net,c.org';
+    process.env.ALLOWED_DOMAINS = 'a.com, b.net ,c.org';
     assert.equal(refererCheck('https://a.com/'), true);
     assert.equal(refererCheck('https://b.net/'), true);
     assert.equal(refererCheck('https://c.org/'), true);
@@ -76,9 +78,7 @@ describe('refererCheck — ALLOWED_DOMAINS parsing', () => {
 });
 
 describe('refererCheck — malformed inputs', () => {
-  it('throws on non-URL strings (caller must catch)', () => {
-    // URL constructor throws on garbage; current code doesn't try/catch.
-    // Documenting the behavior so callers know to validate upstream.
-    assert.throws(() => refererCheck('not-a-url'));
+  it('rejects malformed URLs without throwing', () => {
+    assert.equal(refererCheck('not-a-url'), false);
   });
 });

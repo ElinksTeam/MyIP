@@ -1,19 +1,22 @@
 // IP database definitions
 //
 // Each item: { id, text, url, enabled }
-// - id    numeric identifier, referenced elsewhere in the app (e.g. userPreferences.ipGeoSource)
+// - id    stable numeric provider identifier used by normalization logic
 // - text  UI display name, also lookup key (e.g. `WebRtcTest.vue` looks for "MaxMind")
 // - url   template string, {{ip}} and {{lang}} will be replaced by buildDbUrl()
-// - enabled initial enabled state (user can toggle in Preferences, store will write back this field)
+// - enabled initial availability; configured providers are enabled by /api/configs
 
 export const IP_DATABASES = [
-  { id: 0, text: 'IPCheck.ing', url: '/api/ipchecking?ip={{ip}}&lang={{lang}}', enabled: true },
-  { id: 1, text: 'IPinfo.io', url: '/api/ipinfo?ip={{ip}}', enabled: true },
-  { id: 2, text: 'IP-API.com', url: '/api/ipapicom?ip={{ip}}&lang={{lang}}', enabled: true },
-  { id: 3, text: 'IPAPI.is', url: '/api/ipapiis?ip={{ip}}', enabled: true },
-  { id: 4, text: 'IP2Location.io', url: '/api/ip2location?ip={{ip}}', enabled: true },
+  // Keyless sources are ordered first so a fresh deployment works immediately.
+  { id: 7, text: 'IPWho.is', url: '/api/ipwhois?ip={{ip}}', enabled: true },
   { id: 5, text: 'IP.sb', url: '/api/ipsb?ip={{ip}}', enabled: true },
-  { id: 6, text: 'MaxMind', url: '/api/maxmind?ip={{ip}}&lang={{lang}}', enabled: true },
+  { id: 2, text: 'IP-API.com', url: '/api/ipapicom?ip={{ip}}&lang={{lang}}', enabled: true },
+  // Configured sources are enabled after /api/configs confirms availability.
+  { id: 0, text: 'ElinksNet', url: '/api/elinksnet?ip={{ip}}&lang={{lang}}', enabled: false },
+  { id: 1, text: 'IPinfo.io', url: '/api/ipinfo?ip={{ip}}', enabled: false },
+  { id: 3, text: 'IPAPI.is', url: '/api/ipapiis?ip={{ip}}', enabled: false },
+  { id: 4, text: 'IP2Location.io', url: '/api/ip2location?ip={{ip}}', enabled: false },
+  { id: 6, text: 'MaxMind', url: '/api/maxmind?ip={{ip}}&lang={{lang}}', enabled: false },
 ];
 
 /**

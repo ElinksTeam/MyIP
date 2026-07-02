@@ -1,4 +1,4 @@
-// Smoke coverage for every Express handler under api/.
+// Smoke coverage for every Express handler under server/handlers/.
 // Verifies method gating, param-presence checks, param-validity checks,
 // and the "API key missing" early-return paths. We never hit the real
 // upstream APIs — every assertion is on a branch that returns before
@@ -11,16 +11,23 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 
-import configsHandler from '../api/configs.js';
-import googleMapHandler from '../api/google-map.js';
-import dnsResolverHandler from '../api/dns-resolver.js';
-import getUserInfoHandler from '../api/get-user-info.js';
-import getWhoisHandler from '../api/get-whois.js';
-import cfRadarHandler from '../api/cf-radar.js';
-import invisibilityHandler from '../api/invisibility-test.js';
-import macCheckerHandler from '../api/mac-checker.js';
-import updateAchievementHandler from '../api/update-user-achievement.js';
-import ipcheckIngHandler from '../api/ipcheck-ing.js';
+import configsHandler from '../server/handlers/configs.js';
+import dnsResolverHandler from '../server/handlers/dns-resolver.js';
+import getUserInfoHandler from '../server/handlers/get-user-info.js';
+import getWhoisHandler from '../server/handlers/get-whois.js';
+import cfRadarHandler from '../server/handlers/cf-radar.js';
+import invisibilityHandler from '../server/handlers/invisibility-test.js';
+import macCheckerHandler from '../server/handlers/mac-checker.js';
+import updateAchievementHandler from '../server/handlers/update-user-achievement.js';
+import elinksNetIpHandler from '../server/handlers/elinksnet-ip.js';
+import aiSecurityAdviceHandler from '../server/handlers/ai-security-advice.js';
+import ipWhoIsHandler, { normalizeIpWhoIs } from '../server/handlers/ipwho-is.js';
+import { cliGeoHandler, cliIpHandler, getRequestIp } from '../server/handlers/cli-api.js';
+import proxyRiskHandler from '../server/handlers/proxy-risk.js';
+import ipapiisHandler from '../server/handlers/ipapi-is.js';
+import ipinfoHandler from '../server/handlers/ipinfo-io.js';
+import ip2locationHandler from '../server/handlers/ip2location-io.js';
+import rdapHandler, { classifyQuery } from '../server/handlers/rdap.js';
 
 // -- shared test utilities ------------------------------------------------
 
@@ -38,6 +45,8 @@ function createResponse() {
     return {
         statusCode: 200,
         body: undefined,
+        headers: {},
+        setHeader(name, value) { this.headers[name] = value; return this; },
         status(code) { this.statusCode = code; return this; },
         json(payload) { this.body = payload; return this; },
         send(payload) { this.body = payload; return this; },
@@ -46,10 +55,12 @@ function createResponse() {
 
 // Back up env keys touched by any test here; restore after each case.
 const ENV_KEYS = [
+    'ELINKSNET_API_KEY', 'ELINKSNET_API_ENDPOINT',
     'IPCHECKING_API_KEY', 'IPCHECKING_API_ENDPOINT',
     'MAC_LOOKUP_API_KEY', 'IPAPIIS_API_KEY',
     'IPINFO_API_TOKEN', 'IP2LOCATION_API_KEY',
     'CLOUDFLARE_API',
+    'GROQ_API_KEY', 'ELINKS_AI_MODEL', 'PROXYCHECK_API_KEY',
 ];
 let envBackup = {};
 
@@ -79,23 +90,196 @@ describe('configs handler', () => {
         const res = createResponse();
         configsHandler(createRequest(), res);
         assert.equal(res.statusCode, 200);
-        for (const key of ['map', 'ipInfo', 'ipChecking', 'ip2location', 'originalSite', 'cloudFlare', 'ipapiis']) {
+        for (const key of ['map', 'ipInfo', 'elinksNet', 'ip2location', 'originalSite', 'cloudFlare', 'ipapiis', 'elinksAi', 'maxmind']) {
             assert.equal(typeof res.body[key], 'boolean');
         }
         assert.equal(res.body.originalSite, false);
     });
 });
 
-// -- google-map handler ---------------------------------------------------
-
-describe('google-map handler', () => {
-    it('rejects invalid map parameters without calling the external API', () => {
+describe('IPWho.is handler', () => {
+    it('rejects non-GET requests before contacting the provider', async () => {
         const res = createResponse();
-        googleMapHandler(createRequest({
-            query: { latitude: 'not-a-number', longitude: '0', language: 'en' },
+        await ipWhoIsHandler(createRequest({
+            method: 'POST',
+            query: { ip: '1.1.1.1' },
+        }), res);
+        assert.equal(res.statusCode, 405);
+        assert.deepEqual(res.body, { message: 'Method Not Allowed' });
+    });
+
+    it('normalizes provider data to the shared IP source shape', () => {
+        assert.deepEqual(normalizeIpWhoIs({
+            ip: '1.1.1.1',
+            city: 'Sydney',
+            region: 'New South Wales',
+            country: 'Australia',
+            country_code: 'AU',
+            latitude: -33.86,
+            longitude: 151.2,
+            connection: { asn: 13335, org: 'Cloudflare, Inc.' },
+        }), {
+            ip: '1.1.1.1',
+            city: 'Sydney',
+            region: 'New South Wales',
+            country: 'AU',
+            country_name: 'Australia',
+            country_code: 'AU',
+            latitude: -33.86,
+            longitude: 151.2,
+            postalCode: '',
+            timezone: '',
+            continent: '',
+            asn: 'AS13335',
+            org: 'Cloudflare, Inc.',
+            networkOrganization: 'Cloudflare, Inc.',
+        });
+    });
+});
+
+describe('public CLI API handlers', () => {
+    it('extracts and normalizes the first forwarded client IP', () => {
+        assert.equal(getRequestIp({
+            headers: { 'x-forwarded-for': '::ffff:1.1.1.1, 10.0.0.1' },
+        }), '1.1.1.1');
+    });
+
+    it('returns plain text by default and JSON on request', () => {
+        const plain = createResponse();
+        cliIpHandler({
+            method: 'GET',
+            headers: { 'x-forwarded-for': '1.1.1.1' },
+            query: {},
+        }, plain);
+        assert.equal(plain.statusCode, 200);
+        assert.equal(plain.body, '1.1.1.1\n');
+
+        const json = createResponse();
+        cliIpHandler({
+            method: 'GET',
+            headers: { 'x-forwarded-for': '2001:4860:4860::8888' },
+            query: { format: 'json' },
+        }, json);
+        assert.deepEqual(json.body, { ip: '2001:4860:4860::8888' });
+    });
+
+    it('rejects invalid explicit geo IPs without contacting providers', async () => {
+        const res = createResponse();
+        await cliGeoHandler({
+            method: 'GET',
+            headers: {},
+            query: { ip: 'not-an-ip' },
+        }, res);
+        assert.equal(res.statusCode, 400);
+        assert.deepEqual(res.body, { error: 'Invalid IP address' });
+    });
+});
+
+describe('proxy risk handler', () => {
+    it('rejects non-GET requests', async () => {
+        const res = createResponse();
+        await proxyRiskHandler(createRequest({ method: 'POST' }), res);
+        assert.equal(res.statusCode, 405);
+    });
+
+    it('rejects invalid IPs before contacting the provider', async () => {
+        const res = createResponse();
+        await proxyRiskHandler(createRequest({
+            method: 'GET',
+            query: { ip: 'not-an-ip' },
         }), res);
         assert.equal(res.statusCode, 400);
-        assert.deepEqual(res.body, { error: 'Invalid request' });
+        assert.deepEqual(res.body, { error: 'Invalid IP address' });
+    });
+});
+
+describe('IPAPI.is handler', () => {
+    it('reports missing API configuration without contacting the provider', async () => {
+        delete process.env.IPAPIIS_API_KEY;
+        const res = createResponse();
+        await ipapiisHandler(createRequest({
+            query: { ip: '1.1.1.1' },
+        }), res);
+        assert.equal(res.statusCode, 503);
+        assert.deepEqual(res.body, { error: 'IPAPI.is is not configured' });
+    });
+});
+
+describe('IPinfo.io handler', () => {
+    it('reports missing API configuration without contacting the provider', async () => {
+        delete process.env.IPINFO_API_TOKEN;
+        const res = createResponse();
+        await ipinfoHandler(createRequest({
+            query: { ip: '8.8.8.8' },
+        }), res);
+        assert.equal(res.statusCode, 503);
+        assert.deepEqual(res.body, { error: 'IPinfo.io is not configured' });
+    });
+});
+
+describe('IP2Location.io handler', () => {
+    it('reports missing API configuration without contacting the provider', async () => {
+        delete process.env.IP2LOCATION_API_KEY;
+        const res = createResponse();
+        await ip2locationHandler(createRequest({
+            query: { ip: '2001:4860:4860::8888' },
+        }), res);
+        assert.equal(res.statusCode, 503);
+        assert.deepEqual(res.body, { error: 'IP2Location.io is not configured' });
+    });
+});
+
+describe('RDAP handler', () => {
+    it('classifies domain, IP, and ASN queries', () => {
+        assert.deepEqual(classifyQuery('example.com'), { type: 'domain', value: 'example.com' });
+        assert.deepEqual(classifyQuery('2001:4860:4860::8888'), { type: 'ip', value: '2001:4860:4860::8888' });
+        assert.deepEqual(classifyQuery('AS13335'), { type: 'autnum', value: '13335' });
+    });
+
+    it('rejects malformed queries before contacting RDAP', async () => {
+        const res = createResponse();
+        await rdapHandler(createRequest({ query: { query: 'not a resource' } }), res);
+        assert.equal(res.statusCode, 400);
+    });
+});
+
+describe('Elinks AI security advice handler', () => {
+    it('rejects non-POST requests', async () => {
+        const res = createResponse();
+        await aiSecurityAdviceHandler(createRequest(), res);
+        assert.equal(res.statusCode, 405);
+    });
+
+    it('rejects unsupported languages before contacting the provider', async () => {
+        const res = createResponse();
+        await aiSecurityAdviceHandler(createRequest({
+            method: 'POST',
+            body: { language: 'xx' },
+        }), res);
+        assert.equal(res.statusCode, 400);
+        assert.deepEqual(res.body, { error: 'Unsupported language' });
+    });
+
+    it('reports missing API configuration without exposing a key', async () => {
+        delete process.env.GROQ_API_KEY;
+        const res = createResponse();
+        await aiSecurityAdviceHandler(createRequest({
+            method: 'POST',
+            body: { language: 'zh' },
+        }), res);
+        assert.equal(res.statusCode, 503);
+        assert.deepEqual(res.body, { error: 'Elinks AI is not configured' });
+    });
+
+    it('requires a question before contacting Groq', async () => {
+        process.env.GROQ_API_KEY = 'test-only';
+        const res = createResponse();
+        await aiSecurityAdviceHandler(createRequest({
+            method: 'POST',
+            body: { language: 'zh', diagnostics: { cards: [] } },
+        }), res);
+        assert.equal(res.statusCode, 400);
+        assert.deepEqual(res.body, { error: 'Question is required' });
     });
 });
 
@@ -192,6 +376,7 @@ describe('invisibility-test handler', () => {
     });
 
     it('reports missing API key after param validation passes', async () => {
+        delete process.env.ELINKSNET_API_KEY;
         delete process.env.IPCHECKING_API_KEY;
         const res = createResponse();
         await invisibilityHandler(createRequest({ query: { id: 'a'.repeat(28) } }), res);
@@ -229,6 +414,7 @@ describe('update-user-achievement handler', () => {
     });
 
     it('reports missing API key before forwarding', async () => {
+        delete process.env.ELINKSNET_API_KEY;
         delete process.env.IPCHECKING_API_KEY;
         const res = createResponse();
         await updateAchievementHandler(createRequest({ method: 'PUT', body: { name: 'X' } }), res);
@@ -241,6 +427,7 @@ describe('update-user-achievement handler', () => {
 
 describe('get-user-info handler', () => {
     it('reports missing API key before fetch', async () => {
+        delete process.env.ELINKSNET_API_KEY;
         delete process.env.IPCHECKING_API_KEY;
         const res = createResponse();
         await getUserInfoHandler(createRequest(), res);
@@ -249,13 +436,14 @@ describe('get-user-info handler', () => {
     });
 });
 
-// -- ipcheck-ing handler --------------------------------------------------
+// -- ElinksNet IP handler -------------------------------------------------
 
-describe('ipcheck-ing handler', () => {
+describe('ElinksNet IP handler', () => {
     it('reports missing API key after IP passes validation', async () => {
+        delete process.env.ELINKSNET_API_KEY;
         delete process.env.IPCHECKING_API_KEY;
         const res = createResponse();
-        await ipcheckIngHandler(createRequest({ query: { ip: '1.1.1.1' } }), res);
+        await elinksNetIpHandler(createRequest({ query: { ip: '1.1.1.1' } }), res);
         assert.equal(res.statusCode, 500);
         assert.deepEqual(res.body, { error: 'API key is missing' });
     });

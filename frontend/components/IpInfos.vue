@@ -1,14 +1,15 @@
 <template>
   <!-- IP Infos -->
   <section class="ip-data-section mb-10 mt-2">
-    <header class="mb-2 flex flex-col items-start justify-between gap-4">
-      <h2 id="IPInfo"
-        class="m-0 flex min-w-0 flex-1 items-center gap-2 text-xl md:text-3xl font-semibold tracking-tight leading-tight">
-        🔎 {{ t('ipInfos.Title') }}
-      </h2>
-      <div class="text-base text-muted-foreground">
-        <p>{{ t('ipInfos.Notes') }}</p>
+    <header class="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
+      <div>
+        <h2 id="IPInfo"
+          class="m-0 flex min-w-0 flex-1 items-center gap-2 text-xl md:text-3xl font-semibold tracking-tight leading-tight">
+          🔎 {{ t('ipInfos.Title') }}
+        </h2>
+        <p class="mt-2 max-w-4xl text-sm text-muted-foreground">{{ t('ipInfos.Notes') }}</p>
       </div>
+      <DashboardActions class="shrink-0" :get-cards="() => ipDataCards" />
     </header>
 
     <!-- Card grid: 1 col on mobile, always 2 cols on PC (md+). Card counts
@@ -17,7 +18,7 @@
       <div v-for="(card, index) in ipDataCards.slice(0, ipCardsToShow)" :key="card.id" :ref="card.id" class="flex"
         :class="{ 'opacity-60': !card.ip || card.ip === t('ipInfos.IPv4Error') || card.ip === t('ipInfos.IPv6Error') }">
         <IPCard class="w-full" :card="card" :index="index" :isDarkMode="isDarkMode" :isMobile="isMobile"
-          :ipGeoSource="ipGeoSource" :isCardsCollapsed="isCardsCollapsed" :copiedStatus="copiedStatus"
+          :isCardsCollapsed="isCardsCollapsed" :copiedStatus="copiedStatus"
           :configs="configs" :asnInfos="asnInfos" @refresh-card="refreshCard" />
       </div>
     </div>
@@ -31,10 +32,14 @@ import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
 import { isValidIP } from '@/utils/valid-ip.js';
-import { transformDataFromIPapi } from '@/utils/transform-ip-data.js';
-import { getIPFromIPIP, getIPFromCloudflare_V4, getIPFromCloudflare_V6, getIPFromIPChecking64, getIPFromIPChecking4, getIPFromIPChecking6 } from '@/utils/getips';
+import { fetchMergedIpDetails } from '@/utils/merge-ip-sources.js';
+import {
+  getIPFromElinksNetV4,
+  getIPFromElinksNetV6,
+} from '@/utils/getips';
 import { authenticatedFetch } from '@/utils/authenticated-fetch';
 import IPCard from './ip-infos/IPCard.vue';
+import DashboardActions from './DashboardActions.vue';
 
 
 const { t } = useI18n();
@@ -56,48 +61,34 @@ const createDefaultCard = () => ({
   country_name: "",
   region: "",
   city: "",
+  district: "",
+  postalCode: "",
+  timezone: "",
+  continent: "",
   latitude: "",
   longitude: "",
   isp: "",
+  networkOrganization: "",
+  networkClass: "",
   asn: "",
   asnlink: "",
   mapUrl: '/res/defaultMap.webp',
   mapUrl_dark: '/res/defaultMap_dark.webp',
+  proxyRiskStatus: 'idle',
 });
 
 // IP data cards
-// Order: v4, v6, CF-v4, CF-v6, CN, v64
-// First 2 / 4 / 6 slice is meaningful at every count the user can pick.
+// Keep one canonical IPv4 card and one canonical IPv6 card.
 const ipDataCards = reactive([
   {
     ...createDefaultCard(),
-    id: "ipchecking_v4",
-    source: "IPCheck.ing IPv4",
+    id: "elinksnet_v4",
+    source: "ElinksNet IPv4",
   },
   {
     ...createDefaultCard(),
-    id: "ipchecking_v6",
-    source: "IPCheck.ing IPv6",
-  },
-  {
-    ...createDefaultCard(),
-    id: "cloudflare_v4",
-    source: "Cloudflare IPv4",
-  },
-  {
-    ...createDefaultCard(),
-    id: "cloudflare_v6",
-    source: "Cloudflare IPv6",
-  },
-  {
-    ...createDefaultCard(),
-    id: "cnsource",
-    source: "CN Source",
-  },
-  {
-    ...createDefaultCard(),
-    id: "ipchecking_v64",
-    source: "IPCheck.ing IPv6/4",
+    id: "elinksnet_v6",
+    source: "ElinksNet IPv6",
   },
 ]);
 
@@ -109,37 +100,86 @@ const asnInfos = ref({
 });
 
 // Other data
-const ipCardsToShow = ref(userPreferences.value.ipCardsToShow);
+const ipCardsToShow = ref(2);
 const copiedStatus = ref({});
 const IPArray = ref([]);
-const ipGeoSource = ref(userPreferences.value.ipGeoSource);
-const usingSource = ref(userPreferences.value.ipGeoSource);
 const fetchStatus = reactive([]);
 
 // Middleware
 let pendingIPDetailsRequests = new Map();
 let ipDataCache = new Map();
+let pendingProxyRiskRequests = new Map();
+let proxyRiskCache = new Map();
+
+const applyProxyRisk = (ip, risk) => {
+  ipDataCards
+    .filter(card => card.ip === ip)
+    .forEach(card => Object.assign(card, {
+      isProxy: risk.isProxy
+        ? t('ipInfos.advancedData.proxyYes')
+        : t('ipInfos.advancedData.proxyNo'),
+      qualityScore: risk.qualityScore,
+      type: card.type || risk.type,
+      proxyOperator: risk.provider,
+      proxyRiskSource: risk.source,
+      proxyRiskStatus: 'ready',
+    }));
+};
+
+const fetchProxyRisk = async (ip) => {
+  if (proxyRiskCache.has(ip)) {
+    applyProxyRisk(ip, proxyRiskCache.get(ip));
+    return;
+  }
+  if (pendingProxyRiskRequests.has(ip)) {
+    await pendingProxyRiskRequests.get(ip);
+    return;
+  }
+  ipDataCards.filter(card => card.ip === ip).forEach(card => { card.proxyRiskStatus = 'loading'; });
+  const request = authenticatedFetch(`/api/proxy-risk?ip=${encodeURIComponent(ip)}`)
+    .then((risk) => {
+      proxyRiskCache.set(ip, risk);
+      applyProxyRisk(ip, risk);
+    })
+    .catch((error) => {
+      console.error('Proxy risk lookup failed:', error);
+      ipDataCards
+        .filter(card => card.ip === ip)
+        .forEach(card => { card.proxyRiskStatus = 'error'; });
+    })
+    .finally(() => pendingProxyRiskRequests.delete(ip));
+  pendingProxyRiskRequests.set(ip, request);
+  await request;
+};
 
 // Shared method to get IP address
 const fetchIP = async (cardID, getFromSource) => {
-  const { ip, source } = await getFromSource(configs.value.originalSite);
-  let fetchingStatus = false;
-  if (ip !== null) {
-    ipDataCards[cardID].ip = ip;
-    ipDataCards[cardID].source = source;
-    IPArray.value = [...IPArray.value, ip];
-    await fetchIPDetails(cardID, ip);
-  } else if (cardID === 1 || cardID === 3) {
-    // v6 cards in the new order: ipchecking_v6 (1), cloudflare_v6 (3)
-    ipDataCards[cardID].ip = t('ipInfos.IPv6Error');
-  } else {
-    ipDataCards[cardID].ip = t('ipInfos.IPv4Error');
+  try {
+    const { ip, source } = await getFromSource(configs.value.originalSite);
+    if (isValidIP(ip)) {
+      ipDataCards[cardID].ip = ip;
+      ipDataCards[cardID].source = source;
+      IPArray.value = [...IPArray.value, ip];
+      try {
+        await fetchIPDetails(cardID, ip);
+      } catch (error) {
+        // Keep the valid IP visible even if every optional geo provider fails.
+        console.error(`IP details unavailable for card ${cardID}:`, error);
+      }
+    } else if (cardID === 1 || cardID === 3) {
+      ipDataCards[cardID].ip = t('ipInfos.IPv6Error');
+    } else {
+      ipDataCards[cardID].ip = t('ipInfos.IPv4Error');
+    }
+  } catch (error) {
+    console.error(`IP detection failed for card ${cardID}:`, error);
+    ipDataCards[cardID].ip = cardID === 1 || cardID === 3
+      ? t('ipInfos.IPv6Error')
+      : t('ipInfos.IPv4Error');
+  } finally {
+    fetchStatus[cardID] = { [cardID]: true };
+    trackFetchStatus(fetchStatus);
   }
-  // Always return true, even if fetching IP fails
-  // for tracking fetch status
-  fetchingStatus = true;
-  fetchStatus[cardID] = { [cardID]: fetchingStatus };
-  trackFetchStatus(fetchStatus);
 };
 
 // Report data fetch status, and send to store
@@ -160,42 +200,25 @@ const trackFetchStatus = (status) => {
 // Check all IP addresses
 const checkAllIPs = async () => {
   const ipFunctions = [
-    () => fetchIP(0, getIPFromIPChecking4),
-    () => fetchIP(1, getIPFromIPChecking6),
-    () => fetchIP(2, getIPFromCloudflare_V4),
-    () => fetchIP(3, getIPFromCloudflare_V6),
-    () => fetchIP(4, getIPFromIPIP),
-    () => fetchIP(5, getIPFromIPChecking64),
+    () => fetchIP(0, getIPFromElinksNetV4),
+    () => fetchIP(1, getIPFromElinksNetV6),
   ];
-
-  // Limit the number of functions to execute to the length of ipCardsToShow
-  const maxIndex = ipCardsToShow.value;
-
-  let index = 0;
-  const interval = setInterval(() => {
-    if (index < maxIndex && index < ipFunctions.length) {
-      ipFunctions[index].call(this);
-      index++;
-    } else {
-      clearInterval(interval);
-    }
-  }, 500);
+  const tasks = ipFunctions.slice(0, ipCardsToShow.value);
+  for (const [index, task] of tasks.entries()) {
+    if (index > 0) await new Promise(resolve => setTimeout(resolve, 350));
+    await task();
+  }
 };
 
 // Get IP details from IP address
-const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
-  sourceID = sourceID || ipGeoSource.value;
+const fetchIPDetails = async (cardIndex, ip) => {
   const card = ipDataCards[cardIndex];
   card.ip = ip;
-  let setLang = lang.value;
-  if (setLang === 'zh') {
-    setLang = 'zh-CN';
-  }
-
   // Check if the IP data is already in the cache
   if (ipDataCache.has(ip)) {
     const cachedData = ipDataCache.get(ip);
     Object.assign(card, cachedData);
+    void fetchProxyRisk(ip);
     return;
   }
 
@@ -205,41 +228,17 @@ const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
     const cachedData = ipDataCache.get(ip);
     if (cachedData) {
       Object.assign(card, cachedData);
+      void fetchProxyRisk(ip);
     }
     return;
   }
 
-  const fetchPromise = (async () => {
-    const sources = store.ipDBs.filter(source => source.enabled);
-
-    let currentSourceIndex = sourceID !== null ? sources.findIndex(source => source.id === sourceID) : 0;
-    let attempts = 0;
-
-    while (attempts < sources.length) {
-      const source = sources[currentSourceIndex];
-      try {
-        const url = store.getDbUrl(source.id, ip, setLang);
-        const response = await authenticatedFetch(url);
-        const cardData = transformDataFromIPapi(response, source.id, t, lang.value);
-
-        if (cardData) {
-          ipGeoSource.value = source.id;
-          usingSource.value = source.id;
-          store.updatePreference('ipGeoSource', source.id);
-          Object.assign(card, cardData);
-          ipDataCache.set(ip, cardData);
-          return;
-        }
-      } catch (error) {
-        console.error("Error fetching IP details from source " + source.id + ":", error);
-        store.updateIPDBs({ id: source.id, enabled: false });
-        currentSourceIndex = (currentSourceIndex + 1) % sources.length;
-        attempts++;
-      }
-    }
-
-    throw new Error("All sources failed to fetch IP details for IP: " + ip);
-  })();
+  const fetchPromise = fetchMergedIpDetails({ store, ip, language: lang.value, t })
+    .then(cardData => {
+      Object.assign(card, cardData);
+      ipDataCache.set(ip, cardData);
+      void fetchProxyRisk(ip);
+    });
 
   // Store this Promise in pendingIPDetailsRequests to avoid duplicate queries
   pendingIPDetailsRequests.set(ip, fetchPromise);
@@ -255,55 +254,15 @@ const fetchIPDetails = async (cardIndex, ip, sourceID = null) => {
   }
 };
 
-// When the IP database source is reselected, update the IP geographic data
-const selectIPGeoSource = () => {
-  // Clear partial data
-  ipDataCards.forEach((card) => {
-    const { ip, mapUrl, mapUrl_dark } = card;
-    Object.assign(card, createDefaultCard(), { ip, mapUrl, mapUrl_dark });
-  });
-
-  ipDataCache.clear();
-
-  // Try to update once, then get other IP data
-  let runningSource = fetchIPDetails(0, ipDataCards[0].ip, ipGeoSource.value);
-
-  // Re-fetch IP data
-  let index = 1;
-  const interval = setInterval(() => {
-    if (index < ipDataCards.length) {
-      const card = ipDataCards[index];
-      if (isValidIP(card.ip)) {
-        fetchIPDetails(index, card.ip, parseInt(runningSource));
-      }
-      index++;
-    } else {
-      clearInterval(interval);
-    }
-  }, 500);
-};
-
 // Refresh a card
 const refreshCard = (card, index) => {
   clearCardData(card);
   switch (index) {
     case 0:
-      fetchIP(0, getIPFromIPChecking4);
+      fetchIP(0, getIPFromElinksNetV4);
       break;
     case 1:
-      fetchIP(1, getIPFromIPChecking6);
-      break;
-    case 2:
-      fetchIP(2, getIPFromCloudflare_V4);
-      break;
-    case 3:
-      fetchIP(3, getIPFromCloudflare_V6);
-      break;
-    case 4:
-      fetchIP(4, getIPFromIPIP);
-      break;
-    case 5:
-      fetchIP(5, getIPFromIPChecking64);
+      fetchIP(1, getIPFromElinksNetV6);
       break;
     default:
       console.error("Undefind Source:");
@@ -315,14 +274,6 @@ const refreshCard = (card, index) => {
 const clearCardData = (card) => {
   Object.assign(card, createDefaultCard());
 };
-
-watch(() => userPreferences.value.ipGeoSource, (newVal, oldVal) => {
-  ipGeoSource.value = newVal;
-  if (newVal !== usingSource.value) {
-    selectIPGeoSource();
-  }
-});
-
 
 watch(IPArray, () => {
   store.updateAllIPs(IPArray.value);

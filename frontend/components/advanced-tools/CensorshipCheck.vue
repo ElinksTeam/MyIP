@@ -75,6 +75,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { Icon } from '@iconify/vue';
 import { CircleCheck, CircleX, Frown, Meh, Shield, ShieldAlert, Smile, Play } from 'lucide-vue-next';
+import { createMeasurement, waitForMeasurement } from '@/services/globalping.js';
 
 const { t } = useI18n();
 
@@ -177,75 +178,45 @@ const onSubmit = () => {
     if (hostname) startHttpCheck(hostname);
 };
 
-const startHttpCheck = () => {
+const startHttpCheck = async () => {
     trackEvent('Section', 'StartClick', 'CensorshipCheck');
     const hostname = validateInput(queryURL.value);
     if (!hostname) return;
-    let tryCount = 0;
-
-    const sendHttpRequest = async () => {
-        censorshipCheckStatus.value = 'running';
-        try {
-            const response = await fetch('https://api.globalping.io/v1/measurements', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    locations: [
-                        { country: 'CN', limit: 2 }, { country: 'RU', limit: 2 },
-                        { country: 'TR', limit: 2 }, { country: 'SA', limit: 2 },
-                        { country: 'JP' }, { country: 'US' }, { country: 'CA' }, { country: 'IT' },
-                        { country: 'FI' }, { country: 'AU' }, { country: 'FR' }, { country: 'DE' },
-                    ],
-                    target: hostname,
-                    type: 'http',
-                    measurementOptions: {
-                        request: { host: hostname, path: '/', method: 'HEAD' },
-                        port: 443,
-                        protocol: 'HTTPS',
-                    },
-                }),
-            });
-
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            console.error('Error sending HTTP request:', error);
-            censorshipCheckStatus.value = 'error';
-            errorMsg.value = t('censorshipcheck.invalidURL');
-        }
-    };
-
-    const fetchHttpResults = async (id) => {
-        try {
-            const response = await fetch(`https://api.globalping.io/v1/measurements/${id}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-            const data = await response.json();
-            processHttpResults(data);
-
-            if (data.status === 'in-progress' && tryCount < 5) {
-                setTimeout(() => fetchHttpResults(id), 3000);
-                tryCount++;
-            } else {
-                if (censorshipResults.value.length === 0) {
-                    censorshipCheckStatus.value = 'error';
-                    errorMsg.value = t('censorshipcheck.fetchError');
-                } else {
-                    correctResult();
-                    calResult(censorshipResults.value);
-                    censorshipCheckStatus.value = 'finished';
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching HTTP results:', error);
+    censorshipCheckStatus.value = 'running';
+    try {
+        const measurement = await createMeasurement({
+            locations: [
+                { country: 'CN', limit: 2 }, { country: 'RU', limit: 2 },
+                { country: 'TR', limit: 2 }, { country: 'SA', limit: 2 },
+                { country: 'JP' }, { country: 'US' }, { country: 'CA' }, { country: 'IT' },
+                { country: 'FI' }, { country: 'AU' }, { country: 'FR' }, { country: 'DE' },
+            ],
+            target: hostname,
+            type: 'http',
+            measurementOptions: {
+                request: { host: hostname, path: '/', method: 'HEAD' },
+                port: 443,
+                protocol: 'HTTPS',
+            },
+        });
+        await waitForMeasurement(measurement.id, {
+            interval: 3000,
+            maxAttempts: 6,
+            onUpdate: processHttpResults,
+        });
+        if (censorshipResults.value.length === 0) {
             censorshipCheckStatus.value = 'error';
             errorMsg.value = t('censorshipcheck.fetchError');
+        } else {
+            correctResult();
+            calResult(censorshipResults.value);
+            censorshipCheckStatus.value = 'finished';
         }
-    };
-
-    sendHttpRequest().then(data => {
-        if (data && data.id) setTimeout(() => fetchHttpResults(data.id), 3000);
-    });
+    } catch (error) {
+        console.error('Censorship test failed:', error);
+        censorshipCheckStatus.value = 'error';
+        errorMsg.value = t('censorshipcheck.fetchError');
+    }
 };
 
 const processHttpResults = (data) => {

@@ -1,0 +1,301 @@
+"use client";
+
+import { Button, Chip } from "@heroui/react";
+import {
+  CheckCircle2, LoaderCircle, Play, RefreshCw,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useLocale } from "@/components/locale-provider";
+
+type Json = Record<string, unknown>;
+const LOCATIONS = ["HK", "TW", "CN", "JP", "SG", "IN", "RU", "US", "CA", "AU", "GB", "DE", "BR", "ZA", "KR", "FR"].map((country) => ({ country }));
+const CENSORSHIP_LOCATIONS = ["CN", "RU", "TR", "SA", "JP", "US", "CA", "IT", "FI", "AU", "FR", "DE"].map((country) => ({ country }));
+
+async function api<T = unknown>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, init);
+  const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) throw new Error(readableError(payload.error ?? payload, `Request failed (${response.status})`));
+  return payload.data as T;
+}
+
+function readableError(value: unknown, fallback: string): string {
+  if (typeof value === "string" && value.trim()) return value;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    for (const key of ["message", "detail", "description", "error"]) {
+      if (typeof record[key] === "string" && record[key]) return record[key];
+    }
+    const issues = Array.isArray(record.issues) ? record.issues : Array.isArray(record.errors) ? record.errors : [];
+    if (issues.length) return issues.map((issue) => readableError(issue, "")).filter(Boolean).join("; ") || fallback;
+  }
+  return fallback;
+}
+
+export function AdvancedToolWorkspace({ slug, name }: { slug: string; name: string }) {
+  if (slug === "ping" || slug === "mtr" || slug === "censorship") return <GlobalMeasurement mode={slug} />;
+  if (slug === "dns") return <DnsTool />;
+  if (slug === "rdap" || slug === "whois") return <RegistryTool mode={slug} />;
+  if (slug === "mac") return <MacTool />;
+  if (slug === "browser") return <BrowserTool />;
+  if (slug === "rules") return <RuleTool />;
+  if (slug === "security") return <SecurityTool />;
+  if (slug === "invisibility") return <InvisibilityTool />;
+  if (slug === "passport") return <PassportTool />;
+  return <Card><CardContent><p>{name} 已接入。</p></CardContent></Card>;
+}
+
+function ToolForm({ value, onChange, onRun, loading, placeholder, action = "开始检测", children }: {
+  value: string; onChange: (value: string) => void; onRun: () => void; loading: boolean; placeholder: string; action?: string; children?: React.ReactNode;
+}) {
+  const { t } = useLocale();
+  return <Card className="mb-6"><CardContent className="space-y-4">
+    {children}
+    <div className="flex flex-col gap-3 sm:flex-row"><Input value={value} onChange={(event) => onChange(event.target.value)} onKeyDown={(event) => event.key === "Enter" && onRun()} placeholder={placeholder} className="font-mono" /><Button variant="primary" onPress={onRun} isDisabled={loading || !value.trim()}>{loading ? <LoaderCircle className="size-4 animate-spin" /> : <Play className="size-4" />}{loading ? t("common.running") : action === "开始检测" ? t("common.run") : action}</Button></div>
+  </CardContent></Card>;
+}
+
+function Message({ error }: { error: string }) {
+  return error ? <div className="mb-6 rounded-xl bg-red-500/8 p-4 text-sm text-red-400 ring-1 ring-red-500/15">{error}</div> : null;
+}
+
+function GlobalMeasurement({ mode }: { mode: "ping" | "mtr" | "censorship" }) {
+  const { locale, t } = useLocale();
+  const copy = {
+    en: {
+      domain: "Enter a domain to test", target: "Enter an IP address or domain",
+      ping: "Measure latency and packet loss from 16 regions worldwide.",
+      mtr: "Trace route quality and packet loss from global probes.",
+      censorship: "Compare HTTPS reachability across higher-risk and control regions.",
+      status: "Measurement status", avg: "Average", min: "Minimum", loss: "Packet loss",
+      noRoute: "No route output", reachable: "Reachable from this region", unreachable: "Failed or still being tested",
+      empty: "The measurement finished without a valid probe result.", failed: "Global measurement failed",
+    },
+    zh: {
+      domain: "输入需要检测的域名", target: "输入 IP 或域名",
+      ping: "从全球 16 个地区测量延迟与丢包。", mtr: "从全球探针分析路由路径和链路质量。",
+      censorship: "从高风险与对照地区检查网站 HTTPS 可达性。",
+      status: "测量状态", avg: "平均", min: "最低", loss: "丢包",
+      noRoute: "暂无路由输出", reachable: "目标在该地区可访问", unreachable: "该地区访问失败或仍在检测",
+      empty: "测量完成，但没有探针返回有效结果。", failed: "全球测量失败",
+    },
+    ja: {
+      domain: "診断するドメインを入力", target: "IP またはドメインを入力",
+      ping: "世界 16 地域から遅延とパケット損失を測定します。",
+      mtr: "世界各地のプローブから経路品質とパケット損失を確認します。",
+      censorship: "制限の多い地域と対照地域で HTTPS 到達性を比較します。",
+      status: "測定状態", avg: "平均", min: "最小", loss: "損失率",
+      noRoute: "経路結果がありません", reachable: "この地域から到達可能", unreachable: "到達失敗、または測定中",
+      empty: "測定は完了しましたが、有効な結果がありません。", failed: "グローバル測定に失敗しました",
+    },
+    th: {
+      domain: "กรอกโดเมนที่ต้องการตรวจสอบ", target: "กรอก IP หรือโดเมน",
+      ping: "วัดเวลาแฝงและการสูญเสียแพ็กเก็ตจาก 16 ภูมิภาคทั่วโลก",
+      mtr: "ตรวจสอบคุณภาพเส้นทางและการสูญเสียแพ็กเก็ตจากจุดตรวจทั่วโลก",
+      censorship: "เปรียบเทียบการเข้าถึง HTTPS ระหว่างพื้นที่ควบคุมเข้มงวดและพื้นที่อ้างอิง",
+      status: "สถานะการวัด", avg: "เฉลี่ย", min: "ต่ำสุด", loss: "แพ็กเก็ตสูญหาย",
+      noRoute: "ไม่มีผลเส้นทาง", reachable: "เข้าถึงได้จากภูมิภาคนี้", unreachable: "เข้าถึงไม่สำเร็จหรือยังกำลังตรวจสอบ",
+      empty: "การวัดเสร็จแล้ว แต่ไม่มีผลที่ใช้ได้จากจุดตรวจ", failed: "การวัดทั่วโลกล้มเหลว",
+    },
+  }[locale];
+  const [target, setTarget] = useState(mode === "censorship" ? "example.com" : "8.8.8.8");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [measurement, setMeasurement] = useState<Json | null>(null);
+  const run = async () => {
+    setLoading(true); setError(""); setMeasurement(null);
+    try {
+      const hostname = target.replace(/^https?:\/\//, "").split("/")[0];
+      const type = mode === "censorship" ? "http" : mode;
+      const options = mode === "ping" ? { packets: 8 } : mode === "mtr"
+        ? { port: 80, protocol: "ICMP" }
+        : { request: { host: hostname, path: "/", method: "HEAD" }, port: 443, protocol: "HTTPS" };
+      const created = await api<{ id: string }>("/api/tools/globalping", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: hostname, type, locations: mode === "censorship" ? CENSORSHIP_LOCATIONS : LOCATIONS, measurementOptions: options }),
+      });
+      for (let attempt = 0; attempt < 7; attempt += 1) {
+        if (attempt) await new Promise((resolve) => window.setTimeout(resolve, mode === "censorship" ? 2500 : 1200));
+        const latest = await api<Json>(`/api/tools/globalping?id=${encodeURIComponent(created.id)}`);
+        setMeasurement(latest);
+        if (latest.status !== "in-progress") break;
+      }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : copy.failed); }
+    finally { setLoading(false); }
+  };
+  const results = Array.isArray(measurement?.results) ? measurement.results as Json[] : [];
+  return <>
+    <ToolForm value={target} onChange={setTarget} onRun={run} loading={loading} placeholder={mode === "censorship" ? copy.domain : copy.target}>
+      <p className="text-sm text-muted-foreground">{copy[mode]}</p>
+    </ToolForm>
+    <Message error={error} />
+    {measurement && <div className="mb-4 flex items-center justify-between"><span className="text-sm text-muted-foreground">{copy.status}</span><Chip variant="soft" color={measurement.status === "finished" ? "success" : "warning"}>{measurement.status === "finished" ? t("common.completed") : t("common.running")}</Chip></div>}
+    <div className="grid gap-4 md:grid-cols-2">
+      {results.map((entry, index) => {
+        const probe = entry.probe as Json || {}; const result = entry.result as Json || {}; const stats = result.stats as Json || {};
+        return <Card key={`${String(probe.country)}-${index}`}><CardContent>
+          <div className="mb-4 flex items-center justify-between"><div><p className="font-medium">{String(probe.city || probe.country || "Global probe")}</p><p className="text-xs text-muted-foreground">{String(probe.network || "")} {probe.asn ? `· AS${String(probe.asn)}` : ""}</p></div><Chip size="sm" variant="soft" color={result.status === "finished" ? "success" : result.status === "failed" ? "danger" : "warning"}>{result.status === "finished" ? t("common.completed") : result.status === "failed" ? t("common.failed") : t("common.running")}</Chip></div>
+          {mode === "ping" && <div className="grid grid-cols-3 gap-3 text-center"><Metric label={copy.avg} value={`${String(stats.avg ?? "—")} ms`} /><Metric label={copy.min} value={`${String(stats.min ?? "—")} ms`} /><Metric label={copy.loss} value={`${String(stats.loss ?? "—")}%`} /></div>}
+          {mode === "mtr" && <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-3 font-mono text-xs leading-5">{String(result.rawOutput || copy.noRoute)}</pre>}
+          {mode === "censorship" && <p className="text-sm text-muted-foreground">{result.status === "finished" ? copy.reachable : copy.unreachable}</p>}
+        </CardContent></Card>;
+      })}
+    </div>
+    {!loading && measurement && !results.length && <Empty text={copy.empty} />}
+  </>;
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return <div className="rounded-xl bg-muted/40 p-3"><p className="font-mono text-sm font-semibold">{value}</p><p className="mt-1 text-[11px] text-muted-foreground">{label}</p></div>;
+}
+
+function DnsTool() {
+  const [hostname, setHostname] = useState("example.com"); const [type, setType] = useState("A");
+  const [data, setData] = useState<Array<{ provider: string; status: number; answers: Array<Json>; error?: string }>>([]);
+  const [loading, setLoading] = useState(false); const [error, setError] = useState("");
+  const run = async () => { setLoading(true); setError(""); try { setData(await api(`/api/tools/dns?hostname=${encodeURIComponent(hostname)}&type=${type}`)); } catch (cause) { setError(cause instanceof Error ? cause.message : "DNS 查询失败"); } finally { setLoading(false); } };
+  return <><ToolForm value={hostname} onChange={setHostname} onRun={run} loading={loading} placeholder="example.com">
+    <div className="flex flex-wrap gap-2">{["A", "AAAA", "CNAME", "MX", "NS", "TXT"].map((item) => <button key={item} onClick={() => setType(item)} className={`rounded-lg px-3 py-1.5 font-mono text-xs ${type === item ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{item}</button>)}</div>
+  </ToolForm><Message error={error} /><div className="grid gap-4 md:grid-cols-2">{data.map((provider) => <Card key={provider.provider}><CardHeader><CardTitle>{provider.provider}</CardTitle><CardDescription>DNS-over-HTTPS · {type}</CardDescription></CardHeader><CardContent className="space-y-2">{provider.answers.length ? provider.answers.map((answer, index) => <div key={index} className="overflow-x-auto rounded-lg bg-muted/40 p-3 font-mono text-xs">{String(answer.data)} <span className="text-muted-foreground">TTL {String(answer.TTL)}</span></div>) : <p className="text-sm text-muted-foreground">{provider.error || "无记录"}</p>}</CardContent></Card>)}</div></>;
+}
+
+function RegistryTool({ mode }: { mode: "rdap" | "whois" }) {
+  const [query, setQuery] = useState("example.com"); const [data, setData] = useState<Json | null>(null); const [loading, setLoading] = useState(false); const [error, setError] = useState("");
+  const run = async () => { setLoading(true); setError(""); try { setData(await api(`/api/tools/${mode}?query=${encodeURIComponent(query)}`)); } catch (cause) { setError(cause instanceof Error ? cause.message : "查询失败"); } finally { setLoading(false); } };
+  const rdap = data?.data as Json | undefined;
+  const events = Array.isArray(rdap?.events) ? rdap.events as Json[] : [];
+  return <><ToolForm value={query} onChange={setQuery} onRun={run} loading={loading} placeholder="域名、IP 或 AS13335" action="查询注册信息" /><Message error={error} />{data && <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]"><Card><CardHeader><CardTitle>{String(rdap?.name || rdap?.handle || data.query)}</CardTitle><CardDescription>{String(data.type).toUpperCase()} · RDAP Registry</CardDescription></CardHeader><CardContent className="space-y-3"><Info label="状态" value={Array.isArray(rdap?.status) ? rdap.status.join(", ") : rdap?.status} /><Info label="起始地址" value={rdap?.startAddress} /><Info label="结束地址" value={rdap?.endAddress} /><Info label="端口 43" value={rdap?.port43} />{events.map((event, index) => <Info key={index} label={String(event.eventAction || "事件")} value={event.eventDate} />)}</CardContent></Card><Card><CardHeader><CardTitle>原始注册数据</CardTitle></CardHeader><CardContent><pre className="max-h-[560px] overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-4 font-mono text-xs leading-5">{JSON.stringify(rdap, null, 2)}</pre></CardContent></Card></div>}</>;
+}
+
+function MacTool() {
+  const [mac, setMac] = useState("00:1A:2B:3C:4D:5E"); const [data, setData] = useState<Json | null>(null); const [loading, setLoading] = useState(false); const [error, setError] = useState("");
+  const run = async () => { setLoading(true); setError(""); try { setData(await api(`/api/tools/mac?mac=${encodeURIComponent(mac)}`)); } catch (cause) { setError(cause instanceof Error ? cause.message : "MAC 查询失败"); } finally { setLoading(false); } };
+  return <><ToolForm value={mac} onChange={setMac} onRun={run} loading={loading} placeholder="AA:BB:CC:DD:EE:FF" action="查询厂商" /><Message error={error} />{data && <Card><CardHeader><CardTitle>{String(data.company || "未知厂商")}</CardTitle><CardDescription>{String(data.normalized || mac)}</CardDescription></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2"><Info label="国家" value={data.country} /><Info label="注册地址" value={data.address} /><Info label="地址块" value={data.blockType} /><Info label="更新时间" value={data.updated} /><Info label="分配类型" value={data.isLocal ? "本地管理地址" : "全球唯一地址"} /><Info label="传输类型" value={data.isMulticast ? "组播" : "单播"} /></CardContent></Card>}</>;
+}
+
+function BrowserTool() {
+  const [info, setInfo] = useState<Json>({});
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const screenInfo = window.screen;
+      setInfo({
+        userAgent: navigator.userAgent, language: navigator.language, languages: navigator.languages.join(", "),
+        platform: navigator.platform, cookies: navigator.cookieEnabled, online: navigator.onLine,
+        cpuCores: navigator.hardwareConcurrency, memory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+        screen: `${screenInfo.width} × ${screenInfo.height} @ ${window.devicePixelRatio}x`,
+        viewport: `${window.innerWidth} × ${window.innerHeight}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        colorDepth: screenInfo.colorDepth, touchPoints: navigator.maxTouchPoints,
+      });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+  return <div className="grid gap-4 md:grid-cols-2">{Object.entries(info).map(([key, value]) => <Card key={key}><CardContent><p className="text-xs uppercase tracking-wider text-muted-foreground">{key}</p><p className="mt-2 break-words font-mono text-sm">{String(value ?? "N/A")}</p></CardContent></Card>)}</div>;
+}
+
+function RuleTool() {
+  type RuleResult = { host: string; ip?: string; country?: string; colo?: string; error?: string };
+  const [loading, setLoading] = useState(false); const [results, setResults] = useState<RuleResult[]>([]);
+  const run = async () => { setLoading(true); setResults([]); const output: RuleResult[] = []; for (let i = 1; i <= 8; i += 1) { const host = `ptest-${i}.ipcheck.ing`; try { output.push(await api<RuleResult>(`/api/tools/trace?host=${host}`)); } catch (cause) { output.push({ host, error: cause instanceof Error ? cause.message : "失败" }); } setResults([...output]); } setLoading(false); };
+  return <><Card className="mb-6"><CardContent className="flex items-center justify-between gap-4"><div><p className="font-medium">代理规则矩阵</p><p className="mt-1 text-sm text-muted-foreground">依次连接 8 条测试线路，比较出口 IP 与地区。</p></div><Button variant="primary" onPress={run} isDisabled={loading}>{loading ? <LoaderCircle className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}检测全部</Button></CardContent></Card><div className="grid gap-4 md:grid-cols-2">{Array.from({ length: 8 }, (_, index) => results[index] || { host: `ptest-${index + 1}.ipcheck.ing` }).map((item) => <Card key={item.host}><CardContent><div className="flex items-center justify-between"><p className="font-mono text-sm">{item.host}</p><Chip size="sm" variant="soft" color={item.ip ? "success" : item.error ? "danger" : "default"}>{item.ip ? "在线" : item.error ? "失败" : "等待"}</Chip></div><p className="mt-4 font-mono text-lg">{item.ip || "—"}</p><p className="mt-1 text-xs text-muted-foreground">{[item.country, item.colo].filter(Boolean).join(" · ") || item.error || "尚未检测"}</p></CardContent></Card>)}</div></>;
+}
+
+const CHECKS = ["公网 IP 与代理状态已确认", "DNS 未发现泄漏", "WebRTC 未暴露额外地址", "浏览器与系统已更新", "重要账户启用多因素认证", "未在公共网络传输敏感数据", "代理规则与出口地区符合预期", "AI 风险建议已阅读"];
+function SecurityTool() {
+  const [done, setDone] = useState<boolean[]>(() => Array(CHECKS.length).fill(false));
+  const toggle = (index: number) => setDone((current) => current.map((value, i) => i === index ? !value : value));
+  const count = done.filter(Boolean).length;
+  return <div className="grid gap-6 lg:grid-cols-[1fr_300px]"><Card><CardHeader><CardTitle>网络安全检查清单</CardTitle><CardDescription>按当前网络环境逐项核对。</CardDescription></CardHeader><CardContent className="space-y-3">{CHECKS.map((item, index) => <button key={item} onClick={() => toggle(index)} className="flex w-full items-center gap-3 rounded-xl bg-muted/35 p-4 text-left transition hover:bg-muted/60"><span className={`flex size-6 shrink-0 items-center justify-center rounded-full ${done[index] ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"}`}>{done[index] && <CheckCircle2 className="size-4" />}</span><span className={done[index] ? "text-muted-foreground line-through" : ""}>{item}</span></button>)}</CardContent></Card><Card><CardHeader><CardTitle>完成度</CardTitle></CardHeader><CardContent><p className="font-mono text-4xl font-semibold">{count}/{CHECKS.length}</p><div className="mt-4 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full bg-emerald-500 transition-all" style={{ width: `${count / CHECKS.length * 100}%` }} /></div><p className="mt-4 text-sm text-muted-foreground">{count === CHECKS.length ? "本次检查已全部完成。" : `还有 ${CHECKS.length - count} 项需要确认。`}</p></CardContent></Card></div>;
+}
+
+function InvisibilityTool() {
+  const [data, setData] = useState<Array<{ label: string; value: string; level: "low" | "medium" | "high" }> | null>(null);
+  const run = () => {
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const signals = [
+      { label: "User-Agent", value: nav.userAgent, level: "high" as const },
+      { label: "屏幕与像素比", value: `${screen.width}×${screen.height} @ ${devicePixelRatio}x`, level: "high" as const },
+      { label: "设备性能", value: `${nav.hardwareConcurrency || "?"} CPU · ${nav.deviceMemory || "?"} GB`, level: "medium" as const },
+      { label: "语言组合", value: nav.languages.join(", "), level: nav.languages.length > 2 ? "high" as const : "medium" as const },
+      { label: "时区", value: Intl.DateTimeFormat().resolvedOptions().timeZone, level: "medium" as const },
+      { label: "Cookie", value: nav.cookieEnabled ? "启用" : "禁用", level: nav.cookieEnabled ? "medium" as const : "low" as const },
+      { label: "Do Not Track", value: nav.doNotTrack || "未设置", level: nav.doNotTrack === "1" ? "low" as const : "medium" as const },
+      { label: "触控点", value: String(nav.maxTouchPoints), level: "low" as const },
+    ];
+    setData(signals);
+  };
+  const high = data?.filter((item) => item.level === "high").length || 0;
+  return <><Card className="mb-6"><CardHeader><CardTitle>本地隐私暴露审计</CardTitle><CardDescription>无需账号或私有 API，在浏览器内检查可用于设备识别的信号。</CardDescription></CardHeader><CardContent className="flex items-center justify-between gap-4"><p className="text-sm text-muted-foreground">不会生成永久指纹，也不会上传设备数据。</p><Button variant="primary" onPress={run}>开始本地审计</Button></CardContent></Card>{data && <div className="grid gap-6 lg:grid-cols-[1fr_280px]"><div className="grid gap-4 sm:grid-cols-2">{data.map((item) => <Card key={item.label}><CardContent><div className="flex items-center justify-between"><p className="text-xs uppercase tracking-wider text-muted-foreground">{item.label}</p><Chip size="sm" variant="soft" color={item.level === "high" ? "danger" : item.level === "medium" ? "warning" : "success"}>{item.level}</Chip></div><p className="mt-3 break-words font-mono text-sm">{item.value}</p></CardContent></Card>)}</div><Card><CardHeader><CardTitle>暴露摘要</CardTitle></CardHeader><CardContent><p className="font-mono text-4xl font-semibold">{high}</p><p className="mt-2 text-sm text-muted-foreground">项高辨识度信号</p><p className="mt-4 text-xs leading-5 text-muted-foreground">建议使用浏览器严格隐私模式、减少扩展，并统一代理出口与设备时区。</p></CardContent></Card></div>}</>;
+}
+
+type PassportResult = { score: number; ip: Json; timezone: string; language: string; dns: Json; webrtc: string[]; findings: Array<{ level: "ok" | "warn" | "risk"; text: string }> };
+
+async function collectWebRtcCandidates() {
+  return new Promise<string[]>((resolve) => {
+    const found = new Set<string>();
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }] });
+    const finish = () => { pc.close(); resolve([...found]); };
+    pc.createDataChannel("passport");
+    pc.onicecandidate = (event) => {
+      if (!event.candidate) return finish();
+      const matches = event.candidate.candidate.match(/(?:\d{1,3}\.){3}\d{1,3}|(?:[a-f0-9]{1,4}:){2,7}[a-f0-9]{1,4}/gi) || [];
+      matches.forEach((value) => found.add(value));
+    };
+    pc.createOffer().then((offer) => pc.setLocalDescription(offer)).catch(finish);
+    window.setTimeout(finish, 5_000);
+  });
+}
+
+function PassportTool() {
+  const { t } = useLocale();
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<PassportResult | null>(null);
+  const [error, setError] = useState("");
+  const run = async () => {
+    setLoading(true); setError("");
+    try {
+      const [ip, candidates, dns] = await Promise.all([
+        api<Json>("/api/lookup"),
+        collectWebRtcCandidates(),
+        fetch(`https://${crypto.randomUUID().replace(/-/g, "")}.edns.ip-api.com/json`, { signal: AbortSignal.timeout(8_000) }).then((response) => response.json()).catch(() => ({})),
+      ]);
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const language = navigator.language;
+      const findings: PassportResult["findings"] = [];
+      let score = 100;
+      if (ip.proxy || ip.vpn || ip.tor) { score -= 25; findings.push({ level: "risk", text: t("passport.proxyRisk") }); }
+      else findings.push({ level: "ok", text: t("passport.noProxy") });
+      if (ip.hosting) { score -= 15; findings.push({ level: "warn", text: t("passport.hostingRisk") }); }
+      const ipTimezone = String(ip.timezone || "");
+      if (ipTimezone && timezone !== ipTimezone) { score -= 20; findings.push({ level: "warn", text: t("passport.timezoneMismatch", { device: timezone, exit: ipTimezone }) }); }
+      else findings.push({ level: "ok", text: t("passport.timezoneOk") });
+      const publicCandidates = candidates.filter((value) => !/^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(value));
+      if (publicCandidates.some((value) => value !== ip.ip)) { score -= 25; findings.push({ level: "risk", text: t("passport.webrtcRisk") }); }
+      else findings.push({ level: "ok", text: t("passport.webrtcOk") });
+      if (!dns?.dns?.ip) { score -= 5; findings.push({ level: "warn", text: t("passport.dnsUnknown") }); }
+      else findings.push({ level: "ok", text: t("passport.dnsFound", { ip: dns.dns.ip, geo: dns.dns.geo || "—" }) });
+      setResult({ score: Math.max(0, score), ip, timezone, language, dns, webrtc: candidates, findings });
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "网络护照生成失败"); }
+    finally { setLoading(false); }
+  };
+  return <><Card className="mb-6"><CardHeader><CardTitle>{t("passport.title")}</CardTitle><CardDescription>{t("passport.desc")}</CardDescription></CardHeader><CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-muted-foreground">{t("passport.localOnly")}</p><Button variant="primary" onPress={run} isDisabled={loading}>{loading ? <LoaderCircle className="size-4 animate-spin" /> : <Play className="size-4" />}{t("passport.run")}</Button></CardContent></Card><Message error={error} />{result && <div className="grid gap-6 lg:grid-cols-[300px_1fr]"><Card><CardHeader><CardTitle>{t("passport.score")}</CardTitle></CardHeader><CardContent><div className="flex size-36 items-center justify-center rounded-full bg-primary/10 font-mono text-5xl font-semibold text-primary ring-8 ring-primary/5">{result.score}</div><p className="mt-5 text-sm font-medium">{result.score >= 80 ? t("passport.good") : t("passport.warn")}</p><div className="mt-5 space-y-2 text-xs text-muted-foreground"><p>IP: {String(result.ip.ip)}</p><p>{result.timezone} · {result.language}</p><p>WebRTC: {result.webrtc.length || 0} candidates</p></div></CardContent></Card><Card><CardHeader><CardTitle>{t("passport.evidence")}</CardTitle><CardDescription>{t("passport.disclaimer")}</CardDescription></CardHeader><CardContent className="space-y-3">{result.findings.map((finding, index) => <div key={index} className="flex gap-3 rounded-xl bg-muted/35 p-4"><span className={`mt-1 size-2 shrink-0 rounded-full ${finding.level === "ok" ? "bg-emerald-400" : finding.level === "warn" ? "bg-amber-400" : "bg-red-400"}`} /><p className="text-sm leading-6">{finding.text}</p></div>)}</CardContent></Card></div>}</>;
+}
+
+export function ServiceStatusPanel() {
+  const { t } = useLocale();
+  const [status, setStatus] = useState<Json | null>(null);
+  const [latency, setLatency] = useState<number | null>(null);
+  useEffect(() => { const started = performance.now(); api<Json>("/api/tools/status").then((data) => { setLatency(Math.round(performance.now() - started)); setStatus(data); }).catch(() => setStatus({ core: false })); }, []);
+  const platformLabels: Record<string, string> = { core: "Elinks Core API", ai: "ElinksAI", mac: "MAC Lookup", invisibility: t("status.privacyExposure") };
+  const sourceStatus = (status?.sourceStatus as Json | undefined) || {};
+  const summary = (status?.sourceSummary as Json | undefined) || {};
+  const entries = [...Object.entries(platformLabels).map(([key, label]) => ({ key, label, online: Boolean(status?.[key]), kind: key === "core" ? "core" : "api" })), ...Object.entries(sourceStatus).map(([label, online]) => ({ key: `source-${label}`, label, online: Boolean(online), kind: "source" }))];
+  return <><Card className="mb-5"><CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium">{t("status.sources")}</p><p className="mt-1 text-sm text-muted-foreground">{t("status.sourcesDesc")}</p></div>{status ? <Chip variant="soft" color="success">{String(summary.online || 0)} / {String(summary.total || 0)} {t("common.online")}</Chip> : <LoaderCircle className="size-4 animate-spin" />}</CardContent></Card><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{entries.map((item) => <Card key={item.key}><CardContent className="flex items-center justify-between"><div><p className="text-sm font-medium">{item.label}</p><p className="mt-1 text-xs text-muted-foreground">{item.kind === "core" && latency !== null ? `${latency} ms` : item.kind === "source" ? t("status.liveProbe") : "API"}</p></div>{status ? <Chip size="sm" variant="soft" color={item.online ? "success" : "warning"}>{item.online ? t("common.online") : t("common.unavailable")}</Chip> : <LoaderCircle className="size-4 animate-spin text-muted-foreground" />}</CardContent></Card>)}</div></>;
+}
+
+function Info({ label, value }: { label: string; value: unknown }) {
+  return <div className="flex items-start justify-between gap-4 border-b border-white/[.06] pb-3 text-sm last:border-0"><span className="shrink-0 text-muted-foreground">{label}</span><span className="break-all text-right font-mono">{value === undefined || value === null || value === "" ? "—" : String(value)}</span></div>;
+}
+function Empty({ text }: { text: string }) {
+  return <div className="rounded-xl bg-muted/30 p-8 text-center text-sm text-muted-foreground">{text}</div>;
+}

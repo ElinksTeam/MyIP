@@ -9,6 +9,7 @@ lerna-debug.log*
 .claude
 
 node_modules
+.next
 dist
 dist-ssr
 *.local
@@ -26,7 +27,6 @@ dist-ssr
 .env
 .vscode/extensions.json
 
-package-lock.json
 localtest
 
 .VSCodeCounter
@@ -37,3 +37,5 @@ common/maxmind-db/*.bak
 common/maxmind-db/*.next
 common/maxmind-db/*.mmdb
 .learnings/
+.vercel
+.env*

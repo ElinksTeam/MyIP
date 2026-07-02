@@ -96,6 +96,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { Icon } from '@iconify/vue';
+import { api } from '@/services/api-client.js';
 
 const { t } = useI18n();
 
@@ -145,9 +146,7 @@ const onSubmit = () => {
 const getMacInfo = async (query) => {
     macCheckStatus.value = 'running';
     try {
-        const response = await fetch(`/api/macchecker?mac=${query}`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
+        const data = await api.mac(query);
         macCheckResult.value = data;
         macCheckStatus.value = 'idle';
     } catch (error) {

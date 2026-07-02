@@ -9,10 +9,13 @@
                     class="inline-flex items-center justify-center size-5 rounded-full bg-foreground text-background text-xs font-semibold shrink-0">
                     {{ index + 1 }}
                 </span>
-                <span class="text-sm font-medium truncate">
-                    <span class="text-muted-foreground">{{ t('ipInfos.Source') }}:</span>
-                    {{ card.source }}
-                </span>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-medium">{{ card.source }}</p>
+                    <p v-if="card.sourceCount" class="truncate text-[11px] text-muted-foreground"
+                        :title="card.dataSources?.join(' · ')">
+                        {{ sourceSummary }}
+                    </p>
+                </div>
             </div>
             <JnTooltip :text="t('Tooltips.RefreshIPCard')" side="left">
                 <Button size="icon" variant="outline" class="size-8 shrink-0 cursor-pointer"
@@ -38,8 +41,25 @@
                         </button>
                     </JnTooltip>
                 </div>
+                <div class="mx-4 mb-3 grid grid-cols-2 gap-2 rounded-lg border bg-muted/25 p-2.5">
+                    <div class="min-w-0">
+                        <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <ShieldCheck class="size-3" /> {{ productCopy.proxy.proxy }}
+                        </span>
+                        <p class="mt-1 truncate text-xs font-medium">{{ proxyValue }}</p>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Gauge class="size-3" /> {{ productCopy.proxy.quality }}
+                        </span>
+                        <div class="mt-1 flex items-center gap-2">
+                            <span class="size-2 rounded-full" :class="qualityClass" />
+                            <p class="truncate text-xs font-medium">{{ qualityValue }}</p>
+                        </div>
+                    </div>
+                </div>
 
-                <IpDetailPanel :data="card" :index="index" :ip-geo-source="ipGeoSource" :asn-infos="asnInfos"
+                <IpDetailPanel :data="card" :index="index" :asn-infos="asnInfos"
                     :configs="configs" :is-dark-mode="isDarkMode" :collapsed="isMobile && isCardsCollapsed"
                     :enable-map="true" />
             </template>
@@ -63,6 +83,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useProductCopy } from '@/composables/use-product-copy.js';
 import { isValidIP } from '@/utils/valid-ip.js';
 import { heroIpSizeClass } from '@/utils/hero-ip-size.js';
 import IPErrorIcon from '../svgicons/IPError.vue';
@@ -73,11 +94,14 @@ import { Card } from '@/components/ui/card';
 import {
     ClipboardCheck,
     ClipboardPlus,
+    Gauge,
     Monitor,
     RotateCw,
+    ShieldCheck,
 } from 'lucide-vue-next';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const productCopy = useProductCopy();
 
 const placeholderSizes = [12, 8, 6, 8, 4];
 
@@ -86,7 +110,6 @@ const props = defineProps({
     index: { type: Number, required: true },
     isDarkMode: { type: Boolean, required: true },
     isMobile: { type: Boolean, required: true },
-    ipGeoSource: { type: Number, required: true },
     isCardsCollapsed: { type: Boolean, required: true },
     copiedStatus: { type: Object, required: true },
     configs: { type: Object, required: true },
@@ -97,11 +120,41 @@ defineEmits(['refresh-card']);
 
 // Three state check: has data (normal) / error / loading
 const hasData = computed(() =>
-    Boolean(props.card.asn) || props.card.ip === '2001:4860:4860::8888'
+    isValidIP(props.card.ip)
 );
 const isErrorState = computed(() =>
     props.card.ip === t('ipInfos.IPv4Error') || props.card.ip === t('ipInfos.IPv6Error')
 );
+const proxyValue = computed(() => {
+    if (props.card.proxyRiskStatus === 'loading') return productCopy.value.proxy.loading;
+    if (props.card.proxyRiskStatus === 'error') return productCopy.value.proxy.unavailable;
+    const value = props.card.isProxy;
+    return value && value !== 'sign_in_required' ? value : productCopy.value.proxy.unknown;
+});
+const qualityValue = computed(() => {
+    if (props.card.proxyRiskStatus === 'loading') return productCopy.value.proxy.loading;
+    if (props.card.proxyRiskStatus === 'error') return productCopy.value.proxy.unavailable;
+    const value = props.card.qualityScore;
+    return value !== undefined && value !== 'unknown' && value !== 'sign_in_required'
+        ? `${value}/100`
+        : productCopy.value.proxy.unknown;
+});
+const qualityClass = computed(() => {
+    const score = Number(props.card.qualityScore);
+    if (!Number.isFinite(score)) return 'bg-muted-foreground/40';
+    if (score >= 80) return 'bg-success';
+    if (score >= 50) return 'bg-warning';
+    return 'bg-destructive';
+});
+const sourceSummary = computed(() => {
+    const labels = {
+        zh: `多源融合 · ${props.card.sourceCount} 个来源`,
+        en: `Fused intelligence · ${props.card.sourceCount} sources`,
+        fr: `Données fusionnées · ${props.card.sourceCount} sources`,
+        tr: `Birleşik veri · ${props.card.sourceCount} kaynak`,
+    };
+    return labels[locale.value?.split('-')[0]] || labels.en;
+});
 
 const copyToClipboard = (ip, id) => {
     navigator.clipboard.writeText(ip).then(() => {

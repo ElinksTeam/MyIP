@@ -72,6 +72,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Info, Search } from 'lucide-vue-next';
+import { api } from '@/services/api-client.js';
 
 const { t } = useI18n();
 
@@ -122,9 +123,7 @@ const onSubmit = () => {
 const getWhoisResults = async (query) => {
     whoisCheckStatus.value = 'running';
     try {
-        const response = await fetch(`/api/whois?q=${query}`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
+        const data = await api.whois(query);
         getProviders(data);
         if (type.value === 'domain' && providers.value.length >= 1) {
             whoisResults.value = data;

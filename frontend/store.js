@@ -1,12 +1,12 @@
 // store.js
 import { defineStore } from 'pinia';
-import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged } from "firebase/auth";
-import { auth } from './firebase-init.js';
+import { getFirebaseAuth, isFireBaseSet } from './firebase-init.js';
 import i18n from './locales/i18n.js';
 import { createInitialAchievementsState } from './data/achievements.js';
 import { createInitialIpDBs, buildDbUrl } from './data/ip-databases.js';
 import { createDefaultPreferences } from './data/default-preferences.js';
 import { createMountingStatus, createLoadingStatus, DEFAULT_SECTION } from './data/sections.js';
+import { api } from './services/api-client.js';
 const { t } = i18n.global;
 
 export const useMainStore = defineStore('main', {
@@ -26,11 +26,6 @@ export const useMainStore = defineStore('main', {
     remoteUserInfoFetched: false,
     currentPath: {},
     mountingStatus: createMountingStatus(),
-    curl: {
-      ipv4Domain: import.meta.env?.VITE_CURL_IPV4_DOMAIN,
-      ipv6Domain: import.meta.env?.VITE_CURL_IPV6_DOMAIN,
-      ipv64Domain: import.meta.env?.VITE_CURL_IPV64_DOMAIN,
-    },
     isFireBaseSet: false,
     openSheet: null,
     loadingStatus: createLoadingStatus(),
@@ -56,9 +51,6 @@ export const useMainStore = defineStore('main', {
     allHasLoaded: (state) => {
       return Object.values(state.loadingStatus).every(status => status);
     },
-    curlDomainsHadSet: (state) => {
-      return state.curl.ipv4Domain && state.curl.ipv6Domain && state.curl.ipv64Domain;
-    }
   },
 
   actions: {
@@ -133,8 +125,13 @@ export const useMainStore = defineStore('main', {
       let preferencesToStore;
 
       if (storedPreferences) {
-        const currentPreferences = JSON.parse(storedPreferences);
-        preferencesToStore = { ...defaultPreferences, ...currentPreferences };
+        try {
+          const currentPreferences = JSON.parse(storedPreferences);
+          const { ipGeoSource: _obsoleteSource, ...supportedPreferences } = currentPreferences;
+          preferencesToStore = { ...defaultPreferences, ...supportedPreferences, ipCardsToShow: 2 };
+        } catch {
+          preferencesToStore = defaultPreferences;
+        }
       } else {
         preferencesToStore = defaultPreferences;
       }
@@ -142,19 +139,31 @@ export const useMainStore = defineStore('main', {
       localStorage.setItem('userPreferences', JSON.stringify(preferencesToStore));
       this.setPreferences(preferencesToStore);
     },
+    applyIpSourceAvailability(configs = {}) {
+      const configuredSources = {
+        0: Boolean(configs.elinksNet),
+        1: Boolean(configs.ipInfo),
+        3: Boolean(configs.ipapiis),
+        4: Boolean(configs.ip2location),
+        6: Boolean(configs.maxmind),
+      };
+
+      for (const [id, enabled] of Object.entries(configuredSources)) {
+        this.updateIPDBs({ id: Number(id), enabled });
+      }
+
+    },
     // fetch configs from server
-    fetchConfigs() {
-      fetch('/api/configs')
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          this.configs = data;
-        })
-        .catch(error => console.error('Fetching configs failed: ', error));
+    async fetchConfigs() {
+      try {
+        this.configs = await api.configs();
+        this.applyIpSourceAvailability(this.configs);
+        return this.configs;
+      } catch (error) {
+        console.error('Fetching configs failed: ', error);
+        this.applyIpSourceAvailability({});
+        return {};
+      }
     },
     // Change Section
     changeSection(section) {
@@ -162,16 +171,14 @@ export const useMainStore = defineStore('main', {
     },
     // check Firebase environment
     checkFirebaseEnv() {
-      const env = import.meta.env ?? {};
-      const envConfigs = {
-        key: env.VITE_FIREBASE_API_KEY,
-        domain: env.VITE_FIREBASE_AUTH_DOMAIN,
-        project: env.VITE_FIREBASE_PROJECT_ID,
-      }
-      this.isFireBaseSet = !!envConfigs.key && !!envConfigs.domain && !!envConfigs.project;
+      this.isFireBaseSet = isFireBaseSet;
     },
     // sign in with Google
     async signInWithGoogle() {
+      const [{ GoogleAuthProvider, signInWithPopup }, auth] = await Promise.all([
+        import('firebase/auth'),
+        getFirebaseAuth(),
+      ]);
       const provider = new GoogleAuthProvider();
       provider.addScope('email');
       try {
@@ -186,6 +193,10 @@ export const useMainStore = defineStore('main', {
     },
     // sign in with GitHub
     async signInWithGithub() {
+      const [{ GithubAuthProvider, signInWithPopup }, auth] = await Promise.all([
+        import('firebase/auth'),
+        getFirebaseAuth(),
+      ]);
       const provider = new GithubAuthProvider();
       provider.addScope('user:email');
       try {
@@ -201,7 +212,11 @@ export const useMainStore = defineStore('main', {
     // sign out
     async signOut() {
       try {
-        await firebaseSignOut(auth);
+        const [{ signOut }, auth] = await Promise.all([
+          import('firebase/auth'),
+          getFirebaseAuth(),
+        ]);
+        await signOut(auth);
         this.user = null;
         this.isSignedIn = false;
       } catch (error) {
@@ -209,7 +224,11 @@ export const useMainStore = defineStore('main', {
       }
     },
     // initialize Auth listener
-    initializeAuthListener() {
+    async initializeAuthListener() {
+      const [{ onAuthStateChanged }, auth] = await Promise.all([
+        import('firebase/auth'),
+        getFirebaseAuth(),
+      ]);
       return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
           this.user = currentUser;

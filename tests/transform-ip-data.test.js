@@ -64,8 +64,8 @@ describe('transformDataFromIPapi()', () => {
 
   it('builds map URLs with language + dark variant when lat/lon present', () => {
     const out = transformDataFromIPapi(basicRaw, 1, t, 'zh');
-    assert.match(out.mapUrl, /^\/api\/map\?latitude=35\.6938&longitude=139\.7034&language=zh$/);
-    assert.match(out.mapUrl_dark, /CanvasMode=Dark$/);
+    assert.equal(out.mapUrl, '');
+    assert.equal(out.mapUrl_dark, '');
   });
 
   it("treats country='N/A' as empty country_code", () => {

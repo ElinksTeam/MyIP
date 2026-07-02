@@ -57,9 +57,10 @@ jobs:
         tags: |
           elinksteam/elinksnet:latest
           elinksteam/elinksnet:${{ env.RELEASE_VERSION }}
-          ghcr.io/${{ github.repository_owner }}/elinksnet:latest
-          ghcr.io/${{ github.repository_owner }}/elinksnet:${{ env.RELEASE_VERSION }}
+          ghcr.io/elinksteam/elinksnet:latest
+          ghcr.io/elinksteam/elinksnet:${{ env.RELEASE_VERSION }}
         labels: |
           org.opencontainers.image.version=${{ env.RELEASE_VERSION }}
           org.opencontainers.image.description=${{ env.RELEASE_NOTES }}
+          org.opencontainers.image.source=https://github.com/ElinksTeam/ElinksNet
         platforms: linux/amd64,linux/arm64

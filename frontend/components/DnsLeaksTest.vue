@@ -152,7 +152,7 @@ const leakTest = reactive([
 // Generate 32-digit random string
 const generate32DigitString = () => {
   const unixTime = Date.now().toString();
-  const fixedString = 'jason5ng32';
+  const fixedString = 'elinksteam';
   const randomString = Math.random().toString(36).substring(2, 11);
   return unixTime + fixedString + randomString;
 };

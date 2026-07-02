@@ -238,7 +238,7 @@ const detectionItems = computed(() => {
 
 const generate28DigitString = () => {
     const unixTime = Date.now().toString();
-    const fixedString = 'jason5ng32';
+    const fixedString = 'elinksteam';
     const neededUnixTimeLength = 13;
     const remainingLength = 28 - fixedString.length - neededUnixTimeLength;
     const randomString = Math.random().toString(36).substring(2, 2 + remainingLength);

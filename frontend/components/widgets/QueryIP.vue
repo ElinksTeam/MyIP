@@ -39,7 +39,7 @@
                             :class="heroIpSizeClass(inputIP)" :title="inputIP">{{ inputIP }}</span>
                     </div>
 
-                    <IpDetailPanel :data="modalQueryResult" :ip-geo-source="ipGeoSource" :asn-infos="asnInfos"
+                    <IpDetailPanel :data="modalQueryResult" :asn-infos="asnInfos"
                         :configs="configs" :is-dark-mode="isDarkMode" :enable-map="false" />
                 </div>
             </div>
@@ -53,14 +53,14 @@
 // - No Copy button (the IP was typed by the user — copying it is pointless).
 // - No Map button (Dialog-in-Dialog stacking is avoided; enableMap=false).
 // - Own asnInfos cache (local to this component; not shared with IPCard).
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useMainStore } from '@/store';
 import { isValidIP } from '@/utils/valid-ip.js';
 import { heroIpSizeClass } from '@/utils/hero-ip-size.js';
-import { transformDataFromIPapi } from '@/utils/transform-ip-data.js';
+import { fetchMergedIpDetails } from '@/utils/merge-ip-sources.js';
+import { api } from '@/services/api-client.js';
 import { useI18n } from 'vue-i18n';
 import { trackEvent } from '@/utils/use-analytics';
-import { authenticatedFetch } from '@/utils/authenticated-fetch';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { JnTooltip } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -72,7 +72,6 @@ import { Monitor, Search } from 'lucide-vue-next';
 const { t } = useI18n();
 
 const store = useMainStore();
-const userPreferences = computed(() => store.userPreferences);
 const configs = computed(() => store.configs);
 const isDarkMode = computed(() => store.isDarkMode);
 const lang = computed(() => store.lang);
@@ -81,12 +80,7 @@ const inputIP = ref('');
 const modalQueryResult = ref(null);
 const modalQueryError = ref('');
 const isChecking = ref('idle');
-const ipGeoSource = ref(userPreferences.value.ipGeoSource);
 const asnInfos = ref({});
-
-watch(() => userPreferences.value.ipGeoSource, (newVal) => {
-    ipGeoSource.value = newVal;
-}, { deep: true });
 
 const submitQuery = async () => {
     if (isValidIP(inputIP.value)) {
@@ -119,22 +113,26 @@ const openQueryIP = () => {
 
 const openModal = () => onOpenChange(true);
 
-const fetchIPForModal = async (ip, sourceID = null) => {
-    let selectedLang = lang.value === 'zh' ? 'zh-CN' : lang.value;
-    sourceID = ipGeoSource.value;
-    const sources = store.ipDBs;
-
-    for (const source of sources) {
-        if (sourceID && source.id !== sourceID) continue;
-        try {
-            const url = store.getDbUrl(source.id, ip, selectedLang);
-            const response = await authenticatedFetch(url);
-            modalQueryResult.value = transformDataFromIPapi(response, source.id, t, lang.value);
-            isChecking.value = 'idle';
-            break;
-        } catch (error) {
-            console.error('Error fetching IP details:', error);
+const fetchIPForModal = async (ip) => {
+    try {
+        const [details, risk] = await Promise.all([
+            fetchMergedIpDetails({ store, ip, language: lang.value, t }),
+            api.proxyRisk(ip).catch(() => null),
+        ]);
+        if (risk) {
+            Object.assign(details, {
+                isProxy: risk.isProxy ? t('ipInfos.advancedData.proxyYes') : t('ipInfos.advancedData.proxyNo'),
+                qualityScore: risk.qualityScore,
+                type: details.type || risk.type,
+                proxyOperator: risk.provider,
+            });
         }
+        modalQueryResult.value = details;
+    } catch (error) {
+        console.error('Error fetching IP details:', error);
+        modalQueryError.value = t('ipcheck.Error');
+    } finally {
+        isChecking.value = 'idle';
     }
 };
 

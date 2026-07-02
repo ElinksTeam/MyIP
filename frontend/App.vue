@@ -1,26 +1,59 @@
 <template>
   <TooltipProvider :delay-duration="150">
-    <NavBar ref="navBarRef" />
-    <User ref="userRef" />
-    <Achievements ref="achievementsRef" />
-    <Preferences ref="preferencesRef" />
-    <Alert />
-    <div id="mainpart" class="mx-auto w-full px-4 jn-container">
-      <div class="rounded-md" tabindex="0">
-        <IPCheck ref="IPCheckRef" />
-        <Connectivity ref="connectivityRef" />
-        <WebRTC ref="webRTCRef" />
-        <DNSLeaks ref="dnsLeaksRef" />
-        <SpeedTest ref="speedTestRef" />
-        <AdvancedTools ref="advancedToolsRef" />
+    <div class="dashboard-shell min-h-screen bg-muted/30">
+      <DashboardSidebar />
+
+      <div class="min-w-0 flex-1">
+        <NavBar ref="navBarRef" />
+        <User ref="userRef" />
+        <Achievements ref="achievementsRef" />
+        <Preferences ref="preferencesRef" />
+        <Alert />
+
+        <main id="mainpart" class="w-full px-3 py-4 sm:px-5 lg:px-8 lg:py-6">
+          <div class="mx-auto w-full max-w-[1440px]">
+            <Card class="mb-5 overflow-hidden border-slate-800 bg-slate-950 text-slate-50 shadow-lg shadow-slate-950/10">
+              <CardContent class="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div class="pointer-events-none absolute inset-0 opacity-25 dashboard-grid-pattern" />
+                <div>
+                  <div class="relative flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-sky-400">
+                    <span class="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.8)]" />
+                    Elinks Network Operations
+                  </div>
+                  <h1 class="relative mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{{ t('page.title') }}</h1>
+                  <div class="relative mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-slate-400">
+                    <span>EDGE / GLOBAL</span>
+                    <span>IP INTELLIGENCE</span>
+                    <a href="#/status" class="text-emerald-400 hover:text-emerald-300">SYSTEM OPERATIONAL ↗</a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <!-- Existing network tools, restyled as the dashboard canvas -->
+            <div class="dashboard-sections rounded-md" tabindex="0">
+              <IPCheck ref="IPCheckRef" />
+              <ElinksAiAdvisor :get-diagnostics="getAiDiagnostics" />
+              <Connectivity ref="connectivityRef" />
+              <WebRTC ref="webRTCRef" />
+              <DNSLeaks ref="dnsLeaksRef" />
+              <SpeedTest ref="speedTestRef" />
+              <AdvancedTools ref="advancedToolsRef" />
+            </div>
+          </div>
+        </main>
+
+        <div class="mx-auto w-full max-w-[1440px] px-3 sm:px-5 lg:px-8">
+          <Additional ref="additionalRef" />
+        </div>
+        <Footer ref="footerRef" />
       </div>
     </div>
+
     <InfoMask :showMaskButton.value="showMaskButton" :infoMaskLevel.value="infoMaskLevel"
       :toggleInfoMask="toggleInfoMask" />
     <QueryIP ref="queryIPRef" />
     <HelpModal ref="helpModalRef" />
-    <Additional ref="additionalRef" />
-    <Footer ref="footerRef" />
     <PWA />
   </TooltipProvider>
 </template>
@@ -28,12 +61,11 @@
 <script setup>
 // Components
 import NavBar from './components/Nav.vue';
+import DashboardSidebar from './components/DashboardSidebar.vue';
 import IPCheck from './components/IpInfos.vue';
 import Connectivity from './components/ConnectivityTest.vue';
 import WebRTC from './components/WebRtcTest.vue';
 import DNSLeaks from './components/DnsLeaksTest.vue';
-import SpeedTest from './components/SpeedTest.vue';
-import AdvancedTools from './components/Advanced.vue';
 import Additional from './components/Additional.vue';
 import Footer from './components/Footer.vue';
 import User from './components/User.vue';
@@ -49,9 +81,10 @@ import InfoMask from './components/widgets/InfoMask.vue';
 
 // UI
 import { TooltipProvider } from './components/ui/tooltip';
+import { Card, CardContent } from './components/ui/card';
 
 // Vue + Store
-import { ref, computed, onMounted } from 'vue';
+import { defineAsyncComponent, ref, computed, onMounted } from 'vue';
 import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 
@@ -62,6 +95,9 @@ import { useShortcuts } from '@/composables/use-shortcuts.js';
 import { useSectionTracking } from '@/composables/use-section-tracking.js';
 
 const { t } = useI18n();
+const ElinksAiAdvisor = defineAsyncComponent(() => import('./components/ElinksAiAdvisor.vue'));
+const SpeedTest = defineAsyncComponent(() => import('./components/SpeedTest.vue'));
+const AdvancedTools = defineAsyncComponent(() => import('./components/Advanced.vue'));
 const store = useMainStore();
 const configs = computed(() => store.configs);
 const userPreferences = computed(() => store.userPreferences);
@@ -83,6 +119,30 @@ const IPCheckRef = ref(null);
 const connectivityRef = ref(null);
 const webRTCRef = ref(null);
 const dnsLeaksRef = ref(null);
+const getReportCards = () => IPCheckRef.value?.ipDataCards || [];
+const getAiDiagnostics = () => ({
+    generatedAt: new Date().toISOString(),
+    cards: getReportCards()
+        .filter(card => card.ip && !String(card.ip).includes('Error'))
+        .map(card => ({
+            source: card.source || '',
+            ip: card.ip,
+            country: card.country_name || '',
+            region: card.region || '',
+            city: card.city || '',
+            district: card.district || '',
+            postalCode: card.postalCode || '',
+            timezone: card.timezone || '',
+            latitude: card.latitude || '',
+            longitude: card.longitude || '',
+            isp: card.isp || '',
+            networkOrganization: card.networkOrganization || '',
+            asn: card.asn || '',
+            proxy: card.isProxy || 'unknown',
+            qualityScore: card.qualityScore ?? 'unknown',
+            networkType: card.type || '',
+        })),
+});
 
 // Hide loading mask on first screen
 const loadingElement = document.getElementById('jn-loading');

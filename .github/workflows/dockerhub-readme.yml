@@ -33,5 +33,5 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-          repository: jason5ng32/myip
+          repository: elinksteam/elinksnet
           readme-filepath: ./README.md

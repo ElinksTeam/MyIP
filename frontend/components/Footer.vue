@@ -2,7 +2,7 @@
   <footer class="mt-10 pb-6 text-sm text-muted-foreground">
     <!-- Author + Github -->
     <div class="flex items-center justify-center gap-1.5 mb-3">
-      <span>Created by Jason Ng with love</span>
+      <span>Maintained by Elinks</span>
       <JnTooltip :text="t('Tooltips.GithubLink')" side="top">
         <Button variant="ghost" size="icon" as-child class="size-6 text-foreground/70 hover:text-foreground">
           <a :href="t('page.footerLink')" target="_blank" rel="noopener" aria-label="Github"
@@ -15,8 +15,12 @@
 
     <!-- Sponsor / About entry -->
     <div class="flex items-center justify-center gap-2 mb-3">
+      <Button variant="ghost" size="default" @click="openStatus" class="cursor-pointer gap-1.5">
+        <span class="size-2 rounded-full bg-success" />
+        {{ statusLabel }}
+      </Button>
       <Button variant="link" size="default" as-child class="text-[#d63384] hover:text-[#d63384]">
-        <a href="https://github.com/sponsors/jason5ng32" target="_blank" rel="noopener">
+        <a href="https://github.com/ElinksTeam" target="_blank" rel="noopener">
           {{ t('about.Sponsor') }} 💖
         </a>
       </Button>
@@ -141,6 +145,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import { useMainStore } from '@/store';
 import { useI18n } from 'vue-i18n';
 import changelogData from '@/data/changelog.json';
@@ -156,8 +161,11 @@ import { ArrowLeftCircle, Compass, ExternalLink, Github, Smile, SquareArrowOutUp
 const { t, locale } = useI18n();
 
 const store = useMainStore();
+const router = useRouter();
 const isMobile = computed(() => store.isMobile);
 const configs = computed(() => store.configs);
+const statusLabel = computed(() => ({ zh: '服务在线状态', en: 'Service status', fr: 'État des services', tr: 'Servis durumu' }[store.lang] || 'Service status'));
+const openStatus = () => router.push('/status');
 
 const tabs = ['about', 'changelog', 'specialthanks'];
 const content = ref('about');
@@ -166,10 +174,8 @@ const changelogReversed = computed(() => changelogData.slice().reverse());
 const sheetBody = ref(null);
 
 const personalLinks = [
-  { href: 'https://wujiaxian.com', labelKey: 'about.personal' },
-  { href: 'https://kenengba.com', labelKey: 'about.blog' },
-  { href: 'https://retire.money', labelKey: 'about.retiremoney' },
-  { href: 'https://twitter.com/jason5ng32', labelKey: 'about.twitter' },
+  { href: 'https://github.com/ElinksTeam', labelKey: 'about.personal' },
+  { href: 'https://github.com/ElinksTeam/ElinksNet', labelKey: 'about.blog' },
 ];
 
 const thanksList = [

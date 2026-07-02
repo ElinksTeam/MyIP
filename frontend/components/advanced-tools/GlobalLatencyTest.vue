@@ -109,6 +109,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { Icon } from '@iconify/vue';
 import { Info,Play } from 'lucide-vue-next';
+import { createMeasurement, waitForMeasurement, GLOBALPING_LOCATIONS } from '@/services/globalping.js';
 
 // svgmap CSS：静态 side-effect import。原本在 drawMap() 里 await import('svgmap/style.min')
 // 动态引入 —— dev 下能跑，build 下 Rollup 把 CSS chunk 当 JS 模块去解 export 导致
@@ -149,66 +150,30 @@ const latencyToneClass = (ms) => {
     return 'text-warning';
 };
 
-const startPingCheck = () => {
+const startPingCheck = async () => {
     trackEvent('Section', 'StartClick', 'GlobalLatency');
     pingResults.value = [];
     cleanMap();
-    let tryCount = 0;
-
-    const sendPingRequest = async () => {
-        pingCheckStatus.value = 'running';
-        try {
-            const response = await fetch('https://api.globalping.io/v1/measurements', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    limit: 16,
-                    locations: [
-                        { country: 'HK' }, { country: 'TW' }, { country: 'CN' }, { country: 'JP' },
-                        { country: 'SG' }, { country: 'IN' }, { country: 'RU' }, { country: 'US' },
-                        { country: 'CA' }, { country: 'AU' }, { country: 'GB' }, { country: 'DE' },
-                        { country: 'FR' }, { country: 'BR' }, { country: 'ZA' }, { country: 'SA' },
-                    ],
-                    target: selectedIP.value,
-                    type: 'ping',
-                    measurementOptions: { packets: 8 },
-                }),
-            });
-
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            console.error('Error sending ping request:', error);
-        }
-    };
-
-    const fetchpingResults = async (id) => {
-        try {
-            const response = await fetch(`https://api.globalping.io/v1/measurements/${id}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-            const data = await response.json();
-            processpingResults(data);
-
-            if (data.status === 'in-progress' && tryCount < 4) {
-                setTimeout(() => fetchpingResults(id), 1000);
-                tryCount++;
-            } else {
-                if (pingResults.value.length === 0) {
-                    pingCheckStatus.value = 'error';
-                } else {
-                    pingCheckStatus.value = 'finished';
-                    drawMap();
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching ping results:', error);
-        }
-    };
-
-    sendPingRequest().then(data => {
-        if (data && data.id) setTimeout(() => fetchpingResults(data.id), 1000);
-    });
+    pingCheckStatus.value = 'running';
+    try {
+        const measurement = await createMeasurement({
+            limit: 16,
+            locations: GLOBALPING_LOCATIONS,
+            target: selectedIP.value,
+            type: 'ping',
+            measurementOptions: { packets: 8 },
+        });
+        await waitForMeasurement(measurement.id, {
+            interval: 1000,
+            maxAttempts: 5,
+            onUpdate: processpingResults,
+        });
+        pingCheckStatus.value = pingResults.value.length === 0 ? 'error' : 'finished';
+        if (pingResults.value.length) drawMap();
+    } catch (error) {
+        console.error('Global latency test failed:', error);
+        pingCheckStatus.value = 'error';
+    }
 };
 
 const processpingResults = (data) => {

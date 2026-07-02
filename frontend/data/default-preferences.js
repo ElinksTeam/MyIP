@@ -10,8 +10,7 @@ export const DEFAULT_PREFERENCES = Object.freeze({
   autoStart: true,
   hideUnavailableIPStack: false,
   popupConnectivityNotifications: true,
-  ipCardsToShow: 4,
-  ipGeoSource: 0,
+  ipCardsToShow: 2,
   lang: 'auto', // auto | zh | en | fr | tr
 });
 

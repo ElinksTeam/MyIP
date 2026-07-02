@@ -27,9 +27,9 @@
     "Benefits": {
       "Title": "Avantages Utilisateurs",
       "Benefit": "Avantage",
-      "Note1": "En tant que produit open-source, l'utilisation de IPCheck.ing est gratuite.",
+      "Note1": "En tant que produit open-source, l'utilisation de ElinksNet est gratuite.",
       "Note2": "Cependant, afin de prévenir les abus, nous limitons certaines fonctionnalités. En vous connectant, vous obtiendrez les avantages suivants :",
-      "Benefit1": "Lorsque vous utilisez IPCheck.ing comme source de données IP, tous les champs sont affichés intégralement.",
+      "Benefit1": "Lorsque vous utilisez ElinksNet comme source de données IP, tous les champs sont affichés intégralement.",
       "Benefit2": "Peut utiliser le test d'invisibilité.",
       "Benefit3": "Peut voir les badges de réussite qu'il a obtenus",
       "Benefit4": "Réduit les restrictions d'accès à certaines fonctionnalités.",
@@ -37,7 +37,7 @@
     },
     "Achievements": {
       "Title": "Succès",
-      "Note": "En utilisant IPCheck.ing, vous pouvez déclencher certains succès. Ici, vous pouvez voir tous vos succès.",
+      "Note": "En utilisant ElinksNet, vous pouvez déclencher certains succès. Ici, vous pouvez voir tous vos succès.",
       "Get": "obtenus",
       "GetCount": "Succès obtenus:",
       "NotGet": "non obtenus",
@@ -49,7 +49,7 @@
       "Type": {
         "IAmHuman": {
           "Title": "Je suis humain",
-          "Meet": "Utiliser IPCheck.ing après s'être connecté"
+          "Meet": "Utiliser ElinksNet après s'être connecté"
         },
         "BarelyEnough": {
           "Title": "Tout juste suffisant",
@@ -117,7 +117,7 @@
         },
         "GenerousDonor": {
           "Title": "Généreux donateur",
-          "Meet": "Avoir fait un don au projet IPCheck.ing"
+          "Meet": "Avoir fait un don au projet ElinksNet"
         },
         "ItIsOpen": {
           "Title": "C'est ouvert",
@@ -125,7 +125,7 @@
         },
         "CuriousCat": {
           "Title": "Chat curieux",
-          "Meet": "Rechercher les informations de IPCheck.ing dans la recherche Whois"
+          "Meet": "Rechercher les informations de ElinksNet dans la recherche Whois"
         },
         "CrossingTheWall": {
           "Title": "Huit personnes traversent la muraille",
@@ -136,7 +136,7 @@
   },
   "nav": {
     "id": "nav",
-    "Title": "IPCheck.ing",
+    "Title": "ElinksNet",
     "Navigation": "Navigation",
     "IPInfo": "Infos IP",
     "Connectivity": "Connectivité",
@@ -166,7 +166,7 @@
       "popupConnectivityNotifications": "Alertes de Connectivité Pop-up",
       "popupConnectivityNotificationsTips": "Activé, les résultats de la première vérification sont affichés sous forme d'alerte pop-up.",
       "ipDB": "Base de données de géolocalisation IP",
-      "ipDBTips": "Vous pouvez sélectionner la source de données de géolocalisation IP par défaut. Si la source sélectionnée n'est pas disponible, le système utilisera les sources suivantes.",
+      "ipDBTips": "Le système interroge automatiquement en parallèle toutes les sources IP activées et disponibles, puis fusionne leurs données complémentaires.",
       "language": "Paramètres de langue",
       "languageTips": "Rafraîchissement du navigateur pour prendre effet."
     }
@@ -198,13 +198,21 @@
     "ShowChecked": "Afficher les éléments cochés",
     "Loading": "Chargement..."
   },
+  "additional": {
+    "OpenSource": "Open Source",
+    "OpenSourceNote": "Voir le code sur GitHub",
+    "Docker": "Prêt pour Docker",
+    "DockerNote": "Déployer ElinksNet rapidement",
+    "Curl": "Ligne de commande",
+    "CurlNote": "Interroger votre IP avec curl"
+  },
   "curl": {
     "Title": "API de ligne de commande",
     "Note1": "Eh bien, il s'avère que toi aussi tu aimes utiliser le terminal ?",
     "Note2_1": "Tu peux, dans le terminal, via",
     "Note2_2": "commande, obtenir l'adresse IP de cette machine",
     "Note3": "est un chemin optionnel, son ajout permettra d'obtenir les informations géographiques de l'IP",
-    "Note4": "est votre clé API IPCheck.ing",
+    "Note4": "est votre clé API ElinksNet",
     "getIPv4": "Obtenir l'adresse IPv4 de la machine locale",
     "getIPv6": "Obtenir l'adresse IPv6 de la machine locale",
     "get6and4": "Obtenir l'adresse IP de sortie de réseau préférée de la machine locale",
@@ -433,7 +441,7 @@
   "ruletest": {
     "Title": "Test de règles",
     "Name": "Test",
-    "Note": "Le test de règles est utilisé pour déterminer si les paramètres de règles basées sur le nom de domaine de votre logiciel proxy sont corrects. Avant de procéder au test, veuillez vous référer à la carte ci-dessous et configurer des règles de redirection de domaine différentes pour les 8 URL différentes d'IPCheck.ing dans votre logiciel proxy. Généralement, les paramètres de règles peuvent utiliser un format comme : DOMAIN, ptest-3.ipcheck.ing, POLICY. Le format spécifique peut varier en fonction du logiciel proxy que vous utilisez.",
+    "Note": "Le test de règles est utilisé pour déterminer si les paramètres de règles basées sur le nom de domaine de votre logiciel proxy sont corrects. Avant de procéder au test, veuillez vous référer à la carte ci-dessous et configurer des règles de redirection de domaine différentes pour les 8 URL différentes d'ElinksNet dans votre logiciel proxy. Généralement, les paramètres de règles peuvent utiliser un format comme : DOMAIN, ptest-3.ipcheck.ing, POLICY. Le format spécifique peut varier en fonction du logiciel proxy que vous utilisez.",
     "StatusWait": "En attente du test ou erreur de connexion",
     "StatusError": "Erreur de test",
     "Country": "Région de proxy",
@@ -459,7 +467,7 @@
     "id": "ipinfos",
     "database": "Données",
     "Title": "Infos IP",
-    "Notes": "Le programme vérifie d'abord votre adresse IP à partir des sources différentes (y compris IPv4 et IPv6), puis interroge les données géographiques correspondantes à partir de la source d'informations de localisation IP que vous avez sélectionnée. Si vous n'avez qu'une seule pile IP active, les sources de données non disponibles seront affichées comme vides.",
+    "Notes": "Le système détecte IPv4 et IPv6, interroge en parallèle toutes les sources disponibles et fusionne la localisation, le réseau, l’ASN, l’état du proxy et la qualité de l’IP. Une source indisponible n’affecte pas les autres.",
     "Simple": "Simple",
     "Map": "Carte",
     "MapUnavailable": "Carte non disponible",
@@ -578,7 +586,7 @@
     "id": "pingtest",
     "Title": "Test de latence mondiale",
     "Note": "Le test de ping est un outil réseau utilisé pour mesurer le temps aller-retour des paquets de données de votre appareil vers des cibles spécifiques (dans ce cas, nos serveurs situés sur différents continents et régions). Il s'agit d'une mesure clé pour évaluer les performances du réseau.",
-    "Note2": "Dans ce processus, IPCheck.ing envoie de petits paquets de données depuis des serveurs du monde entier vers votre adresse IP et mesure le temps qu'il faut à ces paquets pour voyager du serveur à votre appareil et vice versa. Grâce à ces tests de ping depuis différentes localisations géographiques, vous pouvez obtenir une vue complète de la vitesse et de la stabilité de la connexion de votre appareil au réseau mondial.",
+    "Note2": "Dans ce processus, ElinksNet envoie de petits paquets de données depuis des serveurs du monde entier vers votre adresse IP et mesure le temps qu'il faut à ces paquets pour voyager du serveur à votre appareil et vice versa. Grâce à ces tests de ping depuis différentes localisations géographiques, vous pouvez obtenir une vue complète de la vitesse et de la stabilité de la connexion de votre appareil au réseau mondial.",
     "Note3": "Veuillez sélectionner votre adresse IP pour le test.",
     "SelectIP": "Choisissez un IP",
     "Region": "Région",
@@ -659,30 +667,30 @@
     "SecurityChecklist": "Ouvrir la Liste de sécurité"
   },
   "page": {
-    "title": "IPCheck.ing - Vérifier mon adresse IP et géolocalisation - Vérifier l'adresse IP de connexion WebRTC - Test de fuite DNS - Test de vitesse - Jason Ng Open Source",
+    "title": "ElinksNet - Boîte à outils IP et réseau open source par Elinks",
     "description": "Une boîte à outils IP meilleure et open source. Facile à vérifier vos adresses IP, informations IP, vérifier les fuites DNS, examiner les connexions WebRTC, tester la disponibilité des sites web, rechercher des enregistrements DNS, rechercher des informations Whois et tester la latence dans le monde entier.",
     "keywords": "MonIP, Outil IP, Mon IP, Vérification IP, Recherche IP, Test de fuite DNS, Test WebRTC, Test de vitesse, Recherche DNS, Recherche Whois, Test de ping, Test de confidentialité",
-    "footerLink": "https://github.com/jason5ng32/MyIP",
-    "copyRightName": "Originalement de ",
-    "copyRightLink": "https://ipcheck.ing",
-    "copyRightLinkName": "IPCheck.ing"
+    "footerLink": "https://github.com/ElinksTeam/ElinksNet",
+    "copyRightName": "Copyright © 2026 ",
+    "copyRightLink": "https://github.com/ElinksTeam",
+    "copyRightLinkName": "Elinks"
   },
   "helpModal": {
     "Title": "Raccourcis"
   },
   "about": {
     "Title": "À propos",
-    "product1": "IPCheck.ing est une boîte à outils IP gratuite qui vous aide à vérifier vos informations IP, tester la disponibilité des sites web, examiner les informations de sortie DNS, effectuer des tests de vitesse, des tests de latence mondiale, des tests MTR, et plus encore.",
+    "product1": "ElinksNet est une boîte à outils IP gratuite qui vous aide à vérifier vos informations IP, tester la disponibilité des sites web, examiner les informations de sortie DNS, effectuer des tests de vitesse, des tests de latence mondiale, des tests MTR, et plus encore.",
     "product2": "Il s'agit d'un projet open-source, et vous pouvez consulter le code source en cliquant sur l'icône GitHub en bas de la page.",
     "product3": "Au départ, il s'agissait d'un projet personnel pour moi afin d'apprendre Vue.js et comment écrire du code en utilisant AI. Au fil du temps, il a gagné en popularité sur GitHub, j'ai donc effectué beaucoup de refactoring et ajouté de nombreuses fonctionnalités utiles. J'espère que vous l'apprécierez.",
     "meTitle": "À propos de moi",
-    "me1": "Je m'appelle Jason Ng, également connu sous le nom d'Achán en ligne. Je ne suis pas un programmeur professionnel, mais j'adore coder, l'open-source et le partage.",
-    "me2": "La plupart du temps, je travaille en tant que chef de produit, blogueur, motard et geek.",
-    "me3": "Vous pouvez trouver une présentation plus détaillée à mon sujet dans le lien suivant :",
+    "me1": "Elinks maintient ElinksNet comme une boîte à outils IP et réseau open source.",
+    "me2": "Nous nous concentrons sur le diagnostic réseau, les contrôles de confidentialité et l'auto-hébergement.",
+    "me3": "Le code source et les mises à jour sont disponibles via les liens ci-dessous :",
     "contactTitle": "Contactez-moi",
-    "contact": "Si vous avez des questions ou des suggestions, veuillez me contacter par email : jason[AT]kenengba.com.",
-    "personal": "Site personnel",
-    "blog": "Mon blog",
+    "contact": "Pour toute question ou suggestion, ouvrez une issue dans le dépôt ElinksTeam/ElinksNet.",
+    "personal": "ElinksTeam",
+    "blog": "Dépôt du projet",
     "retiremoney": "Planificateur futur",
     "twitter": "Twitter",
     "Sponsor": "Sponsor"
