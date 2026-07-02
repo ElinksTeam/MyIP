@@ -1,7 +1,8 @@
 "use client";
 
 import { Button, Chip } from "@heroui/react";
-import { Bot, CheckCircle2, Copy, Globe2, LocateFixed, RefreshCw, Search, ShieldAlert, ShieldCheck, X } from "lucide-react";
+import { CheckCircle2, Copy, DatabaseZap, Globe2, LocateFixed, RefreshCw, Search, Send, ShieldAlert, ShieldCheck, Trash2, X } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,7 @@ type IpData = {
   proxy: boolean; hosting: boolean; vpn: boolean; tor: boolean; confidence: number;
 };
 type Lookup = { data: IpData; sources: Array<Record<string, unknown>>; meta: { providers: number } };
+type AiMessage = { role: "user" | "assistant"; content: string };
 
 export function IpDashboard() {
   const { locale, t } = useLocale();
@@ -26,8 +28,8 @@ export function IpDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [aiOpen, setAiOpen] = useState(false);
-  const [question, setQuestion] = useState("请分析这个 IP 的代理风险、网络质量与安全注意事项");
-  const [answer, setAnswer] = useState("");
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState<AiMessage[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [deviceIps, setDeviceIps] = useState<{ ipv4: string | null; ipv6: string | null; checking: boolean }>({ ipv4: null, ipv6: null, checking: true });
   const portalReady = useSyncExternalStore(() => () => undefined, () => true, () => false);
@@ -65,15 +67,24 @@ export function IpDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function askAi() {
+  async function askAi(prompt = question.trim() || t("dashboard.aiDefaultPrompt")) {
     if (!result) return;
-    setAiLoading(true); setAnswer("");
+    const priorMessages = messages;
+    setAiLoading(true);
+    setMessages((current) => [...current, { role: "user", content: prompt }]);
+    setQuestion("");
     try {
-      const response = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, diagnostics: result, language: locale }) });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error);
-      setAnswer(payload.answer);
-    } catch (cause) { setAnswer(cause instanceof Error ? cause.message : "AI 分析失败"); }
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: prompt, diagnostics: result, language: locale, messages: priorMessages }),
+      });
+      const payload = await response.json().catch(() => ({})) as { answer?: string; error?: unknown };
+      if (!response.ok || !payload.answer) throw new Error(typeof payload.error === "string" ? payload.error : t("dashboard.aiError"));
+      setMessages((current) => [...current, { role: "assistant", content: payload.answer! }]);
+    } catch {
+      setMessages((current) => [...current, { role: "assistant", content: t("dashboard.aiError") }]);
+    }
     finally { setAiLoading(false); }
   }
 
@@ -148,13 +159,22 @@ export function IpDashboard() {
       </div>
       <NetworkDiagnostics report={result} />
 
-      {portalReady && createPortal(<><div className="fixed bottom-5 right-4 z-[60] sm:bottom-6 sm:right-6">
-        <button className="ai-fab group relative grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105" title={t("dashboard.aiHint")} aria-label={t("dashboard.aiHint")} onClick={() => setAiOpen(true)}><Bot className="size-5" /><span className="absolute right-0 top-0 size-3 rounded-full bg-emerald-400 ring-2 ring-background" /><span className="pointer-events-none absolute bottom-full right-0 mb-2 hidden whitespace-nowrap rounded-lg bg-card px-3 py-2 text-xs font-medium text-foreground shadow-xl ring-1 ring-border group-hover:block">{t("dashboard.aiHint")}</span></button>
-      </div>
-      {aiOpen && <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/45 p-3 backdrop-blur-sm sm:p-6" onClick={() => setAiOpen(false)}>
-        <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-          <CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Bot className="size-5 text-primary" />{t("dashboard.aiTitle")}</CardTitle><CardDescription>{t("dashboard.aiDesc")}</CardDescription></div><button aria-label="Close" onClick={() => setAiOpen(false)}><X className="size-5" /></button></CardHeader>
-          <CardContent className="space-y-4"><textarea className="min-h-24 w-full resize-none rounded-xl bg-muted/60 p-3 text-sm outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-primary/60" value={question} onChange={(e) => setQuestion(e.target.value)} />{answer && <div className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-xl bg-muted/50 p-4 text-sm leading-6">{answer}</div>}<Button className="w-full" variant="primary" onPress={() => void askAi()} isDisabled={aiLoading || !result}>{aiLoading ? t("dashboard.aiRunning") : t("dashboard.aiAction")}</Button></CardContent>
+      {portalReady && createPortal(<>{!aiOpen && <div className="fixed bottom-5 right-4 z-[60] sm:bottom-6 sm:right-6">
+        <button className="ai-fab group relative grid size-14 place-items-center overflow-visible rounded-2xl bg-[#071522] shadow-2xl ring-1 ring-cyan-400/30 transition-transform hover:scale-105" title={t("dashboard.aiHint")} aria-label={t("dashboard.aiHint")} onClick={() => setAiOpen(true)}><Image src="/logos/elinks-symbol.png" width={34} height={34} alt="" className="size-8 object-contain" /><span className="absolute -right-1 -top-1 rounded-md bg-cyan-400 px-1.5 py-0.5 font-mono text-[9px] font-bold text-slate-950">AI</span><span className="pointer-events-none absolute bottom-full right-0 mb-2 hidden whitespace-nowrap rounded-lg bg-card px-3 py-2 text-xs font-medium text-foreground shadow-xl ring-1 ring-border group-hover:block">{t("dashboard.aiHint")}</span></button>
+      </div>}
+      {aiOpen && <div className="fixed inset-0 z-[70] flex items-end justify-end bg-black/45 p-3 backdrop-blur-sm sm:p-6" onClick={() => setAiOpen(false)}>
+        <Card className="w-full max-w-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <CardHeader className="flex-row items-start justify-between border-b border-white/[.06]"><div className="flex min-w-0 gap-3"><div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#071522] ring-1 ring-cyan-400/25"><Image src="/logos/elinks-symbol.png" width={30} height={30} alt="" /></div><div><CardTitle>{t("dashboard.aiTitle")}</CardTitle><CardDescription className="mt-1">{t("dashboard.aiDesc")}</CardDescription></div></div><div className="flex gap-1"><button className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" title={t("dashboard.aiClear")} onClick={() => setMessages([])}><Trash2 className="size-4" /></button><button className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close" onClick={() => setAiOpen(false)}><X className="size-5" /></button></div></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-2 rounded-xl bg-emerald-500/8 px-3 py-2 text-xs text-emerald-400"><DatabaseZap className="size-4" />{t("dashboard.aiDataReady")}</div>
+            <div className="max-h-[42vh] min-h-36 space-y-3 overflow-y-auto pr-1">
+              {!messages.length && <div className="rounded-2xl bg-muted/45 p-4 text-sm leading-6 text-muted-foreground">{t("dashboard.aiWelcome")}</div>}
+              {messages.map((message, index) => <div key={`${message.role}-${index}`} className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === "user" ? "ml-8 bg-primary text-primary-foreground" : "mr-4 bg-muted/55"}`}>{message.content}</div>)}
+              {aiLoading && <div className="mr-4 rounded-2xl bg-muted/55 px-4 py-3 text-sm text-muted-foreground">{t("dashboard.aiRunning")}</div>}
+            </div>
+            <div className="flex flex-wrap gap-2">{["dashboard.aiQuickRisk", "dashboard.aiQuickQuality", "dashboard.aiQuickFix"].map((key) => <button key={key} className="rounded-full bg-muted/55 px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground" onClick={() => void askAi(t(key))} disabled={aiLoading || !result}>{t(key)}</button>)}</div>
+            <div className="flex items-end gap-2"><textarea className="min-h-20 flex-1 resize-none rounded-xl bg-muted/60 p-3 text-sm outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-primary/60" value={question} placeholder={t("dashboard.aiPlaceholder")} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void askAi(); } }} /><Button isIconOnly variant="primary" aria-label={t("dashboard.aiAction")} onPress={() => void askAi()} isDisabled={aiLoading || !result}><Send className="size-4" /></Button></div>
+          </CardContent>
         </Card>
       </div>}</>, document.body)}
     </>

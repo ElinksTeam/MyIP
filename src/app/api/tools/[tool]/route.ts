@@ -10,6 +10,21 @@ const RECORD_TYPES = new Set(["A", "AAAA", "CNAME", "MX", "NS", "TXT"]);
 const RULE_HOST = /^ptest-[1-8]\.ipcheck\.ing$/;
 const GLOBALPING = "https://api.globalping.io/v1/measurements";
 
+function readableError(value: unknown, fallback: string): string {
+  if (typeof value === "string" && value.trim()) return value;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    for (const key of ["message", "detail", "description", "error"]) {
+      if (typeof record[key] === "string" && record[key]) return record[key];
+    }
+    const issues = Array.isArray(record.issues) ? record.issues : Array.isArray(record.errors) ? record.errors : [];
+    if (issues.length) {
+      return issues.map((issue) => readableError(issue, "")).filter(Boolean).join("；") || fallback;
+    }
+  }
+  return fallback;
+}
+
 function limited(request: NextRequest, key: string, limit = 20) {
   const client = request.headers.get("x-forwarded-for")?.split(",")[0] || "local";
   return rateLimit(`${key}:${client}`, limit, 60_000).allowed;
@@ -23,7 +38,10 @@ async function jsonFetch(url: string, init: RequestInit = {}) {
     headers: { Accept: "application/json", "User-Agent": "ElinksNet/7.1", ...init.headers },
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error((data as { message?: string; error?: string }).message || (data as { error?: string }).error || `上游服务返回 ${response.status}`);
+  if (!response.ok) {
+    const record = data as Record<string, unknown>;
+    throw new Error(readableError(record.error ?? record.message ?? data, `上游服务返回 ${response.status}`));
+  }
   return data;
 }
 
@@ -137,7 +155,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ too
         ipinfo: Boolean(process.env.IPINFO_API_TOKEN),
         ip2location: Boolean(process.env.IP2LOCATION_API_KEY),
         mac: true,
-        invisibility: true,
+        invisibility: Boolean(process.env.ELINKSNET_API_ENDPOINT || process.env.IPCHECKING_API_ENDPOINT),
       } });
     }
     return NextResponse.json({ error: "未知工具" }, { status: 404 });
@@ -159,8 +177,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ to
     const countries = (body.locations || []).slice(0, 20).filter((item) => /^[A-Z]{2}$/.test(item.country));
     if (!countries.length) throw new Error("测量地区无效");
     const payload = {
-      limit: Math.min(20, countries.reduce((sum, item) => sum + (item.limit || 1), 0)),
-      locations: countries,
+      limit: countries.length,
+      locations: countries.map(({ country }) => ({ country })),
       target: body.target,
       type: body.type,
       measurementOptions: body.measurementOptions || {},

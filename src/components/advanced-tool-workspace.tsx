@@ -11,13 +11,26 @@ import { useLocale } from "@/components/locale-provider";
 
 type Json = Record<string, unknown>;
 const LOCATIONS = ["HK", "TW", "CN", "JP", "SG", "IN", "RU", "US", "CA", "AU", "GB", "DE", "BR", "ZA", "KR", "FR"].map((country) => ({ country }));
-const CENSORSHIP_LOCATIONS = ["CN", "RU", "TR", "SA", "JP", "US", "CA", "IT", "FI", "AU", "FR", "DE"].map((country) => ({ country, limit: ["CN", "RU", "TR", "SA"].includes(country) ? 2 : 1 }));
+const CENSORSHIP_LOCATIONS = ["CN", "RU", "TR", "SA", "JP", "US", "CA", "IT", "FI", "AU", "FR", "DE"].map((country) => ({ country }));
 
 async function api<T = unknown>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error || `请求失败：${response.status}`);
+  const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) throw new Error(readableError(payload.error ?? payload, `Request failed (${response.status})`));
   return payload.data as T;
+}
+
+function readableError(value: unknown, fallback: string): string {
+  if (typeof value === "string" && value.trim()) return value;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    for (const key of ["message", "detail", "description", "error"]) {
+      if (typeof record[key] === "string" && record[key]) return record[key];
+    }
+    const issues = Array.isArray(record.issues) ? record.issues : Array.isArray(record.errors) ? record.errors : [];
+    if (issues.length) return issues.map((issue) => readableError(issue, "")).filter(Boolean).join("; ") || fallback;
+  }
+  return fallback;
 }
 
 export function AdvancedToolWorkspace({ slug, name }: { slug: string; name: string }) {
@@ -48,6 +61,44 @@ function Message({ error }: { error: string }) {
 }
 
 function GlobalMeasurement({ mode }: { mode: "ping" | "mtr" | "censorship" }) {
+  const { locale } = useLocale();
+  const copy = {
+    en: {
+      domain: "Enter a domain to test", target: "Enter an IP address or domain",
+      ping: "Measure latency and packet loss from 16 regions worldwide.",
+      mtr: "Trace route quality and packet loss from global probes.",
+      censorship: "Compare HTTPS reachability across higher-risk and control regions.",
+      status: "Measurement status", avg: "Average", min: "Minimum", loss: "Packet loss",
+      noRoute: "No route output", reachable: "Reachable from this region", unreachable: "Failed or still being tested",
+      empty: "The measurement finished without a valid probe result.", failed: "Global measurement failed",
+    },
+    zh: {
+      domain: "输入需要检测的域名", target: "输入 IP 或域名",
+      ping: "从全球 16 个地区测量延迟与丢包。", mtr: "从全球探针分析路由路径和链路质量。",
+      censorship: "从高风险与对照地区检查网站 HTTPS 可达性。",
+      status: "测量状态", avg: "平均", min: "最低", loss: "丢包",
+      noRoute: "暂无路由输出", reachable: "目标在该地区可访问", unreachable: "该地区访问失败或仍在检测",
+      empty: "测量完成，但没有探针返回有效结果。", failed: "全球测量失败",
+    },
+    ja: {
+      domain: "診断するドメインを入力", target: "IP またはドメインを入力",
+      ping: "世界 16 地域から遅延とパケット損失を測定します。",
+      mtr: "世界各地のプローブから経路品質とパケット損失を確認します。",
+      censorship: "制限の多い地域と対照地域で HTTPS 到達性を比較します。",
+      status: "測定状態", avg: "平均", min: "最小", loss: "損失率",
+      noRoute: "経路結果がありません", reachable: "この地域から到達可能", unreachable: "到達失敗、または測定中",
+      empty: "測定は完了しましたが、有効な結果がありません。", failed: "グローバル測定に失敗しました",
+    },
+    th: {
+      domain: "กรอกโดเมนที่ต้องการตรวจสอบ", target: "กรอก IP หรือโดเมน",
+      ping: "วัดเวลาแฝงและการสูญเสียแพ็กเก็ตจาก 16 ภูมิภาคทั่วโลก",
+      mtr: "ตรวจสอบคุณภาพเส้นทางและการสูญเสียแพ็กเก็ตจากจุดตรวจทั่วโลก",
+      censorship: "เปรียบเทียบการเข้าถึง HTTPS ระหว่างพื้นที่ควบคุมเข้มงวดและพื้นที่อ้างอิง",
+      status: "สถานะการวัด", avg: "เฉลี่ย", min: "ต่ำสุด", loss: "แพ็กเก็ตสูญหาย",
+      noRoute: "ไม่มีผลเส้นทาง", reachable: "เข้าถึงได้จากภูมิภาคนี้", unreachable: "เข้าถึงไม่สำเร็จหรือยังกำลังตรวจสอบ",
+      empty: "การวัดเสร็จแล้ว แต่ไม่มีผลที่ใช้ได้จากจุดตรวจ", failed: "การวัดทั่วโลกล้มเหลว",
+    },
+  }[locale];
   const [target, setTarget] = useState(mode === "censorship" ? "example.com" : "8.8.8.8");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -70,28 +121,28 @@ function GlobalMeasurement({ mode }: { mode: "ping" | "mtr" | "censorship" }) {
         setMeasurement(latest);
         if (latest.status !== "in-progress") break;
       }
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "全球测量失败"); }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : copy.failed); }
     finally { setLoading(false); }
   };
   const results = Array.isArray(measurement?.results) ? measurement.results as Json[] : [];
   return <>
-    <ToolForm value={target} onChange={setTarget} onRun={run} loading={loading} placeholder={mode === "censorship" ? "输入需要检测的域名" : "输入 IP 或域名"}>
-      <p className="text-sm text-muted-foreground">{mode === "ping" ? "从全球 16 个地区测量延迟与丢包。" : mode === "mtr" ? "从全球探针分析路由路径和链路质量。" : "从高风险与对照地区检查网站 HTTPS 可达性。"}</p>
+    <ToolForm value={target} onChange={setTarget} onRun={run} loading={loading} placeholder={mode === "censorship" ? copy.domain : copy.target}>
+      <p className="text-sm text-muted-foreground">{copy[mode]}</p>
     </ToolForm>
     <Message error={error} />
-    {measurement && <div className="mb-4 flex items-center justify-between"><span className="text-sm text-muted-foreground">测量状态</span><Chip variant="soft" color={measurement.status === "finished" ? "success" : "warning"}>{String(measurement.status)}</Chip></div>}
+    {measurement && <div className="mb-4 flex items-center justify-between"><span className="text-sm text-muted-foreground">{copy.status}</span><Chip variant="soft" color={measurement.status === "finished" ? "success" : "warning"}>{String(measurement.status)}</Chip></div>}
     <div className="grid gap-4 md:grid-cols-2">
       {results.map((entry, index) => {
         const probe = entry.probe as Json || {}; const result = entry.result as Json || {}; const stats = result.stats as Json || {};
         return <Card key={`${String(probe.country)}-${index}`}><CardContent>
           <div className="mb-4 flex items-center justify-between"><div><p className="font-medium">{String(probe.city || probe.country || "Global probe")}</p><p className="text-xs text-muted-foreground">{String(probe.network || "")} {probe.asn ? `· AS${String(probe.asn)}` : ""}</p></div><Chip size="sm" variant="soft" color={result.status === "finished" ? "success" : result.status === "failed" ? "danger" : "warning"}>{String(result.status)}</Chip></div>
-          {mode === "ping" && <div className="grid grid-cols-3 gap-3 text-center"><Metric label="平均" value={`${String(stats.avg ?? "—")} ms`} /><Metric label="最低" value={`${String(stats.min ?? "—")} ms`} /><Metric label="丢包" value={`${String(stats.loss ?? "—")}%`} /></div>}
-          {mode === "mtr" && <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-3 font-mono text-xs leading-5">{String(result.rawOutput || "暂无路由输出")}</pre>}
-          {mode === "censorship" && <p className="text-sm text-muted-foreground">{result.status === "finished" ? "目标在该地区可访问" : "该地区访问失败或仍在检测"}</p>}
+          {mode === "ping" && <div className="grid grid-cols-3 gap-3 text-center"><Metric label={copy.avg} value={`${String(stats.avg ?? "—")} ms`} /><Metric label={copy.min} value={`${String(stats.min ?? "—")} ms`} /><Metric label={copy.loss} value={`${String(stats.loss ?? "—")}%`} /></div>}
+          {mode === "mtr" && <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-3 font-mono text-xs leading-5">{String(result.rawOutput || copy.noRoute)}</pre>}
+          {mode === "censorship" && <p className="text-sm text-muted-foreground">{result.status === "finished" ? copy.reachable : copy.unreachable}</p>}
         </CardContent></Card>;
       })}
     </div>
-    {!loading && measurement && !results.length && <Empty text="测量完成，但没有探针返回有效结果。" />}
+    {!loading && measurement && !results.length && <Empty text={copy.empty} />}
   </>;
 }
 
@@ -235,7 +286,7 @@ export function ServiceStatusPanel() {
   const [status, setStatus] = useState<Json | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   useEffect(() => { const started = performance.now(); api<Json>("/api/tools/status").then((data) => { setLatency(Math.round(performance.now() - started)); setStatus(data); }).catch(() => setStatus({ core: false })); }, []);
-  const labels: Record<string, string> = { core: "Elinks Core API", ipwhois: "IPWho.is", ipapi: "ipapi.co", freeipapi: "FreeIPAPI", countryis: "Country.is", ipapicom: "IP-API.com", ai: "Groq AI", ipapiis: "IPAPI.is", ipinfo: "IPinfo", ip2location: "IP2Location", mac: "MAC Lookup", invisibility: "隐私暴露检测" };
+  const labels: Record<string, string> = { core: "Elinks Core API", ipwhois: "IPWho.is", ipapi: "ipapi.co", freeipapi: "FreeIPAPI", countryis: "Country.is", ipapicom: "IP-API.com", ai: "ElinksAI", ipapiis: "IPAPI.is", ipinfo: "IPinfo", ip2location: "IP2Location", mac: "MAC Lookup", invisibility: "Privacy Exposure" };
   const publicSources = new Set(["ipwhois", "ipapi", "freeipapi", "countryis", "ipapicom"]);
   return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Object.entries(labels).map(([key, label]) => <Card key={key}><CardContent className="flex items-center justify-between"><div><p className="text-sm font-medium">{label}</p><p className="mt-1 text-xs text-muted-foreground">{key === "core" && latency !== null ? `${latency} ms` : publicSources.has(key) ? "Live probe" : "API"}</p></div>{status ? <Chip size="sm" variant="soft" color={status[key] ? "success" : "warning"}>{status[key] ? t("common.online") : publicSources.has(key) ? t("common.unavailable") : t("common.notConfigured")}</Chip> : <LoaderCircle className="size-4 animate-spin text-muted-foreground" />}</CardContent></Card>)}</div>;
 }
