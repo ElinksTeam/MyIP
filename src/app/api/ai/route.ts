@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
+type AiMode = "fast" | "balanced" | "deep";
 
 const languageNames: Record<string, string> = {
   en: "English",
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
     diagnostics?: unknown;
     language?: string;
     messages?: ChatMessage[];
+    mode?: AiMode;
   };
   const language = languageNames[body.language || "en"] || languageNames.en;
   const history = Array.isArray(body.messages)
@@ -36,14 +38,20 @@ export async function POST(request: NextRequest) {
   if (!question) return NextResponse.json({ error: "Please enter a question." }, { status: 400 });
 
   const diagnostics = JSON.stringify(body.diagnostics || {}).slice(0, 24_000);
+  const mode: AiMode = ["fast", "balanced", "deep"].includes(body.mode || "") ? body.mode! : "balanced";
+  const models: Record<AiMode, string> = {
+    fast: process.env.ELINKS_AI_FAST_MODEL || "openai/gpt-oss-20b",
+    balanced: process.env.ELINKS_AI_MODEL || "llama-3.3-70b-versatile",
+    deep: process.env.ELINKS_AI_DEEP_MODEL || "openai/gpt-oss-120b",
+  };
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: process.env.ELINKS_AI_MODEL || "llama-3.3-70b-versatile",
+        model: models[mode],
         temperature: 0.2,
-        max_completion_tokens: 1_200,
+        max_completion_tokens: mode === "deep" ? 1_800 : mode === "fast" ? 800 : 1_200,
         messages: [
           {
             role: "system",

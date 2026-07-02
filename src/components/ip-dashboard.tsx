@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NetworkDiagnostics } from "@/components/network-diagnostics";
 import { useLocale } from "@/components/locale-provider";
 import { LocationGlobe } from "@/components/location-globe";
+import { SourceTransparency } from "@/components/source-transparency";
 
 type IpData = {
   ip: string; city: string | null; region: string | null; district: string | null; country: string | null;
@@ -18,7 +19,15 @@ type IpData = {
   longitude: number | null; asn: string | null; organization: string | null; isp: string | null;
   proxy: boolean; hosting: boolean; vpn: boolean; tor: boolean; confidence: number;
 };
-type Lookup = { data: IpData; sources: Array<Record<string, unknown>>; meta: { providers: number } };
+type SourceInfo = Record<string, unknown> & {
+  source?: string; category?: string; fields?: string[]; city?: string | null; region?: string | null;
+  country?: string | null; asn?: string | null; organization?: string | null; proxy?: boolean; hosting?: boolean;
+};
+type Lookup = {
+  data: IpData;
+  sources: SourceInfo[];
+  meta: { providers: number; attempted?: number; failed?: number; agreement?: number; categories?: Record<string, number> };
+};
 type AiMessage = { role: "user" | "assistant"; content: string };
 
 export function IpDashboard() {
@@ -30,7 +39,9 @@ export function IpDashboard() {
   const [aiOpen, setAiOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<AiMessage[]>([]);
+  const [aiMode, setAiMode] = useState<"fast" | "balanced" | "deep">("balanced");
   const [aiLoading, setAiLoading] = useState(false);
+  const [localizedLocation, setLocalizedLocation] = useState<Partial<Pick<IpData, "country" | "region" | "city" | "district" | "postalCode">>>({});
   const [deviceIps, setDeviceIps] = useState<{ ipv4: string | null; ipv6: string | null; checking: boolean }>({ ipv4: null, ipv6: null, checking: true });
   const portalReady = useSyncExternalStore(() => () => undefined, () => true, () => false);
 
@@ -67,6 +78,20 @@ export function IpDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const latitude = result?.data.latitude;
+    const longitude = result?.data.longitude;
+    if (latitude === null || latitude === undefined || longitude === null || longitude === undefined) {
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`/api/localize-location?lat=${latitude}&lon=${longitude}&locale=${locale}`, { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((location) => setLocalizedLocation(location))
+      .catch(() => setLocalizedLocation({}));
+    return () => controller.abort();
+  }, [locale, result?.data.latitude, result?.data.longitude]);
+
   async function askAi(prompt = question.trim() || t("dashboard.aiDefaultPrompt")) {
     if (!result) return;
     const priorMessages = messages;
@@ -77,7 +102,7 @@ export function IpDashboard() {
       const response = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: prompt, diagnostics: result, language: locale, messages: priorMessages }),
+        body: JSON.stringify({ question: prompt, diagnostics: result, language: locale, messages: priorMessages, mode: aiMode }),
       });
       const payload = await response.json().catch(() => ({})) as { answer?: string; error?: unknown };
       if (!response.ok || !payload.answer) throw new Error(typeof payload.error === "string" ? payload.error : t("dashboard.aiError"));
@@ -90,9 +115,9 @@ export function IpDashboard() {
 
   const data = result?.data;
   const fields = data ? [
-    [t("dashboard.country"), [data.country, data.countryCode].filter(Boolean).join(" · ")],
-    [t("dashboard.city"), [data.region, data.city, data.district].filter(Boolean).join(" · ")],
-    [t("dashboard.postal"), data.postalCode], [t("dashboard.timezone"), data.timezone],
+    [t("dashboard.country"), [localizedLocation.country || data.country, data.countryCode].filter(Boolean).join(" · ")],
+    [t("dashboard.city"), [localizedLocation.region || data.region, localizedLocation.city || data.city, localizedLocation.district || data.district].filter(Boolean).join(" · ")],
+    [t("dashboard.postal"), localizedLocation.postalCode || data.postalCode], [t("dashboard.timezone"), data.timezone],
     [t("dashboard.org"), data.organization || data.isp], ["ASN", data.asn],
     [t("dashboard.coordinates"), data.latitude !== null ? `${data.latitude}, ${data.longitude}` : null],
   ] : [];
@@ -115,9 +140,9 @@ export function IpDashboard() {
 
       <div className="section-reveal grid gap-6 [--reveal-delay:140ms] xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)]">
         <Card>
-          <CardHeader className="flex-row items-start justify-between">
-            <div><CardTitle>{t("dashboard.fused")}</CardTitle><CardDescription>{loading ? t("dashboard.loading") : t("dashboard.sources", { count: result?.meta.providers || 0 })}</CardDescription></div>
-            {data && <Chip variant="soft" color={data.proxy || data.vpn || data.tor ? "danger" : "success"}>{data.proxy || data.vpn || data.tor ? t("dashboard.proxy") : t("dashboard.noProxy")}</Chip>}
+          <CardHeader className="flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div><CardTitle>{t("dashboard.fused")}</CardTitle><CardDescription>{loading ? t("dashboard.loading") : t("dashboard.sources", { count: result?.meta.providers || 0, attempted: result?.meta.attempted || result?.meta.providers || 0 })}</CardDescription></div>
+            <div className="flex flex-wrap items-center justify-end gap-2">{result && <SourceTransparency report={result} />}{data && <Chip variant="soft" color={data.proxy || data.vpn || data.tor ? "danger" : "success"}>{data.proxy || data.vpn || data.tor ? t("dashboard.proxy") : t("dashboard.noProxy")}</Chip>}</div>
           </CardHeader>
           <CardContent>
             {loading ? <LoadingState /> : data && (
@@ -132,7 +157,7 @@ export function IpDashboard() {
                     </div>
                   </div>
                   <div className="flex shrink-0 justify-center">
-                    {data.latitude !== null && data.longitude !== null && <LocationGlobe latitude={data.latitude} longitude={data.longitude} label={[data.city, data.country].filter(Boolean).join(", ")} />}
+                    {data.latitude !== null && data.longitude !== null && <LocationGlobe latitude={data.latitude} longitude={data.longitude} label={[localizedLocation.city || data.city, localizedLocation.country || data.country].filter(Boolean).join(", ")} />}
                   </div>
                 </div>
                 <div className="grid gap-x-8 sm:grid-cols-2">
@@ -167,6 +192,7 @@ export function IpDashboard() {
           <CardHeader className="flex-row items-start justify-between border-b border-white/[.06]"><div className="flex min-w-0 gap-3"><div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#071522] ring-1 ring-cyan-400/25"><Image src="/logos/elinks-symbol.png" width={30} height={30} alt="" /></div><div><CardTitle>{t("dashboard.aiTitle")}</CardTitle><CardDescription className="mt-1">{t("dashboard.aiDesc")}</CardDescription></div></div><div className="flex gap-1"><button className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" title={t("dashboard.aiClear")} onClick={() => setMessages([])}><Trash2 className="size-4" /></button><button className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close" onClick={() => setAiOpen(false)}><X className="size-5" /></button></div></CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2 rounded-xl bg-emerald-500/8 px-3 py-2 text-xs text-emerald-400"><DatabaseZap className="size-4" />{t("dashboard.aiDataReady")}</div>
+            <div className="flex gap-2">{(["fast", "balanced", "deep"] as const).map((mode) => <button key={mode} className={`flex-1 rounded-xl px-3 py-2 text-xs font-medium transition ${aiMode === mode ? "bg-primary text-primary-foreground" : "bg-muted/45 text-muted-foreground hover:bg-muted"}`} onClick={() => setAiMode(mode)}>{t(`dashboard.aiMode.${mode}`)}</button>)}</div>
             <div className="max-h-[42vh] min-h-36 space-y-3 overflow-y-auto pr-1">
               {!messages.length && <div className="rounded-2xl bg-muted/45 p-4 text-sm leading-6 text-muted-foreground">{t("dashboard.aiWelcome")}</div>}
               {messages.map((message, index) => <div key={`${message.role}-${index}`} className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === "user" ? "ml-8 bg-primary text-primary-foreground" : "mr-4 bg-muted/55"}`}>{message.content}</div>)}

@@ -155,7 +155,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ too
         ipinfo: Boolean(process.env.IPINFO_API_TOKEN),
         ip2location: Boolean(process.env.IP2LOCATION_API_KEY),
         mac: true,
-        invisibility: Boolean(process.env.ELINKSNET_API_ENDPOINT || process.env.IPCHECKING_API_ENDPOINT),
+        invisibility: true,
       } });
     }
     return NextResponse.json({ error: "未知工具" }, { status: 404 });

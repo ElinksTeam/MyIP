@@ -61,7 +61,7 @@ function Message({ error }: { error: string }) {
 }
 
 function GlobalMeasurement({ mode }: { mode: "ping" | "mtr" | "censorship" }) {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const copy = {
     en: {
       domain: "Enter a domain to test", target: "Enter an IP address or domain",
@@ -130,12 +130,12 @@ function GlobalMeasurement({ mode }: { mode: "ping" | "mtr" | "censorship" }) {
       <p className="text-sm text-muted-foreground">{copy[mode]}</p>
     </ToolForm>
     <Message error={error} />
-    {measurement && <div className="mb-4 flex items-center justify-between"><span className="text-sm text-muted-foreground">{copy.status}</span><Chip variant="soft" color={measurement.status === "finished" ? "success" : "warning"}>{String(measurement.status)}</Chip></div>}
+    {measurement && <div className="mb-4 flex items-center justify-between"><span className="text-sm text-muted-foreground">{copy.status}</span><Chip variant="soft" color={measurement.status === "finished" ? "success" : "warning"}>{measurement.status === "finished" ? t("common.completed") : t("common.running")}</Chip></div>}
     <div className="grid gap-4 md:grid-cols-2">
       {results.map((entry, index) => {
         const probe = entry.probe as Json || {}; const result = entry.result as Json || {}; const stats = result.stats as Json || {};
         return <Card key={`${String(probe.country)}-${index}`}><CardContent>
-          <div className="mb-4 flex items-center justify-between"><div><p className="font-medium">{String(probe.city || probe.country || "Global probe")}</p><p className="text-xs text-muted-foreground">{String(probe.network || "")} {probe.asn ? `· AS${String(probe.asn)}` : ""}</p></div><Chip size="sm" variant="soft" color={result.status === "finished" ? "success" : result.status === "failed" ? "danger" : "warning"}>{String(result.status)}</Chip></div>
+          <div className="mb-4 flex items-center justify-between"><div><p className="font-medium">{String(probe.city || probe.country || "Global probe")}</p><p className="text-xs text-muted-foreground">{String(probe.network || "")} {probe.asn ? `· AS${String(probe.asn)}` : ""}</p></div><Chip size="sm" variant="soft" color={result.status === "finished" ? "success" : result.status === "failed" ? "danger" : "warning"}>{result.status === "finished" ? t("common.completed") : result.status === "failed" ? t("common.failed") : t("common.running")}</Chip></div>
           {mode === "ping" && <div className="grid grid-cols-3 gap-3 text-center"><Metric label={copy.avg} value={`${String(stats.avg ?? "—")} ms`} /><Metric label={copy.min} value={`${String(stats.min ?? "—")} ms`} /><Metric label={copy.loss} value={`${String(stats.loss ?? "—")}%`} /></div>}
           {mode === "mtr" && <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-3 font-mono text-xs leading-5">{String(result.rawOutput || copy.noRoute)}</pre>}
           {mode === "censorship" && <p className="text-sm text-muted-foreground">{result.status === "finished" ? copy.reachable : copy.unreachable}</p>}
@@ -286,7 +286,7 @@ export function ServiceStatusPanel() {
   const [status, setStatus] = useState<Json | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   useEffect(() => { const started = performance.now(); api<Json>("/api/tools/status").then((data) => { setLatency(Math.round(performance.now() - started)); setStatus(data); }).catch(() => setStatus({ core: false })); }, []);
-  const labels: Record<string, string> = { core: "Elinks Core API", ipwhois: "IPWho.is", ipapi: "ipapi.co", freeipapi: "FreeIPAPI", countryis: "Country.is", ipapicom: "IP-API.com", ai: "ElinksAI", ipapiis: "IPAPI.is", ipinfo: "IPinfo", ip2location: "IP2Location", mac: "MAC Lookup", invisibility: "Privacy Exposure" };
+  const labels: Record<string, string> = { core: "Elinks Core API", ipwhois: "IPWho.is", ipapi: "ipapi.co", freeipapi: "FreeIPAPI", countryis: "Country.is", ipapicom: "IP-API.com", ai: "ElinksAI", ipapiis: "IPAPI.is", ipinfo: "IPinfo", ip2location: "IP2Location", mac: "MAC Lookup", invisibility: t("status.privacyExposure") };
   const publicSources = new Set(["ipwhois", "ipapi", "freeipapi", "countryis", "ipapicom"]);
   return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Object.entries(labels).map(([key, label]) => <Card key={key}><CardContent className="flex items-center justify-between"><div><p className="text-sm font-medium">{label}</p><p className="mt-1 text-xs text-muted-foreground">{key === "core" && latency !== null ? `${latency} ms` : publicSources.has(key) ? "Live probe" : "API"}</p></div>{status ? <Chip size="sm" variant="soft" color={status[key] ? "success" : "warning"}>{status[key] ? t("common.online") : publicSources.has(key) ? t("common.unavailable") : t("common.notConfigured")}</Chip> : <LoaderCircle className="size-4 animate-spin text-muted-foreground" />}</CardContent></Card>)}</div>;
 }
