@@ -172,7 +172,7 @@ const ja: Messages = {
 
 const th: Messages = {
   "nav.overview": "ภาพรวม", "nav.tools": "เครื่องมือเครือข่าย", "nav.language": "เปลี่ยนภาษา",
-  "header.title": "Elinks Network Intelligence", "header.status": "Global edge · ทำงานปกติ",
+  "header.title": "Elinks Network Intelligence", "header.status": "เครือข่ายเอดจ์ทั่วโลก · ทำงานปกติ",
   "common.back": "กลับสู่ภาพรวม", "common.run": "เริ่มตรวจสอบ", "common.running": "กำลังตรวจสอบ…", "common.waiting": "รอตรวจสอบ",
   "common.online": "ออนไลน์", "common.failed": "ตรวจสอบผิดพลาด", "common.notConfigured": "ยังไม่ตั้งค่า", "common.copy": "คัดลอก", "common.checking": "กำลังตรวจสอบ…", "common.noIpv6": "ไม่มีที่อยู่ IPv6", "common.unavailable": "ไม่พร้อมใช้งานชั่วคราว", "common.found": "ตรวจพบ", "common.notFound": "ไม่พบ", "common.completed": "เสร็จสิ้น",
   "dashboard.eyebrow": "ข้อมูล IP แบบรวม", "dashboard.title": "ศูนย์วิเคราะห์เครือข่าย",
