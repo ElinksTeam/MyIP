@@ -1,13 +1,15 @@
 services:
   elinksnet:
     container_name: elinksnet
-    image: elinksteam/elinksnet:latest
+    image: elinksteam/elinksnet:8.0.0
+    build:
+      context: .
     restart: unless-stopped
     ports:
       - "18966:18966"
     environment:
-      MAXMIND_ACCOUNT_ID: ""
-      MAXMIND_LICENSE_KEY: ""
-      MAXMIND_AUTO_UPDATE: "false"
-      BACKEND_PORT: "11966"
-      FRONTEND_PORT: "18966"
+      GROQ_API_KEY: ""
+      ELINKS_AI_MODEL: "llama-3.3-70b-versatile"
+      IPINFO_API_TOKEN: ""
+      IPAPIIS_API_KEY: ""
+      IP2LOCATION_API_KEY: ""

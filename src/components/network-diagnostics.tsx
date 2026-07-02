@@ -25,6 +25,7 @@ export function NetworkDiagnostics({ report }: { report?: unknown }) {
   const [checks, setChecks] = useState(initialChecks);
   const [running, setRunning] = useState(false);
   const [webrtc, setWebrtc] = useState<string[]>([]);
+  const [webrtcStatus, setWebrtcStatus] = useState<"idle" | "running" | "complete">("idle");
   const [dns, setDns] = useState<DnsResult | null>(null);
   const [dnsRunning, setDnsRunning] = useState(false);
   const [speed, setSpeed] = useState<{ latency: number; download: number } | null>(null);
@@ -52,6 +53,7 @@ export function NetworkDiagnostics({ report }: { report?: unknown }) {
 
   async function runWebRtc() {
     setWebrtc([]);
+    setWebrtcStatus("running");
     const found = new Set<string>();
     const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }] });
     pc.createDataChannel("elinks");
@@ -60,10 +62,10 @@ export function NetworkDiagnostics({ report }: { report?: unknown }) {
       const matches = candidate.match(/(?:\d{1,3}\.){3}\d{1,3}|(?:[a-f0-9]{1,4}:){2,7}[a-f0-9]{1,4}/gi) || [];
       matches.forEach((ip) => found.add(ip));
       setWebrtc([...found]);
-      if (!event.candidate) pc.close();
+      if (!event.candidate) { pc.close(); setWebrtcStatus("complete"); }
     };
     await pc.setLocalDescription(await pc.createOffer());
-    window.setTimeout(() => pc.close(), 6_000);
+    window.setTimeout(() => { pc.close(); setWebrtcStatus("complete"); }, 6_000);
   }
 
   async function runDnsLeak() {
@@ -113,7 +115,7 @@ export function NetworkDiagnostics({ report }: { report?: unknown }) {
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-mono text-xs uppercase tracking-[.18em] text-primary">{t("diag.eyebrow")}</p><h2 className="mt-1 text-2xl font-semibold tracking-tight">{t("diag.title")}</h2></div><Button variant="tertiary" onPress={exportReport}><Download className="size-4" />{t("diag.export")}</Button></div>
     <div className="grid gap-5 lg:grid-cols-2">
       <Card><CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Activity className="size-4 text-primary" />{t("diag.connectivity")}</CardTitle><CardDescription>{t("diag.connectivityDesc")}</CardDescription></div><Button isIconOnly variant="tertiary" aria-label={t("diag.connectivity")} onPress={runConnectivity} isDisabled={running}>{running ? <LoaderCircle className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}</Button></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2">{checks.map((check) => <div key={check.name} className="rounded-xl bg-muted/35 p-3 transition-colors hover:bg-muted/55"><div className="flex items-center justify-between"><p className="text-sm font-medium">{t(check.name)}</p><Chip className={check.status === "running" ? "status-pulse" : ""} size="sm" variant="soft" color={check.status === "ok" ? "success" : check.status === "fail" ? "danger" : "default"}>{check.status === "ok" ? `${check.latency} ms` : check.status === "fail" ? t("common.failed") : check.status === "unavailable" ? t("common.noIpv6") : check.status === "running" ? t("common.running") : t("common.waiting")}</Chip></div><p className="mt-1 text-xs text-muted-foreground">{t(check.note)}</p></div>)}</CardContent></Card>
-      <Card><CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Radio className="size-4 text-primary" />{t("diag.webrtc")}</CardTitle><CardDescription>{t("diag.webrtcDesc")}</CardDescription></div><Button variant="tertiary" onPress={runWebRtc}>{t("diag.detect")}</Button></CardHeader><CardContent>{webrtc.length ? <div className="space-y-2">{webrtc.map((ip) => <p key={ip} className="rounded-lg bg-muted/40 p-3 font-mono text-sm">{ip}</p>)}</div> : <p className="text-sm text-muted-foreground">{t("diag.notRun")}</p>}</CardContent></Card>
+      <Card className="flex min-h-[250px] flex-col"><CardHeader className="shrink-0 flex-row items-start justify-between"><div className="min-w-0"><CardTitle className="flex items-center gap-2"><Radio className="size-4 text-primary" />{t("diag.webrtc")}</CardTitle><CardDescription>{t("diag.webrtcDesc")}</CardDescription></div><Button className="shrink-0" variant="tertiary" onPress={runWebRtc} isDisabled={webrtcStatus === "running"}>{webrtcStatus === "running" ? <LoaderCircle className="size-4 animate-spin" /> : null}{webrtcStatus === "running" ? t("common.running") : t("diag.detect")}</Button></CardHeader><CardContent className="min-h-0 flex-1"><div className="h-24 overflow-y-auto overscroll-contain">{webrtc.length ? <div className="space-y-2">{webrtc.map((ip) => <p key={ip} className="break-all rounded-lg bg-muted/40 p-3 font-mono text-sm leading-5">{ip}</p>)}</div> : <p className="text-sm leading-6 text-muted-foreground">{webrtcStatus === "running" ? t("common.running") : t("diag.notRun")}</p>}</div></CardContent></Card>
       <Card><CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Network className="size-4 text-primary" />{t("diag.dnsLeak")}</CardTitle><CardDescription>{t("diag.dnsLeakDesc")}</CardDescription></div><Button variant="tertiary" onPress={runDnsLeak} isDisabled={dnsRunning}>{dnsRunning ? <LoaderCircle className="size-4 animate-spin" /> : null}{dnsRunning ? t("common.running") : t("diag.deepDetect")}</Button></CardHeader><CardContent>{dns ? dns.resolvers.length ? <div className="space-y-3"><div className="grid grid-cols-3 gap-2"><Metric label={t("diag.dnsQueries")} value={String(dns.queries)} /><Metric label={t("diag.dnsResolvers")} value={String(dns.resolvers.length)} /><Metric label={t("diag.ednsExposure")} value={dns.edns.length ? t("common.found") : t("common.notFound")} /></div><div className="space-y-2">{dns.resolvers.map((resolver) => <div key={resolver.ip} className="grid gap-1 rounded-xl bg-muted/35 p-3 sm:grid-cols-[150px_1fr]"><p className="font-mono text-sm">{resolver.ip}</p><p className="text-xs text-muted-foreground">{resolver.geo || resolver.provider || "—"}</p></div>)}</div><p className={`text-xs ${dns.risk === "low" ? "text-emerald-400" : "text-amber-400"}`}>{dns.risk === "low" ? t("diag.dnsLowRisk") : t("diag.dnsReview")}</p></div> : <p className="text-sm text-amber-400">{t("common.failed")}</p> : <p className="text-sm text-muted-foreground">{t("diag.dnsPrompt")}</p>}</CardContent></Card>
       <Card><CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Gauge className="size-4 text-primary" />{t("diag.speed")}</CardTitle><CardDescription>{t("diag.speedDesc")}</CardDescription></div><Button variant="tertiary" onPress={runSpeed}>{t("diag.start")}</Button></CardHeader><CardContent>{speed ? <div className="grid grid-cols-2 gap-3"><Metric label={t("diag.download")} value={speed.download ? `${speed.download} Mbps` : t("common.failed")} /><Metric label={t("diag.latency")} value={speed.latency ? `${speed.latency} ms` : t("common.failed")} /></div> : <p className="text-sm text-muted-foreground">{t("diag.speedNote")}</p>}</CardContent></Card>
     </div>

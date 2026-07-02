@@ -1,4 +1,4 @@
-const CACHE = "elinksnet-shell-v7";
+const CACHE = "elinksnet-shell-v8";
 const SHELL = ["/", "/manifest.webmanifest", "/logos/elinks-symbol.png", "/logos/elinks-symbol-square.svg", "/logos/elinks-wordmark.png"];
 
 self.addEventListener("install", (event) => {

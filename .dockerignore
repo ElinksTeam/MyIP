@@ -5,10 +5,20 @@
 .vscode
 
 node_modules
+.next
 dist
 logs
 localtest
-package-lock.json
+frontend
+server
+common
+backend-server.js
+frontend-server.js
+server.js
+vite.config.js
+index.html
+tests
+local-homepage.png
 
 .DS_Store
 .env
