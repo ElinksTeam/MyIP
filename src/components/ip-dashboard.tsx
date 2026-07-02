@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Chip } from "@heroui/react";
-import { Bot, CheckCircle2, Copy, Globe2, LocateFixed, RefreshCw, Search, ShieldAlert, ShieldCheck, Sparkles, X } from "lucide-react";
+import { Bot, CheckCircle2, Copy, Globe2, LocateFixed, RefreshCw, Search, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,7 @@ export function IpDashboard() {
   const [question, setQuestion] = useState("请分析这个 IP 的代理风险、网络质量与安全注意事项");
   const [answer, setAnswer] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [deviceIps, setDeviceIps] = useState<{ ipv4: string | null; ipv6: string | null; checking: boolean }>({ ipv4: null, ipv6: null, checking: true });
   const portalReady = useSyncExternalStore(() => () => undefined, () => true, () => false);
 
   async function lookup(ip?: string) {
@@ -46,8 +47,20 @@ export function IpDashboard() {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
     const timer = window.setTimeout(() => void lookup(), 0);
-    return () => window.clearTimeout(timer);
+    Promise.all([
+      fetch("https://api.ipify.org?format=json", { cache: "no-store", signal: controller.signal }).then((response) => response.json()).then((payload) => String(payload.ip || "")).catch(() => ""),
+      fetch("https://api6.ipify.org?format=json", { cache: "no-store", signal: controller.signal }).then((response) => response.json()).then((payload) => String(payload.ip || "")).catch(() => ""),
+    ]).then(([ipv4, ipv6]) => {
+      if (active) setDeviceIps({
+        ipv4: ipv4.includes(".") ? ipv4 : null,
+        ipv6: ipv6.includes(":") ? ipv6 : null,
+        checking: false,
+      });
+    });
+    return () => { active = false; window.clearTimeout(timer); controller.abort(); };
     // Initial visitor-IP discovery only; later lookups are user initiated.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -98,11 +111,17 @@ export function IpDashboard() {
           <CardContent>
             {loading ? <LoadingState /> : data && (
               <>
-                <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0 flex-1"><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div><p className={`metric-value whitespace-nowrap font-mono font-semibold tracking-[-.035em] ${data.ip.includes(":") ? "text-[11px] sm:text-[17px] lg:text-lg" : "text-2xl sm:text-3xl"}`}>{data.ip}</p></div>
-                  <div className="flex shrink-0 items-start gap-2">
+                <div className="mb-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div>
+                    <div className="flex items-center gap-2"><p className={`metric-value min-w-0 whitespace-nowrap font-mono font-semibold tracking-[-.035em] ${data.ip.includes(":") ? "text-[11px] sm:text-[17px] lg:text-lg" : "text-2xl sm:text-3xl"}`}>{data.ip}</p><button aria-label={`${t("common.copy")} IP`} className="shrink-0 rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => navigator.clipboard.writeText(data.ip)}><Copy className="size-4" /></button></div>
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                      <AddressStatus label={t("dashboard.deviceIpv4")} value={deviceIps.checking ? t("common.checking") : deviceIps.ipv4 || t("dashboard.noIpv4")} available={Boolean(deviceIps.ipv4)} checking={deviceIps.checking} />
+                      <AddressStatus label={t("dashboard.deviceIpv6")} value={deviceIps.checking ? t("common.checking") : deviceIps.ipv6 || t("dashboard.noIpv6")} available={Boolean(deviceIps.ipv6)} checking={deviceIps.checking} />
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 justify-center">
                     {data.latitude !== null && data.longitude !== null && <LocationGlobe latitude={data.latitude} longitude={data.longitude} label={[data.city, data.country].filter(Boolean).join(", ")} />}
-                    <button aria-label={`${t("common.copy")} IP`} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => navigator.clipboard.writeText(data.ip)}><Copy className="size-4" /></button>
                   </div>
                 </div>
                 <div className="grid gap-x-8 sm:grid-cols-2">
@@ -129,9 +148,8 @@ export function IpDashboard() {
       </div>
       <NetworkDiagnostics report={result} />
 
-      {portalReady && createPortal(<><div className="fixed bottom-5 right-4 z-[60] flex items-center gap-2 sm:bottom-6 sm:right-6">
-        <button className="ai-service-hint" onClick={() => setAiOpen(true)}>{t("dashboard.aiHint")}</button>
-        <button className="ai-fab grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105" aria-label={t("dashboard.ai")} onClick={() => setAiOpen(true)}><Sparkles className="size-5" /></button>
+      {portalReady && createPortal(<><div className="fixed bottom-5 right-4 z-[60] sm:bottom-6 sm:right-6">
+        <button className="ai-fab group relative grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105" title={t("dashboard.aiHint")} aria-label={t("dashboard.aiHint")} onClick={() => setAiOpen(true)}><Bot className="size-5" /><span className="absolute right-0 top-0 size-3 rounded-full bg-emerald-400 ring-2 ring-background" /><span className="pointer-events-none absolute bottom-full right-0 mb-2 hidden whitespace-nowrap rounded-lg bg-card px-3 py-2 text-xs font-medium text-foreground shadow-xl ring-1 ring-border group-hover:block">{t("dashboard.aiHint")}</span></button>
       </div>
       {aiOpen && <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/45 p-3 backdrop-blur-sm sm:p-6" onClick={() => setAiOpen(false)}>
         <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
@@ -148,4 +166,7 @@ function LoadingState() {
 }
 function RiskRow({ label, active, activeText, safeText }: { label: string; active: boolean; activeText: string; safeText: string }) {
   return <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{label}</span><span className={`flex items-center gap-1.5 text-xs ${active ? "text-amber-400" : "text-emerald-400"}`}>{active ? <ShieldAlert className="size-4" /> : <ShieldCheck className="size-4" />}{active ? activeText : safeText}</span></div>;
+}
+function AddressStatus({ label, value, available, checking }: { label: string; value: string; available: boolean; checking: boolean }) {
+  return <div className="min-w-0 rounded-xl bg-muted/35 px-3 py-2.5"><div className="mb-1 flex items-center gap-2"><span className={`size-1.5 rounded-full ${checking ? "animate-pulse bg-amber-400" : available ? "bg-emerald-400" : "bg-muted-foreground/50"}`} /><span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span></div><p className="truncate font-mono text-xs" title={value}>{value}</p></div>;
 }

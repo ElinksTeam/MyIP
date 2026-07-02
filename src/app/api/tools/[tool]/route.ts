@@ -27,6 +27,19 @@ async function jsonFetch(url: string, init: RequestInit = {}) {
   return data;
 }
 
+async function serviceAvailable(url: string) {
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(4_500),
+      headers: { Accept: "application/json", "User-Agent": "ElinksNet/7.1" },
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 function validTarget(value: string) {
   return isIP(value) > 0 || DOMAIN.test(value);
 }
@@ -105,9 +118,21 @@ export async function GET(request: NextRequest, context: { params: Promise<{ too
       return NextResponse.json({ data: await jsonFetch(`${GLOBALPING}/${encodeURIComponent(id)}`) });
     }
     if (tool === "status") {
+      const [ipwhois, ipapi, freeipapi, countryis, ipapicom] = await Promise.all([
+        serviceAvailable("https://ipwho.is/8.8.8.8"),
+        serviceAvailable("https://ipapi.co/8.8.8.8/json/"),
+        serviceAvailable("https://free.freeipapi.com/api/json/8.8.8.8"),
+        serviceAvailable("https://api.country.is/8.8.8.8?fields=location,asn"),
+        serviceAvailable("http://ip-api.com/json/8.8.8.8?fields=status"),
+      ]);
       return NextResponse.json({ data: {
         core: true,
         ai: Boolean(process.env.GROQ_API_KEY),
+        ipwhois,
+        ipapi,
+        freeipapi,
+        countryis,
+        ipapicom,
         ipapiis: Boolean(process.env.IPAPIIS_API_KEY),
         ipinfo: Boolean(process.env.IPINFO_API_TOKEN),
         ip2location: Boolean(process.env.IP2LOCATION_API_KEY),

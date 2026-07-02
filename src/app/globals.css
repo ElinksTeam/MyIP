@@ -92,12 +92,10 @@ body {
 .loading-scan::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, color-mix(in oklab, var(--primary) 8%, transparent), transparent 65%); transform: translateX(-100%); animation: shimmer 1.8s ease-in-out infinite; pointer-events: none; }
 .ai-fab { isolation: isolate; }
 .ai-fab::before { content: ""; position: absolute; inset: -5px; z-index: -1; border-radius: inherit; background: color-mix(in oklab, var(--primary) 24%, transparent); animation: ai-halo 2.8s ease-in-out infinite; }
-.ai-service-hint { position: relative; max-width: 11rem; border-radius: .8rem; background: var(--card); padding: .65rem .8rem; color: var(--foreground); font-size: .75rem; font-weight: 600; box-shadow: 0 10px 30px rgb(0 0 0 / .22); }
-.ai-service-hint::after { content: ""; position: absolute; right: -.35rem; top: 50%; width: .7rem; height: .7rem; background: var(--card); transform: translateY(-50%) rotate(45deg); }
 .metric-value { font-variant-numeric: tabular-nums; }
 .location-globe-wrap { display: flex; flex-direction: column; align-items: center; }
 .location-globe {
-  position: relative; width: 7.25rem; aspect-ratio: 1; overflow: hidden; border-radius: 999px;
+  position: relative; width: 5.75rem; aspect-ratio: 1; overflow: hidden; border-radius: 999px;
   background: color-mix(in oklab, var(--background) 86%, black);
   box-shadow: inset -16px -12px 30px rgb(0 0 0 / .4), inset 8px 7px 18px rgb(255 255 255 / .08), 0 10px 35px color-mix(in oklab, var(--primary) 18%, transparent);
 }
@@ -123,7 +121,7 @@ body {
 @keyframes ai-halo { 0%, 100% { opacity: .25; transform: scale(.92); } 50% { opacity: .55; transform: scale(1.08); } }
 @keyframes globe-tilt { from { transform: rotate(-2deg) scale(1.01); } to { transform: rotate(3deg) scale(1.035); } }
 @keyframes marker-bounce { 0%, 100% { transform: translate(-50%, -50%) translateY(0); } 50% { transform: translate(-50%, -50%) translateY(-3px); } }
-@media (max-width: 640px) { .network-backdrop { opacity: .42; } .network-map { width: 150vw; right: -58%; } .network-orb { width: 18rem; filter: blur(70px); } .location-globe { width: 6.25rem; } }
+@media (max-width: 640px) { .network-backdrop { opacity: .42; } .network-map { width: 150vw; right: -58%; } .network-orb { width: 18rem; filter: blur(70px); } .location-globe { width: 5.25rem; } }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
