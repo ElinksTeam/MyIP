@@ -11,8 +11,21 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://net.elinks.dev"),
   title: { default: "ElinksNet · 网络智能工作台", template: "%s · ElinksNet" },
   description: "面向跨境网络运维的 IP 情报、安全诊断与连接质量平台。",
-  icons: { icon: "/favicon.svg", apple: "/logos/elinks-apple-touch.png" },
+  icons: {
+    icon: [{ url: "/logos/elinks-symbol.png", type: "image/png", sizes: "123x109" }],
+    shortcut: "/logos/elinks-symbol.png",
+    apple: "/logos/elinks-symbol.png",
+  },
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    type: "website",
+    siteName: "ElinksNet",
+    images: [{ url: "/logos/elinks-wordmark.png", width: 465, height: 118, alt: "ElinksNet" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/logos/elinks-wordmark.png"],
+  },
 };
 
 export const viewport: Viewport = { themeColor: "#111827", colorScheme: "dark light" };

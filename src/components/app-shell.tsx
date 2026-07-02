@@ -10,6 +10,7 @@ import { tools } from "@/lib/tools";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/components/locale-provider";
 import { type Locale, localeNames } from "@/i18n/messages";
+import { NetworkBackdrop } from "@/components/network-backdrop";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -25,12 +26,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const nav = (
     <>
-      <Link href="/" className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition", pathname === "/" ? "bg-primary/12 text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
+      <Link href="/" className={cn("nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm", pathname === "/" ? "nav-active bg-primary/12 text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
         <LayoutDashboard className="size-4" /> {t("nav.overview")}
       </Link>
       <div className="mb-2 mt-6 px-3 text-[11px] font-medium uppercase tracking-[.18em] text-muted-foreground">{t("nav.tools")}</div>
       {tools.map((tool) => (
-        <Link key={tool.slug} href={`/tools/${tool.slug}`} onClick={() => setMobileOpen(false)} className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition", pathname === `/tools/${tool.slug}` ? "bg-primary/12 text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
+        <Link key={tool.slug} href={`/tools/${tool.slug}`} onClick={() => setMobileOpen(false)} className={cn("nav-link flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm", pathname === `/tools/${tool.slug}` ? "nav-active bg-primary/12 text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
           <tool.icon className="size-4" /> {tool.names?.[locale] || tool.name}
         </Link>
       ))}
@@ -38,8 +39,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[248px_1fr]">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] border-r border-white/[.06] bg-background/85 p-4 backdrop-blur-xl lg:block">
+    <div className="relative min-h-screen lg:grid lg:grid-cols-[248px_1fr]">
+      <NetworkBackdrop />
+      <aside className="app-sidebar fixed inset-y-0 left-0 z-30 hidden w-[248px] border-r border-white/[.06] bg-background/85 p-4 backdrop-blur-xl lg:block">
         <Brand />
         <nav className="mt-8">{nav}</nav>
       </aside>
@@ -52,7 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
       <div className="min-w-0 lg:col-start-2">
-        <header className="sticky top-0 z-20 flex h-16 items-center border-b border-white/[.06] bg-background/75 px-4 backdrop-blur-xl sm:px-6">
+        <header className="app-header sticky top-0 z-20 flex h-16 items-center border-b border-white/[.06] bg-background/75 px-4 backdrop-blur-xl sm:px-6">
           <button className="mr-3 rounded-lg p-2 hover:bg-muted lg:hidden" aria-label="打开菜单" onClick={() => setMobileOpen(true)}><Menu className="size-5" /></button>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{t("header.title")}</p>
@@ -77,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Button isIconOnly variant="tertiary" aria-label="GitHub" onPress={() => window.open("https://github.com", "_blank")}><Github className="size-4" /></Button>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1480px] p-4 sm:p-6 lg:p-8">{children}</main>
+        <main key={pathname} className="page-enter relative mx-auto w-full max-w-[1480px] p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );
@@ -85,9 +87,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function Brand() {
   return (
-    <Link href="/" className="flex items-center gap-2.5 px-2">
-      <Image src="/logos/elinksnet-logo.svg" alt="ElinksNet" width={34} height={34} priority />
-      <span className="text-lg font-semibold tracking-tight">Elinks<span className="text-muted-foreground">Net</span></span>
+    <Link href="/" className="brand-link flex items-center px-2" aria-label="ElinksNet">
+      <Image className="brand-mark h-auto w-[132px]" src="/logos/elinks-wordmark.png" alt="ElinksNet" width={465} height={118} priority />
     </Link>
   );
 }

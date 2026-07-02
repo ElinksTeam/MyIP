@@ -1,5 +1,5 @@
 const CACHE = "elinksnet-shell-v7";
-const SHELL = ["/", "/manifest.webmanifest", "/favicon.svg", "/logos/elinksnet-logo.svg"];
+const SHELL = ["/", "/manifest.webmanifest", "/logos/elinks-symbol.png", "/logos/elinks-symbol-square.svg", "/logos/elinks-wordmark.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));

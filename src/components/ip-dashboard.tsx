@@ -72,12 +72,12 @@ export function IpDashboard() {
 
   return (
     <>
-      <section className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <section className="section-reveal mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div><p className="mb-2 font-mono text-xs uppercase tracking-[.2em] text-primary">{t("dashboard.eyebrow")}</p><h1 className="text-3xl font-semibold tracking-[-.035em] sm:text-4xl">{t("dashboard.title")}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{t("dashboard.description")}</p></div>
-        <Chip color="success" variant="soft"><span className="flex items-center gap-1.5"><CheckCircle2 className="size-3.5" /> {t("dashboard.serviceOnline")}</span></Chip>
+        <Chip color="success" variant="soft"><span className="flex items-center gap-1.5"><CheckCircle2 className="status-pulse size-3.5" /> {t("dashboard.serviceOnline")}</span></Chip>
       </section>
 
-      <Card className="mb-6">
+      <Card className="section-reveal mb-6 [--reveal-delay:70ms]">
         <CardContent className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1"><Search className="absolute left-3.5 top-3.5 size-4 text-muted-foreground" /><Input className="pl-10 font-mono" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && void lookup(query)} placeholder={t("dashboard.placeholder")} /></div>
           <Button variant="primary" onPress={() => void lookup(query)} isDisabled={loading}><RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />{t("dashboard.detect")}</Button>
@@ -86,7 +86,7 @@ export function IpDashboard() {
 
       {error && <Card className="mb-6 bg-red-500/5"><CardContent className="flex items-center gap-3 text-sm text-red-400"><ShieldAlert className="size-5" />{error}</CardContent></Card>}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)]">
+      <div className="section-reveal grid gap-6 [--reveal-delay:140ms] xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)]">
         <Card>
           <CardHeader className="flex-row items-start justify-between">
             <div><CardTitle>{t("dashboard.fused")}</CardTitle><CardDescription>{loading ? t("dashboard.loading") : t("dashboard.sources", { count: result?.meta.providers || 0 })}</CardDescription></div>
@@ -96,7 +96,7 @@ export function IpDashboard() {
             {loading ? <LoadingState /> : data && (
               <>
                 <div className="mb-7 flex items-start justify-between gap-4">
-                  <div><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div><p className="break-all font-mono text-2xl font-semibold sm:text-3xl">{data.ip}</p></div>
+                  <div><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div><p className="metric-value break-all font-mono text-2xl font-semibold sm:text-3xl">{data.ip}</p></div>
                   <button aria-label={`${t("common.copy")} IP`} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => navigator.clipboard.writeText(data.ip)}><Copy className="size-4" /></button>
                 </div>
                 <div className="grid gap-x-8 sm:grid-cols-2">
@@ -113,7 +113,7 @@ export function IpDashboard() {
               <RiskRow label={t("dashboard.proxyVpn")} active={Boolean(data?.proxy || data?.vpn)} activeText={t("dashboard.attention")} safeText={t("dashboard.notFound")} />
               <RiskRow label={t("dashboard.tor")} active={Boolean(data?.tor)} activeText={t("dashboard.attention")} safeText={t("dashboard.notFound")} />
               <RiskRow label={t("dashboard.hosting")} active={Boolean(data?.hosting)} activeText={t("dashboard.attention")} safeText={t("dashboard.notFound")} />
-              <div className="pt-2"><div className="mb-2 flex justify-between text-xs"><span className="text-muted-foreground">{t("dashboard.confidence")}</span><span>{data?.confidence || 0}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${data?.confidence || 0}%` }} /></div></div>
+              <div className="pt-2"><div className="mb-2 flex justify-between text-xs"><span className="text-muted-foreground">{t("dashboard.confidence")}</span><span className="metric-value">{data?.confidence || 0}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="progress-live h-full rounded-full bg-primary" style={{ width: `${data?.confidence || 0}%` }} /></div></div>
             </CardContent>
           </Card>
           <Card>
@@ -123,7 +123,7 @@ export function IpDashboard() {
       </div>
       <NetworkDiagnostics report={result} />
 
-      <Button className="fixed bottom-6 right-6 z-30 shadow-xl" variant="primary" onPress={() => setAiOpen(true)}><Sparkles className="size-4" /> {t("dashboard.ai")}</Button>
+      <Button className="ai-fab fixed bottom-6 right-6 z-30 shadow-xl" variant="primary" onPress={() => setAiOpen(true)}><Sparkles className="size-4" /> {t("dashboard.ai")}</Button>
       {aiOpen && <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/45 p-3 backdrop-blur-sm sm:p-6" onClick={() => setAiOpen(false)}>
         <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
           <CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Bot className="size-5 text-primary" />{t("dashboard.aiTitle")}</CardTitle><CardDescription>{t("dashboard.aiDesc")}</CardDescription></div><button aria-label="Close" onClick={() => setAiOpen(false)}><X className="size-5" /></button></CardHeader>
@@ -135,7 +135,7 @@ export function IpDashboard() {
 }
 
 function LoadingState() {
-  return <div className="space-y-5"><Skeleton className="h-9 w-2/3" /><div className="grid gap-4 sm:grid-cols-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div></div>;
+  return <div className="loading-scan space-y-5 rounded-xl"><Skeleton className="h-9 w-2/3" /><div className="grid gap-4 sm:grid-cols-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div></div>;
 }
 function RiskRow({ label, active, activeText, safeText }: { label: string; active: boolean; activeText: string; safeText: string }) {
   return <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">{label}</span><span className={`flex items-center gap-1.5 text-xs ${active ? "text-amber-400" : "text-emerald-400"}`}>{active ? <ShieldAlert className="size-4" /> : <ShieldCheck className="size-4" />}{active ? activeText : safeText}</span></div>;
