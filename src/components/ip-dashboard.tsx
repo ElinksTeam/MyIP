@@ -2,7 +2,8 @@
 
 import { Button, Chip } from "@heroui/react";
 import { Bot, CheckCircle2, Copy, Globe2, LocateFixed, RefreshCw, Search, ShieldAlert, ShieldCheck, Sparkles, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,6 +29,7 @@ export function IpDashboard() {
   const [question, setQuestion] = useState("请分析这个 IP 的代理风险、网络质量与安全注意事项");
   const [answer, setAnswer] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const portalReady = useSyncExternalStore(() => () => undefined, () => true, () => false);
 
   async function lookup(ip?: string) {
     setLoading(true); setError("");
@@ -96,8 +98,8 @@ export function IpDashboard() {
           <CardContent>
             {loading ? <LoadingState /> : data && (
               <>
-                <div className="mb-7 flex items-start justify-between gap-4">
-                  <div className="min-w-0"><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div><p className="metric-value break-all font-mono text-xl font-semibold sm:text-3xl">{data.ip}</p></div>
+                <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 flex-1"><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div><p className={`metric-value whitespace-nowrap font-mono font-semibold tracking-[-.035em] ${data.ip.includes(":") ? "text-[11px] sm:text-[17px] lg:text-lg" : "text-2xl sm:text-3xl"}`}>{data.ip}</p></div>
                   <div className="flex shrink-0 items-start gap-2">
                     {data.latitude !== null && data.longitude !== null && <LocationGlobe latitude={data.latitude} longitude={data.longitude} label={[data.city, data.country].filter(Boolean).join(", ")} />}
                     <button aria-label={`${t("common.copy")} IP`} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => navigator.clipboard.writeText(data.ip)}><Copy className="size-4" /></button>
@@ -127,13 +129,16 @@ export function IpDashboard() {
       </div>
       <NetworkDiagnostics report={result} />
 
-      <Button className="ai-fab fixed bottom-6 right-6 z-30 shadow-xl" variant="primary" onPress={() => setAiOpen(true)}><Sparkles className="size-4" /> {t("dashboard.ai")}</Button>
+      {portalReady && createPortal(<><div className="fixed bottom-5 right-4 z-[60] flex items-center gap-2 sm:bottom-6 sm:right-6">
+        <button className="ai-service-hint" onClick={() => setAiOpen(true)}>{t("dashboard.aiHint")}</button>
+        <button className="ai-fab grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105" aria-label={t("dashboard.ai")} onClick={() => setAiOpen(true)}><Sparkles className="size-5" /></button>
+      </div>
       {aiOpen && <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/45 p-3 backdrop-blur-sm sm:p-6" onClick={() => setAiOpen(false)}>
         <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
           <CardHeader className="flex-row items-start justify-between"><div><CardTitle className="flex items-center gap-2"><Bot className="size-5 text-primary" />{t("dashboard.aiTitle")}</CardTitle><CardDescription>{t("dashboard.aiDesc")}</CardDescription></div><button aria-label="Close" onClick={() => setAiOpen(false)}><X className="size-5" /></button></CardHeader>
           <CardContent className="space-y-4"><textarea className="min-h-24 w-full resize-none rounded-xl bg-muted/60 p-3 text-sm outline-none ring-1 ring-white/10 focus:ring-2 focus:ring-primary/60" value={question} onChange={(e) => setQuestion(e.target.value)} />{answer && <div className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-xl bg-muted/50 p-4 text-sm leading-6">{answer}</div>}<Button className="w-full" variant="primary" onPress={() => void askAi()} isDisabled={aiLoading || !result}>{aiLoading ? t("dashboard.aiRunning") : t("dashboard.aiAction")}</Button></CardContent>
         </Card>
-      </div>}
+      </div>}</>, document.body)}
     </>
   );
 }
