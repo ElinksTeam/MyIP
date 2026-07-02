@@ -26,23 +26,25 @@ function normalize(ip: string, source: string, raw: RecordValue) {
   const security = (raw.security as RecordValue) || {};
   return {
     source,
-    ip: text(raw.ip) || ip,
-    city: text(raw.city ?? location.city),
-    region: text(raw.region ?? raw.regionName ?? location.state),
-    district: text(raw.district),
-    country: text(raw.country_name ?? raw.countryName ?? location.country ?? raw.country),
-    countryCode: text(raw.country_code ?? raw.countryCode ?? location.country_code),
-    postalCode: text(raw.postal ?? raw.zip ?? location.zip),
+    ip: text(raw.ip ?? raw.ipAddress) || ip,
+    city: text(raw.city ?? raw.cityName ?? location.city),
+    region: text(raw.region ?? raw.regionName ?? raw.subdivision ?? location.state),
+    district: text(raw.district ?? location.district),
+    country: text(raw.country_name ?? raw.countryName ?? location.country_name ?? location.country),
+    countryCode: text(raw.country_code ?? raw.countryCode ?? location.country_code ?? (source === "Country.is" ? raw.country : null)),
+    postalCode: text(raw.postal ?? raw.zip ?? raw.zipCode ?? location.zip),
     timezone: text(
       (typeof raw.timezone === "object" && raw.timezone ? (raw.timezone as RecordValue).id : raw.timezone) ??
-      (typeof location.timezone === "object" && location.timezone ? (location.timezone as RecordValue).id : location.timezone),
+      (typeof location.timezone === "object" && location.timezone ? (location.timezone as RecordValue).id : location.timezone) ??
+      location.time_zone ??
+      (Array.isArray(raw.timeZones) ? raw.timeZones[0] : raw.timeZones),
     ),
     latitude: number(raw.latitude ?? raw.lat ?? location.latitude),
     longitude: number(raw.longitude ?? raw.lon ?? location.longitude),
-    asn: text(raw.asn && typeof raw.asn !== "object" ? raw.asn : asn.asn ?? connection.asn),
-    organization: text(raw.org ?? raw.organization ?? asn.org ?? connection.org ?? connection.isp),
+    asn: text(raw.asn && typeof raw.asn !== "object" ? raw.asn : asn.asn ?? asn.number ?? connection.asn),
+    organization: text(raw.org ?? raw.organization ?? raw.asnOrganization ?? asn.org ?? asn.organization ?? connection.org ?? connection.isp),
     isp: text(raw.isp ?? connection.isp),
-    proxy: Boolean(raw.is_proxy ?? raw.proxy ?? security.proxy ?? raw.is_vpn ?? raw.is_tor),
+    proxy: Boolean(raw.is_proxy ?? raw.isProxy ?? raw.proxy ?? security.proxy ?? raw.is_vpn ?? raw.is_tor),
     hosting: Boolean(raw.is_datacenter ?? raw.hosting ?? security.hosting),
     vpn: Boolean(raw.is_vpn ?? security.vpn),
     tor: Boolean(raw.is_tor ?? security.tor),
@@ -83,6 +85,9 @@ export async function GET(request: NextRequest) {
 
   const providers: Array<[string, string | null]> = [
     ["IPWho.is", `https://ipwho.is/${encodeURIComponent(ip)}`],
+    ["ipapi.co", `https://ipapi.co/${encodeURIComponent(ip)}/json/`],
+    ["FreeIPAPI", `https://free.freeipapi.com/api/json/${encodeURIComponent(ip)}`],
+    ["Country.is", `https://api.country.is/${encodeURIComponent(ip)}?fields=city,continent,subdivision,postal,location,asn`],
     ["IP-API.com", `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,message,country,countryCode,regionName,city,district,zip,lat,lon,timezone,isp,org,as,proxy,hosting,query`],
     ["IPAPI.is", process.env.IPAPIIS_API_KEY ? `https://api.ipapi.is/?q=${encodeURIComponent(ip)}&key=${process.env.IPAPIIS_API_KEY.split(",")[0].trim()}` : null],
     ["IPinfo", process.env.IPINFO_API_TOKEN ? `https://api.ipinfo.io/lite/${encodeURIComponent(ip)}?token=${process.env.IPINFO_API_TOKEN.split(",")[0].trim()}` : null],

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NetworkDiagnostics } from "@/components/network-diagnostics";
 import { useLocale } from "@/components/locale-provider";
+import { LocationGlobe } from "@/components/location-globe";
 
 type IpData = {
   ip: string; city: string | null; region: string | null; district: string | null; country: string | null;
@@ -96,8 +97,11 @@ export function IpDashboard() {
             {loading ? <LoadingState /> : data && (
               <>
                 <div className="mb-7 flex items-start justify-between gap-4">
-                  <div><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div><p className="metric-value break-all font-mono text-2xl font-semibold sm:text-3xl">{data.ip}</p></div>
-                  <button aria-label={`${t("common.copy")} IP`} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => navigator.clipboard.writeText(data.ip)}><Copy className="size-4" /></button>
+                  <div className="min-w-0"><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Globe2 className="size-4" /> {t("dashboard.current")}</div><p className="metric-value break-all font-mono text-xl font-semibold sm:text-3xl">{data.ip}</p></div>
+                  <div className="flex shrink-0 items-start gap-2">
+                    {data.latitude !== null && data.longitude !== null && <LocationGlobe latitude={data.latitude} longitude={data.longitude} label={[data.city, data.country].filter(Boolean).join(", ")} />}
+                    <button aria-label={`${t("common.copy")} IP`} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => navigator.clipboard.writeText(data.ip)}><Copy className="size-4" /></button>
+                  </div>
                 </div>
                 <div className="grid gap-x-8 sm:grid-cols-2">
                   {fields.map(([label, value]) => <div key={label} className="flex min-h-16 items-center justify-between gap-4 border-t border-white/[.06] py-3"><span className="text-xs text-muted-foreground">{label}</span><span className="text-right text-sm font-medium">{value || "—"}</span></div>)}
