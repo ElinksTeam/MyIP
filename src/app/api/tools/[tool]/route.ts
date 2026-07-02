@@ -9,6 +9,34 @@ const DOMAIN = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2
 const RECORD_TYPES = new Set(["A", "AAAA", "CNAME", "MX", "NS", "TXT"]);
 const RULE_HOST = /^ptest-[1-8]\.ipcheck\.ing$/;
 const GLOBALPING = "https://api.globalping.io/v1/measurements";
+const STATUS_SOURCES: Record<string, string> = {
+  "IPWho.is": "https://ipwho.is/8.8.8.8",
+  "ipapi.co": "https://ipapi.co/8.8.8.8/json/",
+  FreeIPAPI: "https://free.freeipapi.com/api/json/8.8.8.8",
+  "Country.is": "https://api.country.is/8.8.8.8?fields=location,asn",
+  "IP-API.com": "http://ip-api.com/json/8.8.8.8?fields=status",
+  GeoJS: "https://get.geojs.io/v1/ip/geo/8.8.8.8.json",
+  IPQuery: "https://api.ipquery.io/8.8.8.8",
+  "IP.Guide": "https://ip.guide/8.8.8.8",
+  "IP.SB": "https://api.ip.sb/geoip/8.8.8.8",
+  "IPLocation.net": "https://api.iplocation.net/?ip=8.8.8.8",
+  "IPWhois.app": "https://ipwhois.app/json/8.8.8.8",
+  ReallyFreeGeoIP: "https://reallyfreegeoip.org/json/8.8.8.8",
+  "IPinfo Public": "https://ipinfo.io/8.8.8.8/json",
+  IPBase: "https://api.ipbase.com/v1/json/8.8.8.8",
+  FreeGeoIP: "https://freegeoip.app/json/8.8.8.8",
+  "IP2Location Public": "https://api.ip2location.io/?ip=8.8.8.8",
+  SeeIP: "https://api.seeip.org/geoip/8.8.8.8",
+  TechnikNews: "https://api.techniknews.net/ipgeo/8.8.8.8",
+  GeolocationDB: "https://geolocation-db.com/json/8.8.8.8",
+  IP2C: "https://ip2c.org/8.8.8.8",
+  HackerTarget: "https://api.hackertarget.com/geoip/?q=8.8.8.8",
+  "ARIN RDAP": "https://rdap.arin.net/registry/ip/8.8.8.8",
+  "RIPE Stat": "https://stat.ripe.net/data/prefix-overview/data.json?resource=8.8.8.8",
+  Robtex: "https://freeapi.robtex.com/ipquery/8.8.8.8",
+  "Shodan InternetDB": "https://internetdb.shodan.io/8.8.8.8",
+  "IPAPI.is": "https://api.ipapi.is/?q=8.8.8.8",
+};
 
 function readableError(value: unknown, fallback: string): string {
   if (typeof value === "string" && value.trim()) return value;
@@ -136,24 +164,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ too
       return NextResponse.json({ data: await jsonFetch(`${GLOBALPING}/${encodeURIComponent(id)}`) });
     }
     if (tool === "status") {
-      const [ipwhois, ipapi, freeipapi, countryis, ipapicom] = await Promise.all([
-        serviceAvailable("https://ipwho.is/8.8.8.8"),
-        serviceAvailable("https://ipapi.co/8.8.8.8/json/"),
-        serviceAvailable("https://free.freeipapi.com/api/json/8.8.8.8"),
-        serviceAvailable("https://api.country.is/8.8.8.8?fields=location,asn"),
-        serviceAvailable("http://ip-api.com/json/8.8.8.8?fields=status"),
-      ]);
+      const sourceEntries = Object.entries(STATUS_SOURCES);
+      const sourceChecks = await Promise.all(sourceEntries.map(([, url]) => serviceAvailable(url)));
+      const sourceStatus = Object.fromEntries(sourceEntries.map(([name], index) => [name, sourceChecks[index]]));
       return NextResponse.json({ data: {
         core: true,
         ai: Boolean(process.env.GROQ_API_KEY),
-        ipwhois,
-        ipapi,
-        freeipapi,
-        countryis,
-        ipapicom,
-        ipapiis: Boolean(process.env.IPAPIIS_API_KEY),
-        ipinfo: Boolean(process.env.IPINFO_API_TOKEN),
-        ip2location: Boolean(process.env.IP2LOCATION_API_KEY),
+        sourceStatus,
+        sourceSummary: { online: sourceChecks.filter(Boolean).length, total: sourceChecks.length },
         mac: true,
         invisibility: true,
       } });

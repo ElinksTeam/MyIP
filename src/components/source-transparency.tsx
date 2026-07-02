@@ -92,9 +92,9 @@ export function SourceTransparency({ report }: { report: Report }) {
       <Button size="sm" variant="tertiary" onPress={createShareImage} isDisabled={sharing}><ImageDown className="size-4" />{t("share.image")}</Button>
     </div>
     {open && createPortal(<div className="fixed inset-0 z-[75] flex items-end justify-center bg-black/55 p-3 backdrop-blur-sm sm:items-center sm:p-6" onClick={() => setOpen(false)}>
-      <Card className="max-h-[88vh] w-full max-w-4xl overflow-hidden" onClick={(event) => event.stopPropagation()}>
-        <CardHeader className="flex-row items-start justify-between border-b border-white/[.06]"><div><CardTitle>{t("sources.title")}</CardTitle><CardDescription>{t("sources.description")}</CardDescription></div><button className="rounded-lg p-2 text-muted-foreground hover:bg-muted" onClick={() => setOpen(false)} aria-label="Close"><X className="size-5" /></button></CardHeader>
-        <CardContent className="overflow-y-auto">
+      <Card className="flex max-h-[88dvh] w-full max-w-4xl flex-col overflow-hidden" onClick={(event) => event.stopPropagation()}>
+        <CardHeader className="shrink-0 flex-row items-start justify-between border-b border-white/[.06]"><div><CardTitle>{t("sources.title")}</CardTitle><CardDescription>{t("sources.description")}</CardDescription></div><button className="rounded-lg p-2 text-muted-foreground hover:bg-muted" onClick={() => setOpen(false)} aria-label="Close"><X className="size-5" /></button></CardHeader>
+        <CardContent className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain">
           <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Summary value={report.meta.providers} label={t("sources.responded")} />
             <Summary value={report.meta.attempted || report.meta.providers} label={t("sources.attempted")} />

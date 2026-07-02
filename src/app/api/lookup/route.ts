@@ -125,6 +125,10 @@ function normalize(ip: string, definition: SourceDefinition, raw: RecordValue) {
     hosting: flag(raw.is_datacenter ?? raw.hosting ?? security.hosting ?? security.is_datacenter),
     vpn: flag(raw.is_vpn ?? security.vpn),
     tor: flag(raw.is_tor ?? security.tor),
+    sourceType: text(
+      raw.type ?? raw.usage_type ?? raw.usageType ?? security.type ??
+      connection.type ?? (raw.company && typeof raw.company === "object" ? (raw.company as RecordValue).type : null),
+    ),
     details: definition.category === "registry"
       ? { handle: raw.handle, name: raw.name, prefix: ripe.prefix, holder: ripe.holder }
       : definition.name === "Shodan InternetDB"
@@ -172,6 +176,18 @@ export async function GET(request: NextRequest) {
   const agreement = locationVotes.length
     ? Math.round(locationVotes.filter((value) => value === majorityCountry).length / locationVotes.length * 100)
     : 0;
+  const proxy = successful.some((item) => item.proxy);
+  const vpn = successful.some((item) => item.vpn);
+  const tor = successful.some((item) => item.tor);
+  const hosting = successful.some((item) => item.hosting);
+  const typeText = successful.map((item) => String(item.sourceType || "")).join(" ").toLowerCase();
+  const organizationText = successful.map((item) => `${item.organization || ""} ${item.isp || ""}`).join(" ").toLowerCase();
+  const networkType = tor ? "tor" : hosting || /hosting|datacenter|data center|cdn|cloud/.test(typeText)
+    ? "datacenter" : vpn ? "vpn" : proxy ? "proxy"
+    : /mobile|cellular|wireless/.test(`${typeText} ${organizationText}`) ? "mobile" : "residential";
+  const riskPenalty = (tor ? 38 : 0) + (vpn ? 20 : 0) + (proxy ? 18 : 0) + (hosting ? 16 : 0);
+  const qualityScore = Math.max(0, Math.min(100, 96 - riskPenalty + Math.round((agreement - 80) / 5)));
+  const qualityGrade = qualityScore >= 85 ? "excellent" : qualityScore >= 70 ? "good" : qualityScore >= 50 ? "review" : "high-risk";
 
   return NextResponse.json({
     data: {
@@ -180,8 +196,7 @@ export async function GET(request: NextRequest) {
       country: pick("country"), countryCode: majorityCountry, postalCode: pick("postalCode"),
       timezone: pick("timezone"), latitude: pick("latitude"), longitude: pick("longitude"),
       asn: pick("asn"), organization: pick("organization"), isp: pick("isp"),
-      proxy: successful.some((item) => item.proxy), hosting: successful.some((item) => item.hosting),
-      vpn: successful.some((item) => item.vpn), tor: successful.some((item) => item.tor),
+      proxy, hosting, vpn, tor, networkType, qualityScore, qualityGrade,
       confidence: Math.min(99, Math.round((agreement * 0.7) + (Math.min(successful.length, 20) / 20 * 29))),
     },
     sources: successful,

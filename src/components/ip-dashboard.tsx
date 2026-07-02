@@ -18,6 +18,8 @@ type IpData = {
   countryCode: string | null; postalCode: string | null; timezone: string | null; latitude: number | null;
   longitude: number | null; asn: string | null; organization: string | null; isp: string | null;
   proxy: boolean; hosting: boolean; vpn: boolean; tor: boolean; confidence: number;
+  networkType: "residential" | "datacenter" | "mobile" | "proxy" | "vpn" | "tor";
+  qualityScore: number; qualityGrade: "excellent" | "good" | "review" | "high-risk";
 };
 type SourceInfo = Record<string, unknown> & {
   source?: string; category?: string; fields?: string[]; city?: string | null; region?: string | null;
@@ -42,6 +44,7 @@ export function IpDashboard() {
   const [aiMode, setAiMode] = useState<"fast" | "balanced" | "deep">("balanced");
   const [aiLoading, setAiLoading] = useState(false);
   const [localizedLocation, setLocalizedLocation] = useState<Partial<Pick<IpData, "country" | "region" | "city" | "district" | "postalCode">>>({});
+  const [connectionType, setConnectionType] = useState("unknown");
   const [deviceIps, setDeviceIps] = useState<{ ipv4: string | null; ipv6: string | null; checking: boolean }>({ ipv4: null, ipv6: null, checking: true });
   const portalReady = useSyncExternalStore(() => () => undefined, () => true, () => false);
 
@@ -76,6 +79,14 @@ export function IpDashboard() {
     return () => { active = false; window.clearTimeout(timer); controller.abort(); };
     // Initial visitor-IP discovery only; later lookups are user initiated.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const connection = (navigator as Navigator & { connection?: { type?: string; effectiveType?: string } }).connection;
+      setConnectionType(connection?.type || connection?.effectiveType || "unknown");
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -177,6 +188,7 @@ export function IpDashboard() {
               <div className="pt-2"><div className="mb-2 flex justify-between text-xs"><span className="text-muted-foreground">{t("dashboard.confidence")}</span><span className="metric-value">{data?.confidence || 0}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="progress-live h-full rounded-full bg-primary" style={{ width: `${data?.confidence || 0}%` }} /></div></div>
             </CardContent>
           </Card>
+          {data && <NetworkAssessment data={data} connectionType={connectionType} />}
           <Card>
             <CardContent className="flex items-start gap-4"><div className="rounded-xl bg-primary/12 p-3 text-primary"><LocateFixed className="size-5" /></div><div><p className="text-sm font-medium">{t("dashboard.privacy")}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{t("dashboard.privacyDesc")}</p></div></CardContent>
           </Card>
@@ -205,6 +217,25 @@ export function IpDashboard() {
       </div>}</>, document.body)}
     </>
   );
+}
+
+function NetworkAssessment({ data, connectionType }: { data: IpData; connectionType: string }) {
+  const { t } = useLocale();
+  const protectedTunnel = data.vpn || data.proxy || data.tor;
+  const publicRisk = !protectedTunnel && connectionType === "wifi";
+  const typeKey = `quality.type.${data.networkType}`;
+  const gradeKey = `quality.grade.${data.qualityGrade}`;
+  return <Card>
+    <CardHeader><CardTitle>{t("quality.title")}</CardTitle><CardDescription>{t("quality.description")}</CardDescription></CardHeader>
+    <CardContent className="space-y-4">
+      <div className="grid grid-cols-2 gap-3"><div className="rounded-xl bg-muted/35 p-3"><p className="text-xs text-muted-foreground">{t("quality.score")}</p><p className="mt-1 font-mono text-2xl font-semibold">{data.qualityScore}<span className="text-sm text-muted-foreground">/100</span></p><p className="mt-1 text-xs text-primary">{t(gradeKey)}</p></div><div className="rounded-xl bg-muted/35 p-3"><p className="text-xs text-muted-foreground">{t("quality.ipType")}</p><p className="mt-2 text-sm font-semibold">{t(typeKey)}</p><p className="mt-1 text-xs text-muted-foreground">{t("quality.inferred")}</p></div></div>
+      <div className="space-y-3 text-sm">
+        <div className="flex items-start justify-between gap-4"><span className="text-muted-foreground">{t("quality.connection")}</span><span className="text-right font-medium">{protectedTunnel ? t("quality.tunnel") : t("quality.direct")}</span></div>
+        <div className="flex items-start justify-between gap-4"><span className="text-muted-foreground">{t("quality.publicNetwork")}</span><span className={`text-right font-medium ${publicRisk ? "text-amber-400" : "text-foreground"}`}>{protectedTunnel ? t("quality.protected") : publicRisk ? t("quality.possiblePublic") : t("quality.unknown")}</span></div>
+      </div>
+      <div className={`rounded-xl p-3 text-xs leading-5 ${protectedTunnel ? "bg-emerald-500/8 text-emerald-300" : "bg-amber-500/8 text-amber-300"}`}>{protectedTunnel ? t("quality.vpnDetected") : t("quality.vpnAdvice")}</div>
+    </CardContent>
+  </Card>;
 }
 
 function LoadingState() {
